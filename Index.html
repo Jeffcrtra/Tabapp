@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>11.36 TabApp – Banco + Setlist</title>
+  <title>11.41 TabApp – Banco + Setlist</title>
   <style>
     :root{
       --bg:#0b0d12; --card:#121622; --muted:#98a2b3; --text:#e6e9ef;
@@ -136,7 +136,7 @@
         </div>
 
         <div style="height:12px"></div>
-        <div class="list" id="webResults"></div>
+        <div class="list" id="unifiedResults"></div>
 
         <div class="divider"></div>
 
@@ -563,6 +563,90 @@ function renderSetlist(){
     });
   });
 }
+
+function renderUnifiedResults(localMatches, webMatches){
+  const box = el("unifiedResults");
+  box.innerHTML = "";
+
+  if((!localMatches || localMatches.length===0) && (!webMatches || webMatches.length===0)){
+    box.innerHTML = `<div class="sub">Escribí algo para buscar. Si existe en tu banco sale primero; si no, salen opciones online.</div>`;
+    return;
+  }
+
+  // 1) Banco
+  if(localMatches && localMatches.length){
+    const h = document.createElement("div");
+    h.className = "sub";
+    h.innerHTML = `📚 En tu banco`;
+    box.appendChild(h);
+
+    localMatches.slice(0,6).forEach(s=>{
+      const node = document.createElement("div");
+      node.className = "item";
+      node.innerHTML = `
+        <div class="meta" style="min-width:0;">
+          <div class="title">${escapeHtml(s.title||"Sin título")}</div>
+          <div class="tags">
+            ${s.artist ? `<span>🎤 ${escapeHtml(s.artist)}</span>` : ""}
+            ${s.key ? `<span>🎼 <span class="kbd">${escapeHtml(s.key)}</span></span>` : ""}
+            <span class="badge">Banco</span>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn small accent" data-add="${s.id}">＋</button>
+          <button class="btn small" data-edit="${s.id}">Editar</button>
+        </div>
+      `;
+      box.appendChild(node);
+    });
+
+    box.querySelectorAll("[data-add]").forEach(b=> b.addEventListener("click", e=>{
+      addToSet(e.currentTarget.getAttribute("data-add"));
+    }));
+    box.querySelectorAll("[data-edit]").forEach(b=> b.addEventListener("click", e=>{
+      openEditor(e.currentTarget.getAttribute("data-edit"));
+    }));
+  }
+
+  // 2) Online
+  if(webMatches && webMatches.length){
+    const h = document.createElement("div");
+    h.className = "sub";
+    h.style.marginTop = "10px";
+    h.innerHTML = `🌐 Online`;
+    box.appendChild(h);
+
+    webMatches.slice(0,10).forEach((r, i)=>{
+      const node = document.createElement("div");
+      node.className = "item";
+      node.innerHTML = `
+        <div class="meta" style="min-width:0;">
+          <div class="title">${escapeHtml(r.title || "Resultado")}</div>
+          <div class="tags">
+            <span>🌐 ${escapeHtml(r.host || "sitio")}</span>
+          </div>
+        </div>
+        <div class="actions">
+          <a class="btn small" href="${escapeHtml(r.url)}" target="_blank" rel="noopener">Abrir</a>
+          <button class="btn small ok" data-savefrom="${i}">Guardar en banco</button>
+        </div>
+      `;
+      box.appendChild(node);
+    });
+
+    box.querySelectorAll("[data-savefrom]").forEach(b=> b.addEventListener("click", e=>{
+      const idx = parseInt(e.currentTarget.getAttribute("data-savefrom"),10);
+      const r = webMatches[idx];
+      openEditor(null, {
+        titleGuess: r.title || el("searchWeb").value,
+        artistGuess: "",
+        source: r.url
+      });
+    }));
+  }
+}
+
+  
 function renderViewer(){
   const s = currentSong();
   const titleEl = el("viewTitle");
