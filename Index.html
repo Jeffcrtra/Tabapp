@@ -1,0 +1,867 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Setlist Live (Personal)</title>
+  <style>
+    :root{
+      --bg:#0b0d12; --card:#121622; --muted:#98a2b3; --text:#e6e9ef;
+      --line:#23283a; --accent:#ffd54a; --ok:#33d17a; --danger:#ff5c77;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius: 18px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+    *{box-sizing:border-box}
+    body{margin:0; font-family:var(--sans); background:radial-gradient(1200px 700px at 20% 0%, #1b2240 0%, var(--bg) 55%); color:var(--text);}
+    header{position:sticky; top:0; backdrop-filter: blur(10px); background:rgba(11,13,18,.65); border-bottom:1px solid var(--line); z-index:10;}
+    .wrap{max-width:1180px; margin:0 auto; padding:16px;}
+    .row{display:flex; gap:14px; align-items:center; flex-wrap:wrap;}
+    h1{font-size:18px; margin:0; letter-spacing:.3px;}
+    .pill{padding:6px 10px; border:1px solid var(--line); border-radius:999px; color:var(--muted); font-size:12px;}
+    .grid{display:grid; grid-template-columns: 1.1fr .9fr; gap:14px; padding:16px;}
+    @media (max-width: 980px){ .grid{grid-template-columns:1fr; } }
+
+    .card{background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01)); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow);}
+    .card .hd{padding:14px 14px 10px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center; gap:10px;}
+    .card .bd{padding:14px;}
+    .sub{color:var(--muted); font-size:12px;}
+    .btn{appearance:none; border:1px solid var(--line); background:rgba(255,255,255,.03); color:var(--text);
+      padding:10px 12px; border-radius:14px; cursor:pointer; transition:transform .05s ease, background .15s ease, border-color .15s ease;
+      display:inline-flex; align-items:center; gap:8px; font-weight:650; }
+    .btn:active{transform:translateY(1px) scale(.99);}
+    .btn:hover{background:rgba(255,255,255,.06); border-color:#2d3552;}
+    .btn.accent{background:rgba(255,213,74,.15); border-color:rgba(255,213,74,.45);}
+    .btn.accent:hover{background:rgba(255,213,74,.22);}
+    .btn.danger{background:rgba(255,92,119,.12); border-color:rgba(255,92,119,.4);}
+    .btn.ok{background:rgba(51,209,122,.12); border-color:rgba(51,209,122,.4);}
+    .btn.small{padding:8px 10px; border-radius:12px; font-size:13px;}
+    .btn.icon{width:44px; justify-content:center;}
+    .btn.link{background:transparent;}
+
+    .input, textarea{
+      width:100%; padding:12px 12px; border-radius:14px; border:1px solid var(--line);
+      background:rgba(255,255,255,.02); color:var(--text); outline:none;
+    }
+    .input:focus, textarea:focus{border-color:#3c4a7c; box-shadow:0 0 0 4px rgba(60,74,124,.25);}
+    textarea{min-height:200px; font-family:var(--mono); line-height:1.35; font-size:13px; resize:vertical;}
+    .two{display:grid; grid-template-columns: 1fr 1fr; gap:10px;}
+    @media (max-width: 560px){ .two{grid-template-columns:1fr;} }
+
+    .list{display:flex; flex-direction:column; gap:10px;}
+    .item{
+      border:1px solid var(--line); border-radius:16px; padding:12px; background:rgba(255,255,255,.02);
+      display:flex; justify-content:space-between; gap:10px; align-items:flex-start;
+    }
+    .item .meta{display:flex; flex-direction:column; gap:4px; min-width:0;}
+    .title{font-weight:750; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+    .tags{display:flex; gap:8px; flex-wrap:wrap; color:var(--muted); font-size:12px;}
+    .kbd{font-family:var(--mono); font-size:12px; border:1px solid var(--line); padding:2px 6px; border-radius:8px; color:var(--muted);}
+
+    .actions{display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;}
+    .drag{cursor:grab;}
+    .drag:active{cursor:grabbing;}
+    .drop-hint{border:1px dashed rgba(255,213,74,.55);}
+
+    .viewer{
+      border-radius:18px; border:1px solid var(--line); background:rgba(0,0,0,.2);
+      padding:14px; min-height:360px;
+    }
+    .viewer h2{margin:0 0 4px; font-size:18px;}
+    .viewer .info{color:var(--muted); font-size:12px; display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;}
+    .viewer pre{
+      margin:0; white-space:pre-wrap; word-break:break-word;
+      font-family:var(--mono); font-size:14px; line-height:1.55;
+    }
+    .bar{display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between; margin-top:12px;}
+    .bar .left, .bar .right{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
+    .muted{color:var(--muted);}
+
+    /* modal */
+    .modal-back{position:fixed; inset:0; background:rgba(0,0,0,.6); display:none; align-items:center; justify-content:center; padding:16px; z-index:99;}
+    .modal{max-width:900px; width:100%; max-height:92vh; overflow:auto;}
+    .modal .bd{padding:14px;}
+    .modal .hd{position:sticky; top:0; background:rgba(18,22,34,.98);}
+
+    .toast{position:fixed; bottom:16px; left:50%; transform:translateX(-50%); background:rgba(18,22,34,.95);
+      border:1px solid var(--line); border-radius:999px; padding:10px 14px; color:var(--text); display:none; z-index:200;}
+    .hint{font-size:12px; color:var(--muted); margin-top:8px;}
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="row" style="justify-content:space-between;">
+      <div class="row">
+        <h1>Setlist Live (Personal)</h1>
+        <span class="pill">BD local • GitHub Pages friendly</span>
+      </div>
+      <div class="row">
+        <button class="btn accent small" id="btnNewSong">＋ Nueva canción</button>
+        <button class="btn small" id="btnExport">Exportar</button>
+        <button class="btn small" id="btnImport">Importar</button>
+        <button class="btn danger small" id="btnReset">Reset</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="grid">
+    <!-- Library -->
+    <section class="card">
+      <div class="hd">
+        <div>
+          <div style="font-weight:800">Biblioteca</div>
+          <div class="sub">Buscá y agregá versiones a tu setlist.</div>
+        </div>
+        <div class="row">
+          <span class="kbd">/</span><span class="sub">Buscar</span>
+        </div>
+      </div>
+      <div class="bd">
+        <input class="input" id="search" placeholder="Buscar canción (título, artista, tags)..." />
+        <div class="hint">Tip: Guardá varias “versiones” de la misma canción (Original / Tono más bajo / Acústica / etc.) y el buscador te las devuelve.</div>
+        <div style="height:12px"></div>
+        <div class="list" id="libraryList"></div>
+      </div>
+    </section>
+
+    <!-- Setlist + Viewer -->
+    <section class="card">
+      <div class="hd">
+        <div>
+          <div style="font-weight:800">Setlist</div>
+          <div class="sub">Arrastrá para reordenar. Next/Prev para navegar.</div>
+        </div>
+        <div class="row">
+          <button class="btn small" id="btnClearSet">Vaciar set</button>
+        </div>
+      </div>
+      <div class="bd">
+        <div class="list" id="setList"></div>
+        <div style="height:14px"></div>
+
+        <div class="viewer">
+          <h2 id="viewTitle">Nada seleccionado</h2>
+          <div class="info" id="viewInfo"></div>
+
+          <div class="two" style="margin:10px 0;">
+            <button class="btn small" id="btnPrev">⟵ Previous</button>
+            <button class="btn small" id="btnNext">Next ⟶</button>
+          </div>
+
+          <div class="bar">
+            <div class="left">
+              <button class="btn small" id="btnTransposeDown">− Transpose</button>
+              <button class="btn small" id="btnTransposeUp">＋ Transpose</button>
+              <span class="muted" id="transposeLabel">Transposición: 0</span>
+            </div>
+            <div class="right">
+              <button class="btn small" id="btnEditCurrent">Editar</button>
+              <button class="btn danger small" id="btnRemoveCurrent">Quitar del set</button>
+            </div>
+          </div>
+
+          <div style="height:12px"></div>
+          <pre id="viewContent" aria-label="Letra y acordes"></pre>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<!-- Modal: Song Editor -->
+<div class="modal-back" id="modalBack">
+  <div class="card modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="hd">
+      <div>
+        <div id="modalTitle" style="font-weight:900">Nueva canción</div>
+        <div class="sub">Pegá letra + acordes en formato tipo ChordPro: <span class="kbd">[G]</span>palabra</div>
+      </div>
+      <div class="row">
+        <button class="btn small" id="btnCloseModal">Cerrar</button>
+      </div>
+    </div>
+    <div class="bd">
+      <div class="two">
+        <div>
+          <label class="sub">Título</label>
+          <input class="input" id="songTitle" placeholder="Has aumentado" />
+        </div>
+        <div>
+          <label class="sub">Artista / Versión</label>
+          <input class="input" id="songArtist" placeholder="Danilo Montero • (Versión banda)" />
+        </div>
+      </div>
+      <div style="height:10px"></div>
+      <div class="two">
+        <div>
+          <label class="sub">Tonalidad (opcional)</label>
+          <input class="input" id="songKey" placeholder="G" />
+        </div>
+        <div>
+          <label class="sub">Tags (separados por coma)</label>
+          <input class="input" id="songTags" placeholder="adoración, domingo, alegre" />
+        </div>
+      </div>
+      <div style="height:10px"></div>
+
+      <label class="sub">Contenido (ChordPro)</label>
+      <textarea id="songBody" spellcheck="false" placeholder="[G]Has aumentado la [D]alegría..."></textarea>
+      <div class="hint">
+        Consejo: guardá una misma canción en varias versiones. Ej: “Has aumentado (Tono F)” y “Has aumentado (Acústica capo 2)”.
+      </div>
+
+      <div style="height:12px"></div>
+      <div class="row" style="justify-content:space-between;">
+        <div class="row">
+          <button class="btn ok" id="btnSaveSong">Guardar</button>
+          <button class="btn" id="btnSaveAndAdd">Guardar + Agregar al set</button>
+        </div>
+        <div class="row">
+          <button class="btn danger" id="btnDeleteSong" style="display:none;">Borrar canción</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Import -->
+<div class="modal-back" id="importBack">
+  <div class="card modal">
+    <div class="hd">
+      <div>
+        <div style="font-weight:900">Importar / Exportar</div>
+        <div class="sub">Pegá JSON exportado para restaurar tu biblioteca y setlist.</div>
+      </div>
+      <div class="row">
+        <button class="btn small" id="btnCloseImport">Cerrar</button>
+      </div>
+    </div>
+    <div class="bd">
+      <textarea id="importText" spellcheck="false" placeholder="{ ... }"></textarea>
+      <div style="height:12px"></div>
+      <div class="row" style="justify-content:space-between;">
+        <button class="btn ok" id="btnDoImport">Importar</button>
+        <button class="btn" id="btnCopyExport">Copiar export</button>
+      </div>
+      <div class="hint">Tu data queda en este navegador (localStorage). Exportá por seguridad si cambiás de cel/compu.</div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ==========================
+   Setlist Live (Personal)
+   - Single-file SPA
+   - Storage: localStorage
+   - Format: ChordPro-style chords [G] in-line
+   ========================== */
+
+const STORE_KEY = "setlistlive_personal_v1";
+
+const state = {
+  songs: [],       // {id,title,artist,key,tags[],body,createdAt,updatedAt}
+  setlist: [],     // array of songIds
+  currentIndex: -1,
+  transpose: 0,    // semitone offset for viewer
+  search: "",
+};
+
+const el = (id) => document.getElementById(id);
+const toast = (msg) => {
+  const t = el("toast");
+  t.textContent = msg;
+  t.style.display = "block";
+  clearTimeout(toast._tm);
+  toast._tm = setTimeout(()=> t.style.display="none", 2200);
+};
+
+function uid(){
+  return Math.random().toString(16).slice(2) + Date.now().toString(16);
+}
+
+function load(){
+  const raw = localStorage.getItem(STORE_KEY);
+  if(raw){
+    try{
+      const data = JSON.parse(raw);
+      state.songs = Array.isArray(data.songs) ? data.songs : [];
+      state.setlist = Array.isArray(data.setlist) ? data.setlist : [];
+      state.currentIndex = Number.isInteger(data.currentIndex) ? data.currentIndex : -1;
+      state.transpose = Number.isInteger(data.transpose) ? data.transpose : 0;
+    }catch(e){
+      console.warn("Bad storage, resetting.", e);
+      save();
+    }
+  }else{
+    seedDemo();
+    save();
+  }
+}
+
+function save(){
+  localStorage.setItem(STORE_KEY, JSON.stringify({
+    songs: state.songs,
+    setlist: state.setlist,
+    currentIndex: state.currentIndex,
+    transpose: state.transpose
+  }));
+}
+
+function seedDemo(){
+  state.songs = [
+    {
+      id: uid(),
+      title: "Demo: Canción 1",
+      artist: "Versión banda",
+      key: "G",
+      tags: ["demo","domingo"],
+      body: "[G]Verso 1\n[C]Coro\n[D]Puente\n\nTip: pegá tus letras y acordes aquí.",
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    }
+  ];
+  state.setlist = [];
+  state.currentIndex = -1;
+  state.transpose = 0;
+}
+
+/* ====== Chord handling (basic but solid) ====== */
+
+const NOTE_SHARPS = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+const NOTE_FLATS  = ["C","Db","D","Eb","E","F","Gb","G","Ab","A","Bb","B"];
+
+function normalizeRoot(root){
+  // Keep common spellings; prefer flats if user typed b.
+  return root;
+}
+
+function parseChord(ch){
+  // Handles roots like C, C#, Db, F#, Bb etc. Keeps suffix.
+  // Examples: "G", "G/B", "F#m7", "Bbmaj7", "D(add9)", "Em", "A7sus4"
+  // We'll transpose each "root" token inside slash chords.
+  const parts = ch.split("/");
+  return parts.map(part => {
+    const m = part.match(/^([A-G])([#b]?)(.*)$/);
+    if(!m) return part;
+    return { letter: m[1], accidental: m[2] || "", rest: m[3] || "" };
+  });
+}
+
+function chordToIndex(letter, accidental){
+  const name = letter + accidental;
+  let idx = NOTE_SHARPS.indexOf(name);
+  if(idx !== -1) return idx;
+  idx = NOTE_FLATS.indexOf(name);
+  if(idx !== -1) return idx;
+  return null;
+}
+
+function indexToNote(idx, preferFlats){
+  idx = (idx % 12 + 12) % 12;
+  return preferFlats ? NOTE_FLATS[idx] : NOTE_SHARPS[idx];
+}
+
+function transposeChordSymbol(symbol, semitones){
+  // Transpose a chord string like "F#m7/B"
+  // Preserve flat preference if original uses 'b'
+  const preferFlats = symbol.includes("b") && !symbol.includes("#");
+  const tokens = symbol.split("/");
+  const out = tokens.map(tok=>{
+    const m = tok.match(/^([A-G])([#b]?)(.*)$/);
+    if(!m) return tok;
+    const idx = chordToIndex(m[1], m[2]||"");
+    if(idx === null) return tok;
+    const newNote = indexToNote(idx + semitones, preferFlats);
+    return newNote + (m[3]||"");
+  });
+  return out.join("/");
+}
+
+function transposeChordProText(text, semitones){
+  // Replace [CHORD] segments
+  return text.replace(/\[([^\]]+)\]/g, (m, chord)=>{
+    const t = transposeChordSymbol(chord.trim(), semitones);
+    return "[" + t + "]";
+  });
+}
+
+function renderChordProAsText(text){
+  // Simple display: keep [Chord] inline. Later we can render chords above lyrics.
+  return text;
+}
+
+/* ====== Library / Setlist operations ====== */
+
+function filteredSongs(){
+  const q = state.search.trim().toLowerCase();
+  if(!q) return state.songs.slice().sort((a,b)=> (b.updatedAt||0)-(a.updatedAt||0));
+  return state.songs
+    .filter(s=>{
+      const hay = [
+        s.title||"", s.artist||"", (s.key||""), (s.tags||[]).join(" "),
+      ].join(" ").toLowerCase();
+      return hay.includes(q);
+    })
+    .sort((a,b)=> (b.updatedAt||0)-(a.updatedAt||0));
+}
+
+function addToSet(songId){
+  state.setlist.push(songId);
+  if(state.currentIndex === -1) state.currentIndex = 0;
+  save();
+  render();
+  toast("Agregada al set ✅");
+}
+
+function removeFromSet(index){
+  if(index < 0 || index >= state.setlist.length) return;
+  state.setlist.splice(index,1);
+  if(state.setlist.length === 0){
+    state.currentIndex = -1;
+    state.transpose = 0;
+  }else{
+    state.currentIndex = Math.min(state.currentIndex, state.setlist.length - 1);
+  }
+  save();
+  render();
+}
+
+function setCurrent(index){
+  if(index < 0 || index >= state.setlist.length) return;
+  state.currentIndex = index;
+  state.transpose = 0;
+  save();
+  renderViewer();
+  renderSetlist();
+}
+
+function currentSong(){
+  if(state.currentIndex < 0) return null;
+  const id = state.setlist[state.currentIndex];
+  return state.songs.find(s=>s.id===id) || null;
+}
+
+/* ====== UI rendering ====== */
+
+function render(){
+  renderLibrary();
+  renderSetlist();
+  renderViewer();
+  el("transposeLabel").textContent = `Transposición: ${state.transpose}`;
+}
+
+function renderLibrary(){
+  const box = el("libraryList");
+  box.innerHTML = "";
+  const list = filteredSongs();
+  if(list.length === 0){
+    box.innerHTML = `<div class="sub">No hay resultados. Creá una canción nueva con “＋ Nueva canción”.</div>`;
+    return;
+  }
+  for(const s of list){
+    const node = document.createElement("div");
+    node.className = "item";
+    node.innerHTML = `
+      <div class="meta" style="min-width:0;">
+        <div class="title">${escapeHtml(s.title || "Sin título")}</div>
+        <div class="tags">
+          ${s.artist ? `<span>🎤 ${escapeHtml(s.artist)}</span>` : ""}
+          ${s.key ? `<span>🎼 Key: <span class="kbd">${escapeHtml(s.key)}</span></span>` : ""}
+          ${(s.tags||[]).slice(0,4).map(t=>`<span>🏷️ ${escapeHtml(t)}</span>`).join("")}
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn small accent" data-add="${s.id}">＋</button>
+        <button class="btn small" data-edit="${s.id}">Editar</button>
+      </div>
+    `;
+    box.appendChild(node);
+  }
+  box.querySelectorAll("[data-add]").forEach(b=> b.addEventListener("click", e=>{
+    addToSet(e.currentTarget.getAttribute("data-add"));
+  }));
+  box.querySelectorAll("[data-edit]").forEach(b=> b.addEventListener("click", e=>{
+    openEditor(e.currentTarget.getAttribute("data-edit"));
+  }));
+}
+
+function renderSetlist(){
+  const box = el("setList");
+  box.innerHTML = "";
+  if(state.setlist.length === 0){
+    box.innerHTML = `<div class="sub">Tu setlist está vacío. Buscá una canción y tocá <span class="kbd">＋</span>.</div>`;
+    return;
+  }
+
+  state.setlist.forEach((songId, idx)=>{
+    const s = state.songs.find(x=>x.id===songId);
+    const title = s ? s.title : "(No encontrada)";
+    const artist = s?.artist || "";
+    const key = s?.key || "";
+    const node = document.createElement("div");
+    node.className = "item drag";
+    node.draggable = true;
+    if(idx === state.currentIndex) node.style.borderColor = "rgba(255,213,74,.55)";
+    node.dataset.index = String(idx);
+
+    node.innerHTML = `
+      <div class="meta" style="min-width:0;">
+        <div class="title">${escapeHtml(String(idx+1).padStart(2,"0"))}. ${escapeHtml(title)}</div>
+        <div class="tags">
+          ${artist ? `<span>🎤 ${escapeHtml(artist)}</span>` : ""}
+          ${key ? `<span>🎼 <span class="kbd">${escapeHtml(key)}</span></span>` : ""}
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn small" data-open="${idx}">Abrir</button>
+        <button class="btn small danger" data-rm="${idx}">Quitar</button>
+      </div>
+    `;
+    box.appendChild(node);
+  });
+
+  // open / remove
+  box.querySelectorAll("[data-open]").forEach(b=> b.addEventListener("click", e=>{
+    setCurrent(parseInt(e.currentTarget.getAttribute("data-open"),10));
+  }));
+  box.querySelectorAll("[data-rm]").forEach(b=> b.addEventListener("click", e=>{
+    removeFromSet(parseInt(e.currentTarget.getAttribute("data-rm"),10));
+  }));
+
+  // drag & drop reorder
+  let dragIndex = null;
+  box.querySelectorAll(".item.drag").forEach(item=>{
+    item.addEventListener("dragstart", (e)=>{
+      dragIndex = parseInt(item.dataset.index,10);
+      e.dataTransfer.effectAllowed = "move";
+      item.classList.add("drop-hint");
+    });
+    item.addEventListener("dragend", ()=>{
+      dragIndex = null;
+      box.querySelectorAll(".item.drag").forEach(n=> n.classList.remove("drop-hint"));
+    });
+    item.addEventListener("dragover", (e)=>{ e.preventDefault(); e.dataTransfer.dropEffect="move"; });
+    item.addEventListener("drop", (e)=>{
+      e.preventDefault();
+      const dropIndex = parseInt(item.dataset.index,10);
+      if(dragIndex === null || dropIndex === dragIndex) return;
+      const [moved] = state.setlist.splice(dragIndex,1);
+      state.setlist.splice(dropIndex,0,moved);
+
+      // keep currentIndex tracking
+      if(state.currentIndex === dragIndex) state.currentIndex = dropIndex;
+      else if(dragIndex < state.currentIndex && dropIndex >= state.currentIndex) state.currentIndex -= 1;
+      else if(dragIndex > state.currentIndex && dropIndex <= state.currentIndex) state.currentIndex += 1;
+
+      save();
+      renderSetlist();
+      renderViewer();
+    });
+  });
+}
+
+function renderViewer(){
+  const s = currentSong();
+  const titleEl = el("viewTitle");
+  const infoEl = el("viewInfo");
+  const contentEl = el("viewContent");
+
+  if(!s){
+    titleEl.textContent = "Nada seleccionado";
+    infoEl.innerHTML = `<span class="muted">Agregá canciones al set y abrí una.</span>`;
+    contentEl.textContent = "";
+    el("btnEditCurrent").disabled = true;
+    el("btnRemoveCurrent").disabled = true;
+    return;
+  }
+  el("btnEditCurrent").disabled = false;
+  el("btnRemoveCurrent").disabled = false;
+
+  titleEl.textContent = s.title || "Sin título";
+  const bits = [];
+  if(s.artist) bits.push(`🎤 ${escapeHtml(s.artist)}`);
+  if(s.key) bits.push(`🎼 Key: <span class="kbd">${escapeHtml(s.key)}</span>`);
+  if(s.tags?.length) bits.push(`🏷️ ${s.tags.slice(0,5).map(escapeHtml).join(", ")}`);
+  bits.push(`🧭 ${state.currentIndex+1}/${state.setlist.length}`);
+  infoEl.innerHTML = bits.map(x=>`<span>${x}</span>`).join("");
+
+  const transposed = transposeChordProText(s.body || "", state.transpose);
+  contentEl.textContent = renderChordProAsText(transposed);
+  el("transposeLabel").textContent = `Transposición: ${state.transpose}`;
+}
+
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, s=>({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+  }[s]));
+}
+
+/* ====== Editor modal ====== */
+
+let editingId = null;
+
+function openEditor(songId=null){
+  editingId = songId;
+  el("modalBack").style.display = "flex";
+
+  const delBtn = el("btnDeleteSong");
+  if(songId){
+    const s = state.songs.find(x=>x.id===songId);
+    el("modalTitle").textContent = "Editar canción";
+    el("songTitle").value = s?.title || "";
+    el("songArtist").value = s?.artist || "";
+    el("songKey").value = s?.key || "";
+    el("songTags").value = (s?.tags || []).join(", ");
+    el("songBody").value = s?.body || "";
+    delBtn.style.display = "inline-flex";
+  }else{
+    el("modalTitle").textContent = "Nueva canción";
+    el("songTitle").value = "";
+    el("songArtist").value = "";
+    el("songKey").value = "";
+    el("songTags").value = "";
+    el("songBody").value = "";
+    delBtn.style.display = "none";
+  }
+
+  setTimeout(()=> el("songTitle").focus(), 50);
+}
+
+function closeEditor(){
+  el("modalBack").style.display = "none";
+  editingId = null;
+}
+
+function upsertSong(){
+  const title = el("songTitle").value.trim();
+  const artist = el("songArtist").value.trim();
+  const key = el("songKey").value.trim();
+  const tags = el("songTags").value.split(",").map(t=>t.trim()).filter(Boolean);
+  const body = el("songBody").value;
+
+  if(!title){
+    toast("Poné un título 🙂");
+    el("songTitle").focus();
+    return null;
+  }
+
+  const now = Date.now();
+
+  if(editingId){
+    const s = state.songs.find(x=>x.id===editingId);
+    if(!s) return null;
+    s.title = title;
+    s.artist = artist;
+    s.key = key;
+    s.tags = tags;
+    s.body = body;
+    s.updatedAt = now;
+    save();
+    render();
+    toast("Guardado ✅");
+    return s.id;
+  }else{
+    const id = uid();
+    state.songs.unshift({
+      id, title, artist, key, tags, body,
+      createdAt: now, updatedAt: now
+    });
+    save();
+    render();
+    toast("Creada ✅");
+    return id;
+  }
+}
+
+function deleteSong(id){
+  const idx = state.songs.findIndex(x=>x.id===id);
+  if(idx === -1) return;
+  state.songs.splice(idx,1);
+
+  // remove from setlist
+  const beforeLen = state.setlist.length;
+  state.setlist = state.setlist.filter(x=>x!==id);
+  if(state.setlist.length !== beforeLen){
+    state.currentIndex = Math.min(state.currentIndex, state.setlist.length-1);
+    if(state.setlist.length === 0) state.currentIndex = -1;
+  }
+  save();
+  render();
+  toast("Borrada 🗑️");
+}
+
+/* ====== Import/Export ====== */
+
+function exportData(){
+  return JSON.stringify({
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    songs: state.songs,
+    setlist: state.setlist,
+    currentIndex: state.currentIndex,
+    transpose: state.transpose
+  }, null, 2);
+}
+
+function openImport(){
+  el("importBack").style.display = "flex";
+  el("importText").value = exportData();
+  setTimeout(()=> el("importText").select(), 50);
+}
+function closeImport(){ el("importBack").style.display = "none"; }
+
+function doImport(){
+  const raw = el("importText").value.trim();
+  if(!raw){ toast("Pegá un JSON"); return; }
+  try{
+    const data = JSON.parse(raw);
+    if(!Array.isArray(data.songs) || !Array.isArray(data.setlist)){
+      toast("Formato inválido");
+      return;
+    }
+    state.songs = data.songs;
+    state.setlist = data.setlist;
+    state.currentIndex = Number.isInteger(data.currentIndex) ? data.currentIndex : -1;
+    state.transpose = Number.isInteger(data.transpose) ? data.transpose : 0;
+    save();
+    render();
+    toast("Importado ✅");
+  }catch(e){
+    toast("JSON inválido");
+  }
+}
+
+async function copyToClipboard(text){
+  try{
+    await navigator.clipboard.writeText(text);
+    toast("Copiado 📋");
+  }catch(e){
+    toast("No se pudo copiar");
+  }
+}
+
+/* ====== Controls ====== */
+
+el("btnNewSong").addEventListener("click", ()=> openEditor(null));
+el("btnCloseModal").addEventListener("click", closeEditor);
+el("modalBack").addEventListener("click", (e)=>{ if(e.target === el("modalBack")) closeEditor(); });
+
+el("btnSaveSong").addEventListener("click", ()=>{
+  const id = upsertSong();
+  if(id) closeEditor();
+});
+
+el("btnSaveAndAdd").addEventListener("click", ()=>{
+  const id = upsertSong();
+  if(id){
+    closeEditor();
+    addToSet(id);
+  }
+});
+
+el("btnDeleteSong").addEventListener("click", ()=>{
+  if(!editingId) return;
+  const s = state.songs.find(x=>x.id===editingId);
+  const ok = confirm(`¿Borrar "${s?.title || "canción"}"? Esto también la quita del setlist.`);
+  if(ok){
+    deleteSong(editingId);
+    closeEditor();
+  }
+});
+
+el("search").addEventListener("input", (e)=>{
+  state.search = e.target.value || "";
+  renderLibrary();
+});
+document.addEventListener("keydown", (e)=>{
+  if(e.key === "/" && document.activeElement?.tagName !== "INPUT" && document.activeElement?.tagName !== "TEXTAREA"){
+    e.preventDefault();
+    el("search").focus();
+  }
+  if(e.key === "Escape"){
+    if(el("modalBack").style.display === "flex") closeEditor();
+    if(el("importBack").style.display === "flex") closeImport();
+  }
+  // viewer shortcuts
+  if(e.key === "ArrowRight") el("btnNext").click();
+  if(e.key === "ArrowLeft") el("btnPrev").click();
+});
+
+el("btnNext").addEventListener("click", ()=>{
+  if(state.setlist.length === 0) return;
+  state.currentIndex = Math.min(state.currentIndex + 1, state.setlist.length - 1);
+  state.transpose = 0;
+  save();
+  renderViewer();
+  renderSetlist();
+});
+
+el("btnPrev").addEventListener("click", ()=>{
+  if(state.setlist.length === 0) return;
+  state.currentIndex = Math.max(state.currentIndex - 1, 0);
+  state.transpose = 0;
+  save();
+  renderViewer();
+  renderSetlist();
+});
+
+el("btnTransposeUp").addEventListener("click", ()=>{
+  if(!currentSong()) return;
+  state.transpose = Math.min(state.transpose + 1, 11);
+  save();
+  renderViewer();
+});
+el("btnTransposeDown").addEventListener("click", ()=>{
+  if(!currentSong()) return;
+  state.transpose = Math.max(state.transpose - 1, -11);
+  save();
+  renderViewer();
+});
+
+el("btnEditCurrent").addEventListener("click", ()=>{
+  const s = currentSong();
+  if(s) openEditor(s.id);
+});
+
+el("btnRemoveCurrent").addEventListener("click", ()=>{
+  if(state.currentIndex < 0) return;
+  removeFromSet(state.currentIndex);
+});
+
+el("btnClearSet").addEventListener("click", ()=>{
+  const ok = confirm("¿Vaciar setlist?");
+  if(!ok) return;
+  state.setlist = [];
+  state.currentIndex = -1;
+  state.transpose = 0;
+  save();
+  render();
+});
+
+el("btnReset").addEventListener("click", ()=>{
+  const ok = confirm("Reset total (borra biblioteca y setlist en este navegador). ¿Seguro?");
+  if(!ok) return;
+  localStorage.removeItem(STORE_KEY);
+  location.reload();
+});
+
+el("btnExport").addEventListener("click", ()=> openImport());
+el("btnImport").addEventListener("click", ()=> openImport());
+
+el("btnCloseImport").addEventListener("click", closeImport);
+el("importBack").addEventListener("click", (e)=>{ if(e.target === el("importBack")) closeImport(); });
+el("btnDoImport").addEventListener("click", doImport);
+el("btnCopyExport").addEventListener("click", ()=> copyToClipboard(el("importText").value));
+
+/* ====== boot ====== */
+load();
+render();
+</script>
+</body>
+</html>
