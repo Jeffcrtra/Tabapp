@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>12.18 TabApp – Banco + Setlist</title>
+  <title>12.05 TabApp – Banco + Setlist</title>
   <style>
     :root{
       --bg:#0b0d12; --card:#121622; --muted:#98a2b3; --text:#e6e9ef;
@@ -118,6 +118,45 @@
       background: var(--accent);
       box-shadow: 0 0 18px rgba(255,213,74,.55);
     }
+      .inlinePanel{
+        margin-top:10px;
+        border:1px solid var(--line);
+        border-radius:16px;
+        overflow:hidden;
+        background:rgba(0,0,0,.18);
+      }
+      
+      .inlineBar{
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        gap:10px;
+        padding:10px 12px;
+        border-bottom:1px solid var(--line);
+        background:rgba(18,22,34,.92);
+      }
+      
+      .inlineTitle{
+        font-weight:800;
+        font-size:13px;
+        overflow:hidden;
+        text-overflow:ellipsis;
+        white-space:nowrap;
+      }
+      
+      .inlineFrame{
+        width:100%;
+        height:420px;
+        border:0;
+        background:#000;
+      }
+      
+      .inlineHint{
+        padding:10px 12px;
+        font-size:12px;
+        color:var(--muted);
+        border-top:1px solid var(--line);
+      }
 
     
   </style>
@@ -481,6 +520,30 @@ function looksLikeTabsFront(title, url){
   return ok && !bad;
 }
 
+function toggleInlinePreview(containerEl, url, title){
+  // Crea o alterna un panel de vista debajo del resultado
+  let panel = containerEl.querySelector(".inlinePanel");
+  if(panel){
+    panel.remove();
+    return;
+  }
+
+  panel = document.createElement("div");
+  panel.className = "inlinePanel";
+  panel.innerHTML = `
+    <div class="inlineBar">
+      <div class="inlineTitle">${escapeHtml(title || "Vista previa")}</div>
+      <button class="btn small danger" data-close-inline>Cerrar</button>
+    </div>
+    <iframe class="inlineFrame" src="${escapeHtml(url)}" title="Vista previa"></iframe>
+    <div class="inlineHint">
+      Si no carga, ese sitio bloquea verse dentro de otras páginas (normal). En ese caso usá “Añadir” y abrís la fuente manualmente desde tu banco.
+    </div>
+  `;
+
+  containerEl.appendChild(panel);
+  panel.querySelector("[data-close-inline]").addEventListener("click", ()=> panel.remove());
+}
 
   
 /* ====== Helpers ====== */
@@ -561,13 +624,6 @@ function renderUnifiedResults(localMatches, webMatches){
       </div>`;
     return;
   }
-    // Click para embebido
-    box.querySelectorAll("[data-embed]").forEach(b => b.addEventListener("click", e=>{
-      const idx = parseInt(e.currentTarget.getAttribute("data-embed"), 10);
-      const r = webMatches[idx];
-      openEmbedded(r.url, `${r.host || "sitio"} • ${r.title || ""}`.trim());
-    }));
-
 
   // Banco
   if(hasLocal){
@@ -606,16 +662,17 @@ function renderUnifiedResults(localMatches, webMatches){
   }
 
   // Online
-  if(hasWeb){
+  if (hasWeb) {
     const h = document.createElement("div");
     h.className = "sub";
     h.style.marginTop = "10px";
     h.innerHTML = `🌐 Online`;
     box.appendChild(h);
 
-    webMatches.slice(0,10).forEach((r, i)=>{
+    webMatches.slice(0, 10).forEach((r, i) => {
       const node = document.createElement("div");
       node.className = "item";
+
       node.innerHTML = `
         <div class="meta" style="min-width:0;">
           <div class="title">${escapeHtml(r.title || "Resultado")}</div>
@@ -624,22 +681,34 @@ function renderUnifiedResults(localMatches, webMatches){
           </div>
         </div>
         <div class="actions">
-          <button class="btn small" data-embed="${i}">Ver aquí</button>
-          <a class="btn small" href="${escapeHtml(r.url)}" target="_blank" rel="noopener">Pestaña</a>
+          <button class="btn small" data-preview="${i}">Ver aquí</button>
+          <button class="btn small ok" data-addfrom="${i}">Añadir</button>
         </div>
       `;
+
       box.appendChild(node);
     });
 
-    box.querySelectorAll("[data-savefrom]").forEach(b=> b.addEventListener("click", e=>{
-      const idx = parseInt(e.currentTarget.getAttribute("data-savefrom"),10);
-      const r = webMatches[idx];
-      openEditor(null, {
-        titleGuess: r.title || state.q,
-        artistGuess: "",
-        source: r.url
-      });
-    }));
+    box.querySelectorAll("[data-preview]").forEach(btn =>
+      btn.addEventListener("click", e => {
+        const idx = parseInt(e.currentTarget.getAttribute("data-preview"), 10);
+        const r = webMatches[idx];
+        const itemEl = e.currentTarget.closest(".item");
+        toggleInlinePreview(itemEl, r.url, `${r.host || "sitio"} • ${r.title || ""}`.trim());
+      })
+    );
+
+    box.querySelectorAll("[data-addfrom]").forEach(btn =>
+      btn.addEventListener("click", e => {
+        const idx = parseInt(e.currentTarget.getAttribute("data-addfrom"), 10);
+        const r = webMatches[idx];
+        openEditor(null, {
+          titleGuess: r.title || state.q,
+          artistGuess: "",
+          source: r.url
+        });
+      })
+    );
   }
 }
 
@@ -744,7 +813,7 @@ function renderSetlist(){
       else if(dragIndex > state.currentIndex && dropIndex <= state.currentIndex) state.currentIndex += 1;
 
       save();
-      renderSetlist();
+      renderAll();
       renderViewer();
     });
   });
