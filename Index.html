@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>10.53 TabApp – Banco + Setlist</title>
+  <title>12.18 TabApp – Banco + Setlist</title>
   <style>
     :root{
       --bg:#0b0d12; --card:#121622; --muted:#98a2b3; --text:#e6e9ef;
@@ -344,7 +344,7 @@
    ========================== */
 
 // 1) PEGÁ AQUÍ TU WEB APP URL DEL APPS SCRIPT (termina con /exec)
-const SEARCH_PROXY_URL = "https://script.google.com/macros/s/AKfycbw93HYeFKReddyoe_YBPB-gZO2YWucu6RxW4QhUt0E4v0uprDx9EzK4mUPzkqKVPy8t/exec";
+const SEARCH_PROXY_URL = "https://script.google.com/macros/s/AKfycbwOww5ZIffupe3iBJv0KBKeJuO1D55nIqDVrCuaYvlnxdnFRi76zewrguGrBZeeHcYt/exec";
 
 const STORE_KEY = "tabapp_bank_setlist_v3";
 
@@ -463,6 +463,24 @@ function closeEmbedded(){
   el("embedClose").addEventListener("click", closeEmbedded);
   el("embedTitle").textContent = "Vista dentro de TabApp (si el sitio lo permite)";
 }
+
+const ALLOWED_HOSTS = new Set([
+  "www.institutocanzion.com",
+  "www.cifraclub.com",
+  "acordes.lacuerda.net",
+  "chords.lacuerda.net",
+  "es.ultimate-guitar.com",
+  "acordesweb.com"
+]);
+
+function looksLikeTabsFront(title, url){
+  const t = (title||"").toLowerCase();
+  const u = (url||"").toLowerCase();
+  const ok = ["acorde","acordes","cifra","chords","tab","tabs","tablatura","guitarra","ukulele","piano"].some(k => t.includes(k) || u.includes(k));
+  const bad = ["letra","lyrics","video","videoclip","official"].some(k => t.includes(k) || u.includes(k));
+  return ok && !bad;
+}
+
 
   
 /* ====== Helpers ====== */
@@ -776,9 +794,10 @@ async function webSearchViaProxy(q){
     const data = await res.json();
     const results = Array.isArray(data.results) ? data.results : [];
     return results
-      .filter(r => r && r.url)
+      .filter(r => r && r.url && r.host && ALLOWED_HOSTS.has(r.host))
+      .filter(r => looksLikeTabsFront(r.title, r.url))
       .slice(0, 10)
-      .map(r => ({ title: r.title || r.url, url: r.url, host: r.host || hostOf(r.url) }));
+      .map(r => ({ title: r.title || r.url, url: r.url, host: r.host }));
   }catch(e){
     console.warn(e);
     return [];
