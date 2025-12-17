@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>12.50 TabApp – Banco + Setlist</title>
+  <title>2.45 TabApp – Banco + Setlist</title>
   <style>
     :root{
       --bg:#0b0d12; --card:#121622; --muted:#98a2b3; --text:#e6e9ef;
@@ -345,7 +345,7 @@
    ========================== */
 
 // PEGÁ AQUÍ TU WEB APP URL DEL APPS SCRIPT (termina con /exec)
-const SEARCH_PROXY_URL = "https://script.google.com/macros/s/AKfycbwOww5ZIffupe3iBJv0KBKeJuO1D55nIqDVrCuaYvlnxdnFRi76zewrguGrBZeeHcYt/exec";
+const SEARCH_PROXY_URL = "https://script.google.com/macros/s/AKfycbwkURCIhV_AgX2a-cOtxddhDhHo3W5MiRtDcLCaUn2vXkoX7YhUTGEudHJ4Hj9iEb9E/exec";
 
 const STORE_KEY = "tabapp_bank_setlist_v3";
 
@@ -815,8 +815,9 @@ async function webSearchViaProxy(q){
       .filter(r => r.url && r.host && ALLOWED_HOSTS.has(r.host))
       .filter(r => looksLikeTabsFront(r.title, r.url))
       .slice(0, 10);
-  }catch(e){
-    console.warn(e);
+  } catch (e) {
+    console.warn("Proxy error:", e);
+    toast("Proxy falló o no devolvió resultados");
     return [];
   }
 }
