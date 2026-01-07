@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>5.01 TabApp – Pro Edition</title>
+  <title>5.04 TabApp Pro v3.51</title>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
     :root{
@@ -22,28 +22,19 @@
     h1{font-size:18px; margin:0; letter-spacing:.3px;}
     .grid{display:grid; grid-template-columns: 1.1fr .9fr; gap:14px; padding:16px;}
     @media (max-width: 980px){ .grid{grid-template-columns:1fr; } }
-    
     .card{background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01)); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); margin-bottom:14px;}
     .card .hd{padding:14px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center;}
     .card .bd{padding:14px;}
-    
     .btn{appearance:none; border:1px solid var(--line); background:rgba(255,255,255,.03); color:var(--text); padding:10px 12px; border-radius:14px; cursor:pointer; font-weight:650; display:inline-flex; align-items:center; justify-content:center; transition: 0.2s; user-select: none;}
     .btn:active{transform: scale(0.95);}
     .btn.accent{background:rgba(255,213,74,.15); border-color:rgba(255,213,74,.45);}
     .btn.small{padding: 6px 10px; font-size: 12px;}
-    
     .input{width:100%; padding:12px; border-radius:14px; border:1px solid var(--line); background:rgba(255,255,255,.02); color:var(--text); outline:none;}
-    
     .list{display:flex; flex-direction:column; gap:10px;}
     .item{border:1px solid var(--line); border-radius:16px; padding:12px; background:rgba(255,255,255,.03); display:flex; justify-content:space-between; align-items:center; cursor: grab;}
-    .item:active { cursor: grabbing; }
-    
-    /* Indicador visual de que se puede arrastrar */
     .sortable-ghost { opacity: 0.3; background: var(--accent); }
-
     .viewer { min-height: 80vh; display: flex; flex-direction: column; }
     .viewer-tools { display: flex; gap: 10px; margin-bottom: 15px; align-items: center; flex-wrap: wrap; }
-    .font-controls { display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 12px; border: 1px solid var(--line); }
     #viewContent { flex-grow: 1; background: rgba(0,0,0,0.25); padding: 20px; border-radius: 14px; border: 1px solid var(--line); overflow-y: auto; white-space: pre-wrap; font-family: var(--mono); font-size: 18px; line-height: 1.55; }
     .chord{color:var(--accent); font-weight:bold;}
   </style>
@@ -53,8 +44,8 @@
 <header>
   <div class="wrap">
     <div class="row" style="justify-content:space-between;">
-      <h1>🎸 TabApp Pro</h1>
-      <span id="status" style="font-size:12px; color:var(--muted);">Cargando API...</span>
+      <h1>🎸 TabApp Pro v3.51</h1>
+      <span id="status" style="font-size:12px; color:var(--muted);">Iniciando...</span>
     </div>
   </div>
 </header>
@@ -62,30 +53,28 @@
 <main class="wrap">
   <div class="grid">
     <section class="card">
-      <div class="hd"><b>Buscador en Drive</b></div>
+      <div class="hd"><b>Buscador (Sin acentos)</b></div>
       <div class="bd">
-        <input class="input" id="searchDrive" placeholder="Buscar canción..." />
+        <input class="input" id="searchDrive" placeholder="Ej: Jesus (sin tilde)" />
         <div class="list" id="driveResults" style="margin-top:14px;"></div>
       </div>
     </section>
 
     <section class="card">
       <div class="hd">
-        <b>Setlist (Arrastra para reordenar)</b>
+        <b>Setlist</b>
         <button class="btn small" onclick="clearSetlist()">Vaciar</button>
       </div>
       <div class="bd">
         <div class="list" id="setList"></div>
         <hr style="border:0; border-top:1px solid var(--line); margin:20px 0;">
         <div class="viewer">
-          <h2 id="viewTitle">Selecciona una canción</h2>
+          <h2 id="viewTitle">Cargando...</h2>
           <div class="viewer-tools">
             <button class="btn" onclick="prevSong()">⟵</button>
             <button class="btn" onclick="nextSong()">⟶</button>
-            <div class="font-controls">
-              <button class="btn small" onclick="changeFontSize(-2)">A-</button>
-              <button class="btn small" onclick="changeFontSize(2)">A+</button>
-            </div>
+            <button class="btn small" onclick="changeFontSize(-2)">A-</button>
+            <button class="btn small" onclick="changeFontSize(2)">A+</button>
           </div>
           <pre id="viewContent"></pre>
         </div>
@@ -95,90 +84,60 @@
 </main>
 
 <script>
-  // --- CONFIGURACIÓN ---
   const API_KEY = 'AIzaSyC74SgLN0OFD8zytCktOTCyVdRZZmdL-S0';
-  const FOLDER_ID = '1x6zy_Bor6i9qBhUIl27ZIG0E1qdf5Ye6'; 
+  const FOLDER_ID = '1x6zy_Bor6i9qBhUIl27ZIG0E1qdf5Ye6';
   const DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"];
 
   const state = {
     setlist: JSON.parse(localStorage.getItem('tabs_setlist') || '[]'),
+    allSongs: [], 
     currentIndex: -1,
     currentFontSize: parseInt(localStorage.getItem('pref_font_size') || '18')
   };
 
-  const normalizar = (str) => {
-    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-  }
-  const state = {
-    setlist: JSON.parse(localStorage.getItem('tabs_setlist') || '[]'),
-    currentIndex: -1,
-    currentFontSize: parseInt(localStorage.getItem('pref_font_size') || '18'),
-    allSongsInDrive: [] // <--- Nueva lista para el buscador flexible
-  };
+  const normalizar = (str) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
-  // --- INICIALIZACIÓN ---
   function startApp() {
     gapi.load('client', async () => {
-      await gapi.client.init({ apiKey: API_KEY, discoveryDocs: DISCOVERY_DOCS });
-      document.getElementById('status').innerText = "Drive Online ✅";
-      buscarEnDrive("");
-      renderAll();
-      initSortable(); // Activar arrastre
-    });
-  }
-
-  // --- ARRASTRAR Y REORDENAR (Long Press) ---
-  function initSortable() {
-    const el = document.getElementById('setList');
-    Sortable.create(el, {
-      animation: 150,
-      delay: 500, // 500ms de pulsación para empezar a mover (evita errores al hacer scroll)
-      delayOnTouchOnly: true,
-      ghostClass: 'sortable-ghost',
-      onEnd: (evt) => {
-        // Reordenar el array interno basado en el movimiento visual
-        const movedItem = state.setlist.splice(evt.oldIndex, 1)[0];
-        state.setlist.splice(evt.newIndex, 0, movedItem);
-        state.currentIndex = evt.newIndex; // Actualizar índice para que no se pierda la vista
-        saveLocal();
+      try {
+        await gapi.client.init({ apiKey: API_KEY, discoveryDocs: DISCOVERY_DOCS });
+        document.getElementById('status').innerText = "Online ✅";
+        await cargarBiblioteca();
         renderAll();
+        initSortable();
+      } catch (e) {
+        document.getElementById('status').innerText = "Error API Key ❌";
       }
     });
   }
 
- async function buscarEnDrive(nameQ = "") {
+  async function cargarBiblioteca() {
+    const response = await gapi.client.drive.files.list({
+      q: `'${FOLDER_ID}' in parents and mimeType = 'text/plain' and trashed = false`,
+      fields: 'files(id, name)',
+      orderBy: 'name',
+      pageSize: 1000
+    });
+    state.allSongs = response.result.files || [];
+    mostrarResultados(state.allSongs);
+  }
+
+  function mostrarResultados(lista) {
     const resDiv = document.getElementById('driveResults');
-    
-    // Si es la primera vez, descargamos todos los nombres de la carpeta
-    if (state.allSongsInDrive.length === 0) {
-        resDiv.innerHTML = "Cargando biblioteca...";
-        try {
-            let q = `'${FOLDER_ID}' in parents and mimeType = 'text/plain' and trashed = false`;
-            const response = await gapi.client.drive.files.list({ q: q, fields: 'files(id, name)', orderBy: 'name' });
-            state.allSongsInDrive = response.result.files || [];
-        } catch (e) {
-            resDiv.innerHTML = "Error de conexión.";
-            return;
-        }
-    }
-
-    // Filtrado inteligente (sin acentos)
-    const queryLimpia = normalizar(nameQ);
-    const filtrados = state.allSongsInDrive.filter(f => {
-        return normalizar(f.name).includes(queryLimpia);
-    });
-
     resDiv.innerHTML = "";
-    filtrados.forEach(f => {
-        const item = document.createElement('div');
-        item.className = 'item';
-        item.style.cursor = 'default';
-        item.innerHTML = `<span>${f.name.replace('.txt','')}</span><button class="btn accent small" onclick="importar('${f.id}', '${f.name}')">Añadir</button>`;
-        resDiv.appendChild(item);
+    lista.forEach(f => {
+      const item = document.createElement('div');
+      item.className = 'item';
+      item.innerHTML = `<span>${f.name.replace('.txt','')}</span><button class="btn accent small" onclick="importar('${f.id}', '${f.name}')">Añadir</button>`;
+      resDiv.appendChild(item);
     });
+  }
 
-    if (filtrados.length === 0) resDiv.innerHTML = "<div class='sub'>No se encontró nada...</div>";
-}
+  document.getElementById('searchDrive').oninput = (e) => {
+    const q = normalizar(e.target.value);
+    const filtrados = state.allSongs.filter(f => normalizar(f.name).includes(q));
+    mostrarResultados(filtrados);
+  };
 
   async function importar(id, name) {
     const url = `https://www.googleapis.com/drive/v3/files/${id}?alt=media&key=${API_KEY}`;
@@ -190,7 +149,6 @@
     renderAll();
   }
 
-  // --- UI Y RENDER ---
   function renderAll() {
     const sl = document.getElementById('setList');
     sl.innerHTML = "";
@@ -198,40 +156,34 @@
       const item = document.createElement('div');
       item.className = 'item';
       if(idx === state.currentIndex) item.style.borderColor = 'var(--accent)';
-      item.innerHTML = `
-        <div style="flex:1" onclick="seleccionar(${idx})">
-          <span style="color:var(--muted); font-size:12px; margin-right:8px;">☰</span>
-          <span>${s.title}</span>
-        </div>
-        <button class="btn small" onclick="seleccionar(${idx})">Ver</button>
-      `;
+      item.innerHTML = `<div style="flex:1" onclick="seleccionar(${idx})">☰ ${s.title}</div>`;
       sl.appendChild(item);
     });
-
     const curr = state.setlist[state.currentIndex];
-    if (curr) {
-      document.getElementById('viewTitle').innerText = curr.title;
-      document.getElementById('viewContent').innerHTML = curr.body.replace(/\[([^\]]+)\]/g, '<span class="chord">[$1]</span>');
-      document.getElementById('viewContent').style.fontSize = state.currentFontSize + 'px';
-    } else {
-      document.getElementById('viewTitle').innerText = "Selecciona una canción";
-      document.getElementById('viewContent').innerText = "";
-    }
+    document.getElementById('viewTitle').innerText = curr ? curr.title : "Selecciona canción";
+    document.getElementById('viewContent').innerHTML = curr ? curr.body.replace(/\[([^\]]+)\]/g, '<span class="chord">[$1]</span>') : "";
+    document.getElementById('viewContent').style.fontSize = state.currentFontSize + 'px';
   }
 
-  function changeFontSize(delta) {
-    state.currentFontSize = Math.min(Math.max(state.currentFontSize + delta, 10), 45);
-    localStorage.setItem('pref_font_size', state.currentFontSize);
-    renderAll();
+  function initSortable() {
+    Sortable.create(document.getElementById('setList'), {
+      animation: 150, delay: 500, delayOnTouchOnly: true,
+      onEnd: (evt) => {
+        const item = state.setlist.splice(evt.oldIndex, 1)[0];
+        state.setlist.splice(evt.newIndex, 0, item);
+        state.currentIndex = evt.newIndex;
+        saveLocal(); renderAll();
+      }
+    });
   }
 
   function seleccionar(idx) { state.currentIndex = idx; renderAll(); }
   function saveLocal() { localStorage.setItem('tabs_setlist', JSON.stringify(state.setlist)); }
-  function clearSetlist() { if(confirm("¿Vaciar setlist?")) { state.setlist = []; state.currentIndex = -1; saveLocal(); renderAll(); } }
-  function nextSong() { if(state.currentIndex < state.setlist.length - 1) seleccionar(state.currentIndex + 1); }
-  function prevSong() { if(state.currentIndex > 0) seleccionar(state.currentIndex - 1); }
+  function clearSetlist() { if(confirm("¿Vaciar?")) { state.setlist = []; state.currentIndex = -1; saveLocal(); renderAll(); } }
+  function nextSong() { if(state.currentIndex < state.setlist.length-1) seleccionar(state.currentIndex+1); }
+  function prevSong() { if(state.currentIndex > 0) seleccionar(state.currentIndex-1); }
+  function changeFontSize(d) { state.currentFontSize += d; localStorage.setItem('pref_font_size', state.currentFontSize); renderAll(); }
 
-  document.getElementById('searchDrive').oninput = (e) => buscarEnDrive(e.target.value);
 </script>
 <script async defer src="https://apis.google.com/js/api.js" onload="startApp()"></script>
 </body>
