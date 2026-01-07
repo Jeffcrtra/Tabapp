@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>3.30 TabApp – Drive Edition</title>
+  <title>3.47 TabApp – Drive Edition</title>
   <style>
     :root{
       --bg:#0b0d12; --card:#121622; --muted:#98a2b3; --text:#e6e9ef;
@@ -123,34 +123,64 @@
   document.getElementById('btnAuth').onclick = () => tokenClient.requestAccessToken({prompt: 'consent'});
   document.getElementById('btnSignOut').onclick = () => { google.accounts.oauth2.revokeToken(gapi.client.getToken().access_token); gapi.client.setToken(''); location.reload(); };
 
-  // BUSCADOR DRIVE
+  // Disparar búsqueda al escribir (con un pequeño retraso para no saturar la API)
+  let searchTimeout;
   document.getElementById('searchDrive').oninput = (e) => {
-    const q = e.target.value;
-    if (q.length < 2) return;
-    buscarEnDrive(q);
+      clearTimeout(searchTimeout);
+      const query = e.target.value;
+      searchTimeout = setTimeout(() => {
+          buscarEnDrive(query);
+      }, 400); // Espera 400ms después de que dejes de escribir
   };
 
-  const FOLDER_ID = '1x6zy_Bor6i9qBhUIl27ZIG0E1qdf5Ye6';
-  
+const FOLDER_ID = '1x6zy_Bor6i9qBhUIl27ZIG0E1qdf5Ye6'; 
+
 async function buscarEnDrive(nameQ = "") {
-  // Modificamos la consulta para buscar SOLO dentro de esa carpeta
-  let q = `'${FOLDER_ID}' in parents and mimeType = 'text/plain' and trashed = false`;
-  
-  if (nameQ) {
-    q += ` and name contains '${nameQ}'`;
-  }
-  
-  try {
-    const response = await gapi.client.drive.files.list({
-      q: q,
-      fields: 'files(id, name)',
-      pageSize: 20
-    });
-    const files = response.result.files;
-    renderDriveResults(files); // Asegúrate de que esta función maneje la lista
-  } catch (err) {
-    console.error("Error filtrando carpeta:", err);
-  }
+    // 1. Mostrar estado de "buscando"
+    const resDiv = document.getElementById('driveResults');
+    resDiv.innerHTML = "<div class='sub'>Buscando en Drive...</div>";
+
+    try {
+        // 2. Construir la consulta (Query)
+        // Buscamos archivos .txt que NO estén en la papelera y estén en TU carpeta
+        let q = `'${FOLDER_ID}' in parents and mimeType = 'text/plain' and trashed = false`;
+        
+        // Si el usuario escribió algo, filtramos por nombre (name contains)
+        if (nameQ.trim() !== "") {
+            q += ` and name contains '${nameQ}'`;
+        }
+        
+        const response = await gapi.client.drive.files.list({
+            q: q,
+            fields: 'files(id, name)',
+            pageSize: 20,
+            orderBy: 'name' // Ordenar alfabéticamente
+        });
+
+        const files = response.result.files;
+        resDiv.innerHTML = ""; // Limpiar mensaje de carga
+
+        if (!files || files.length === 0) {
+            resDiv.innerHTML = "<div class='sub'>No se encontraron archivos .txt.</div>";
+            return;
+        }
+
+        // 3. Renderizar resultados
+        files.forEach(f => {
+            const item = document.createElement('div');
+            item.className = 'item';
+            item.innerHTML = `
+                <div style="min-width:0; flex:1;">
+                    <span style="font-weight:bold;">${f.name.replace('.txt','')}</span>
+                </div>
+                <button class="btn accent small" onclick="importar('${f.id}', '${f.name}')">Añadir</button>
+            `;
+            resDiv.appendChild(item);
+        });
+    } catch (err) {
+        console.error("Error en la búsqueda de Drive:", err);
+        resDiv.innerHTML = "<div class='danger'>Error al conectar con la carpeta.</div>";
+    }
 }
 
   async function importar(id, name) {
