@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>2.45 TabApp – Banco + Setlist</title>
+  <title>2.59 TabApp – Banco + Setlist</title>
   <style>
     :root{
       --bg:#0b0d12; --card:#121622; --muted:#98a2b3; --text:#e6e9ef;
@@ -473,8 +473,12 @@ function transposeChordProText(text, semitones){
 function looksLikeTabsFront(title, url){
   const t = (title||"").toLowerCase();
   const u = (url||"").toLowerCase();
-  const ok = ["acorde","acordes","cifra","chords","tab","tabs","tablatura","guitarra","ukulele","piano"].some(k => t.includes(k) || u.includes(k));
-  const bad = ["letra","lyrics","video","videoclip","official"].some(k => t.includes(k) || u.includes(k));
+  
+  // Si el URL contiene acordesweb, descartar de inmediato
+  if (u.includes("acordesweb.com")) return false;
+
+  const ok = ["acorde","acordes","cifra","chords","tab","tabs"].some(k => t.includes(k) || u.includes(k));
+  const bad = ["letra","lyrics","video","videoclip"].some(k => t.includes(k) || u.includes(k));
   return ok && !bad;
 }
 
