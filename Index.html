@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>3.20 TabApp – Drive Edition</title>
+  <title>3.30 TabApp – Drive Edition</title>
   <style>
     :root{
       --bg:#0b0d12; --card:#121622; --muted:#98a2b3; --text:#e6e9ef;
@@ -130,22 +130,28 @@
     buscarEnDrive(q);
   };
 
-  async function buscarEnDrive(nameQ = "") {
-    let q = "mimeType = 'text/plain' and trashed = false";
-    if (nameQ) q += ` and name contains '${nameQ}'`;
-    
-    const response = await gapi.client.drive.files.list({ q: q, fields: 'files(id, name)' });
-    const files = response.result.files;
-    const resDiv = document.getElementById('driveResults');
-    resDiv.innerHTML = "";
-
-    files.forEach(f => {
-      const item = document.createElement('div');
-      item.className = 'item';
-      item.innerHTML = `<span>${f.name}</span><button class="btn accent" onclick="importar('${f.id}', '${f.name}')">Importar</button>`;
-      resDiv.appendChild(item);
-    });
+  const FOLDER_ID = '1x6zy_Bor6i9qBhUIl27ZIG0E1qdf5Ye6';
+  
+async function buscarEnDrive(nameQ = "") {
+  // Modificamos la consulta para buscar SOLO dentro de esa carpeta
+  let q = `'${FOLDER_ID}' in parents and mimeType = 'text/plain' and trashed = false`;
+  
+  if (nameQ) {
+    q += ` and name contains '${nameQ}'`;
   }
+  
+  try {
+    const response = await gapi.client.drive.files.list({
+      q: q,
+      fields: 'files(id, name)',
+      pageSize: 20
+    });
+    const files = response.result.files;
+    renderDriveResults(files); // Asegúrate de que esta función maneje la lista
+  } catch (err) {
+    console.error("Error filtrando carpeta:", err);
+  }
+}
 
   async function importar(id, name) {
     const resp = await gapi.client.drive.files.get({ fileId: id, alt: 'media' });
