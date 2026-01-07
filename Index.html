@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>4.55 TabApp – Pro Edition</title>
+  <title>5.01 TabApp – Pro Edition</title>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
     :root{
@@ -106,6 +106,16 @@
     currentFontSize: parseInt(localStorage.getItem('pref_font_size') || '18')
   };
 
+  const normalizar = (str) => {
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  }
+  const state = {
+    setlist: JSON.parse(localStorage.getItem('tabs_setlist') || '[]'),
+    currentIndex: -1,
+    currentFontSize: parseInt(localStorage.getItem('pref_font_size') || '18'),
+    allSongsInDrive: [] // <--- Nueva lista para el buscador flexible
+  };
+
   // --- INICIALIZACIÓN ---
   function startApp() {
     gapi.load('client', async () => {
@@ -136,24 +146,39 @@
     });
   }
 
-  // --- BUSCADOR ---
-  async function buscarEnDrive(nameQ = "") {
+ async function buscarEnDrive(nameQ = "") {
     const resDiv = document.getElementById('driveResults');
-    try {
-      let q = `'${FOLDER_ID}' in parents and mimeType = 'text/plain' and trashed = false`;
-      if (nameQ.trim() !== "") q += ` and name contains '${nameQ}'`;
-      const response = await gapi.client.drive.files.list({ q: q, fields: 'files(id, name)', orderBy: 'name' });
-      const files = response.result.files || [];
-      resDiv.innerHTML = "";
-      files.forEach(f => {
+    
+    // Si es la primera vez, descargamos todos los nombres de la carpeta
+    if (state.allSongsInDrive.length === 0) {
+        resDiv.innerHTML = "Cargando biblioteca...";
+        try {
+            let q = `'${FOLDER_ID}' in parents and mimeType = 'text/plain' and trashed = false`;
+            const response = await gapi.client.drive.files.list({ q: q, fields: 'files(id, name)', orderBy: 'name' });
+            state.allSongsInDrive = response.result.files || [];
+        } catch (e) {
+            resDiv.innerHTML = "Error de conexión.";
+            return;
+        }
+    }
+
+    // Filtrado inteligente (sin acentos)
+    const queryLimpia = normalizar(nameQ);
+    const filtrados = state.allSongsInDrive.filter(f => {
+        return normalizar(f.name).includes(queryLimpia);
+    });
+
+    resDiv.innerHTML = "";
+    filtrados.forEach(f => {
         const item = document.createElement('div');
         item.className = 'item';
         item.style.cursor = 'default';
         item.innerHTML = `<span>${f.name.replace('.txt','')}</span><button class="btn accent small" onclick="importar('${f.id}', '${f.name}')">Añadir</button>`;
         resDiv.appendChild(item);
-      });
-    } catch (e) { resDiv.innerHTML = "Error de conexión."; }
-  }
+    });
+
+    if (filtrados.length === 0) resDiv.innerHTML = "<div class='sub'>No se encontró nada...</div>";
+}
 
   async function importar(id, name) {
     const url = `https://www.googleapis.com/drive/v3/files/${id}?alt=media&key=${API_KEY}`;
