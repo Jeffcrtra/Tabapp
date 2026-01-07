@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>5.04 TabApp Pro v3.51</title>
+  <title>5.14 TabApp Pro v3.51</title>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
     :root{
@@ -17,11 +17,21 @@
     *{box-sizing:border-box}
     body{margin:0; font-family:var(--sans); background:radial-gradient(1200px 700px at 20% 0%, #1b2240 0%, var(--bg) 55%); color:var(--text);}
     header{position:sticky; top:0; backdrop-filter: blur(10px); background:rgba(11,13,18,.65); border-bottom:1px solid var(--line); z-index:10;}
-    .wrap{max-width:1180px; margin:0 auto; padding:16px;}
+    .wrap{max-width:100%; margin:0 auto; padding:8px;}
     .row{display:flex; gap:14px; align-items:center; flex-wrap:wrap;}
     h1{font-size:18px; margin:0; letter-spacing:.3px;}
-    .grid{display:grid; grid-template-columns: 1.1fr .9fr; gap:14px; padding:16px;}
-    @media (max-width: 980px){ .grid{grid-template-columns:1fr; } }
+    .grid{display:grid; grid-template-columns: 1.1fr .9fr; gap:10px; padding:0px;}
+    @media (max-width: 980px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+      .wrap {
+        padding: 4px; /* Margen casi inexistente en móviles para maximizar lectura */
+      }
+      .card .bd {
+        padding: 8px; /* Reduce el espacio entre el borde del card y el visor */
+      }
+    }
     .card{background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01)); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); margin-bottom:14px;}
     .card .hd{padding:14px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center;}
     .card .bd{padding:14px;}
@@ -35,7 +45,7 @@
     .sortable-ghost { opacity: 0.3; background: var(--accent); }
     .viewer { min-height: 80vh; display: flex; flex-direction: column; }
     .viewer-tools { display: flex; gap: 10px; margin-bottom: 15px; align-items: center; flex-wrap: wrap; }
-    #viewContent { flex-grow: 1; background: rgba(0,0,0,0.25); padding: 20px; border-radius: 14px; border: 1px solid var(--line); overflow-y: auto; white-space: pre-wrap; font-family: var(--mono); font-size: 18px; line-height: 1.55; }
+    #viewContent { flex-grow: 1; background: rgba(0,0,0,0.25); padding: 15px 10px; border-radius: 14px; border: 1px solid var(--line); overflow-y: auto; white-space: pre-wrap; font-family: var(--mono); font-size: 18px; line-height: 1.55; width: 100%;}
     .chord{color:var(--accent); font-weight:bold;}
   </style>
 </head>
