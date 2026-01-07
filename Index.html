@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>5.18 TabApp Pro v3.52</title>
+  <title>TabApp Pro v3.53</title>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
     :root{
@@ -18,45 +18,38 @@
     body{margin:0; font-family:var(--sans); background:radial-gradient(1200px 700px at 20% 0%, #1b2240 0%, var(--bg) 55%); color:var(--text);}
     header{position:sticky; top:0; backdrop-filter: blur(10px); background:rgba(11,13,18,.65); border-bottom:1px solid var(--line); z-index:10;}
     
-    /* --- ANCHO MÁXIMO --- */
-    .wrap{max-width: 100%; margin: 0; padding: 12px;}
-    .grid{display:grid; grid-template-columns: 1.1fr .9fr; gap:12px; padding:0;}
-    
-    @media (max-width: 980px){ 
-        .grid{grid-template-columns:1fr;}
-        .wrap{padding: 6px;}
-    }
+    .wrap{max-width: 100%; margin: 0; padding: 10px;}
+    .grid{display:grid; grid-template-columns: 1fr; gap:12px;} /* Optimizado para móvil */
+    @media (min-width: 980px){ .grid{grid-template-columns: 1.1fr .9fr;} }
 
     .card{background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01)); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); margin-bottom:14px;}
     .card .hd{padding:14px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center;}
     .card .bd{padding:12px;}
     
-    .btn{appearance:none; border:1px solid var(--line); background:rgba(255,255,255,.03); color:var(--text); padding:10px 12px; border-radius:14px; cursor:pointer; font-weight:650; display:inline-flex; align-items:center; justify-content:center; transition: 0.2s; user-select: none;}
-    .btn:active{transform: scale(0.95);}
-    .btn.accent{background:rgba(255,213,74,.15); border-color:rgba(255,213,74,.45);}
+    .btn{appearance:none; border:1px solid var(--line); background:rgba(255,255,255,.03); color:var(--text); padding:12px 16px; border-radius:14px; cursor:pointer; font-weight:650; display:inline-flex; align-items:center; justify-content:center; transition: 0.2s; user-select: none; font-size: 16px;}
+    .btn:active{transform: scale(0.92); background:rgba(255,255,255,0.1);}
+    .btn.accent{background:rgba(255,213,74,.15); border-color:rgba(255,213,74,.45); color:var(--accent);}
     .btn.danger{background:rgba(255,92,119,.1); border-color:rgba(255,92,119,0.3); color:var(--danger);}
-    .btn.small{padding: 6px 10px; font-size: 12px;}
-    
-    .input{width:100%; padding:12px; border-radius:14px; border:1px solid var(--line); background:rgba(255,255,255,.02); color:var(--text); outline:none;}
+    .btn.small{padding: 8px 12px; font-size: 14px;}
+
+    /* Contenedor del buscador con X */
+    .search-box { position: relative; width: 100%; }
+    .input{width:100%; padding:14px; padding-right:45px; border-radius:14px; border:1px solid var(--line); background:rgba(255,255,255,.02); color:var(--text); outline:none; font-size: 16px;}
+    .clear-search { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); cursor: pointer; font-size: 20px; font-weight: bold; display: none; }
+
     .list{display:flex; flex-direction:column; gap:10px;}
-    .item{border:1px solid var(--line); border-radius:16px; padding:12px; background:rgba(255,255,255,.03); display:flex; justify-content:space-between; align-items:center; cursor: grab;}
+    .item{border:1px solid var(--line); border-radius:16px; padding:14px; background:rgba(255,255,255,.03); display:flex; justify-content:space-between; align-items:center;}
     
-    /* --- VISOR MAXIMIZADO --- */
+    /* Visor Expandido */
     .viewer { min-height: 85vh; display: flex; flex-direction: column; }
+    .viewer-tools { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
+    .tool-group { display: flex; gap: 12px; justify-content: center; align-items: center; background: rgba(255,255,255,0.03); padding: 10px; border-radius: 16px; border: 1px solid var(--line); }
+    
     #viewContent { 
-        flex-grow: 1; 
-        background: rgba(0,0,0,0.3); 
-        padding: 20px 15px; 
-        border-radius: 14px; 
-        border: 1px solid var(--line); 
-        overflow-y: auto; 
-        white-space: pre-wrap; 
-        font-family: var(--mono); 
-        font-size: 18px; 
-        line-height: 1.55; 
-        width: 100%;
+        flex-grow: 1; background: rgba(0,0,0,0.35); padding: 25px 15px; border-radius: 16px; border: 1px solid var(--line); 
+        overflow-y: auto; white-space: pre-wrap; font-family: var(--mono); line-height: 1.6; width: 100%;
     }
-    .chord{color:var(--accent); font-weight:bold;}
+    .chord{color:var(--accent); font-weight:bold; background: rgba(255,213,74,0.05); padding: 0 2px; border-radius: 4px;}
   </style>
 </head>
 <body>
@@ -64,8 +57,8 @@
 <header>
   <div class="wrap">
     <div class="row" style="justify-content:space-between;">
-      <h1>🎸 TabApp Pro v3.52</h1>
-      <span id="status" style="font-size:12px; color:var(--muted);">Iniciando...</span>
+      <h1>🎸 TabApp Pro v3.53</h1>
+      <span id="status" style="font-size:12px; color:var(--muted);">Conectando...</span>
     </div>
   </div>
 </header>
@@ -73,29 +66,44 @@
 <main class="wrap">
   <div class="grid">
     <section class="card">
-      <div class="hd"><b>Biblioteca</b></div>
+      <div class="hd"><b>Biblioteca Drive</b></div>
       <div class="bd">
-        <input class="input" id="searchDrive" placeholder="Buscar canción..." />
-        <div class="list" id="driveResults" style="margin-top:14px;"></div>
+        <div class="search-box">
+            <input class="input" id="searchDrive" placeholder="Buscar canción..." autocomplete="off" />
+            <span class="clear-search" id="btnSearchClear" onclick="clearSearchInput()">✕</span>
+        </div>
+        <div class="list" id="driveResults" style="margin-top:14px; display:none;"></div>
       </div>
     </section>
 
     <section class="card">
       <div class="hd">
-        <b>Setlist</b>
+        <b>Setlist Actual</b>
         <button class="btn small danger" onclick="clearSetlist()">Vaciar Todo</button>
       </div>
       <div class="bd">
         <div class="list" id="setList"></div>
-        <hr style="border:0; border-top:1px solid var(--line); margin:20px 0;">
+        <hr style="border:0; border-top:1px solid var(--line); margin:25px 0;">
         <div class="viewer">
-          <h2 id="viewTitle" style="margin-top:0;">Selecciona canción</h2>
-          <div class="viewer-tools" style="margin-bottom:15px; display:flex; gap:10px;">
-            <button class="btn" onclick="prevSong()">⟵</button>
-            <button class="btn" onclick="nextSong()">⟶</button>
-            <button class="btn small" onclick="changeFontSize(-2)">A-</button>
-            <button class="btn small" onclick="changeFontSize(2)">A+</button>
+          <h2 id="viewTitle" style="margin: 0 0 15px 0; text-align: center;">Selecciona una canción</h2>
+          
+          <div class="viewer-tools">
+            <div class="tool-group">
+                <button class="btn" onclick="prevSong()">⟵</button>
+                <button class="btn" onclick="nextSong()">⟶</button>
+            </div>
+            <div class="tool-group">
+                <button class="btn accent" onclick="transpose(-1)">♭</button>
+                <span style="font-weight: bold; font-size: 12px;">TONO</span>
+                <button class="btn accent" onclick="transpose(1)">♯</button>
+            </div>
+            <div class="tool-group" style="grid-column: span 2;">
+                <button class="btn" onclick="changeFontSize(-2)">A-</button>
+                <span style="font-weight: bold; font-size: 12px;">LETRA</span>
+                <button class="btn" onclick="changeFontSize(2)">A+</button>
+            </div>
           </div>
+
           <pre id="viewContent"></pre>
         </div>
       </div>
@@ -112,11 +120,13 @@
     setlist: JSON.parse(localStorage.getItem('tabs_setlist') || '[]'),
     allSongs: [], 
     currentIndex: -1,
-    currentFontSize: parseInt(localStorage.getItem('pref_font_size') || '18')
+    currentFontSize: parseInt(localStorage.getItem('pref_font_size') || '18'),
+    currentTranspose: 0
   };
 
   const normalizar = (str) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
+  // --- GOOGLE DRIVE LOGIC ---
   function startApp() {
     gapi.load('client', async () => {
       try {
@@ -125,9 +135,7 @@
         await cargarBiblioteca();
         renderAll();
         initSortable();
-      } catch (e) {
-        document.getElementById('status').innerText = "Error API ❌";
-      }
+      } catch (e) { document.getElementById('status').innerText = "Error API ❌"; }
     });
   }
 
@@ -137,7 +145,31 @@
       fields: 'files(id, name)', orderBy: 'name', pageSize: 1000
     });
     state.allSongs = response.result.files || [];
-    mostrarResultados(state.allSongs);
+  }
+
+  // --- SEARCH LOGIC (Only show when typing) ---
+  document.getElementById('searchDrive').oninput = (e) => {
+    const val = e.target.value;
+    const resDiv = document.getElementById('driveResults');
+    const clearBtn = document.getElementById('btnSearchClear');
+
+    if (val.trim() === "") {
+        resDiv.style.display = "none";
+        clearBtn.style.display = "none";
+    } else {
+        resDiv.style.display = "flex";
+        clearBtn.style.display = "block";
+        const q = normalizar(val);
+        const filtrados = state.allSongs.filter(f => normalizar(f.name).includes(q));
+        mostrarResultados(filtrados);
+    }
+  };
+
+  function clearSearchInput() {
+    const input = document.getElementById('searchDrive');
+    input.value = "";
+    document.getElementById('driveResults').style.display = "none";
+    document.getElementById('btnSearchClear').style.display = "none";
   }
 
   function mostrarResultados(lista) {
@@ -146,28 +178,45 @@
     lista.forEach(f => {
       const item = document.createElement('div');
       item.className = 'item';
-      item.style.cursor = 'default';
       item.innerHTML = `<span>${f.name.replace('.txt','')}</span><button class="btn accent small" onclick="importar('${f.id}', '${f.name}')">Añadir</button>`;
       resDiv.appendChild(item);
     });
   }
 
-  document.getElementById('searchDrive').oninput = (e) => {
-    const q = normalizar(e.target.value);
-    const filtrados = state.allSongs.filter(f => normalizar(f.name).includes(q));
-    mostrarResultados(filtrados);
-  };
-
   async function importar(id, name) {
     const url = `https://www.googleapis.com/drive/v3/files/${id}?alt=media&key=${API_KEY}`;
     const resp = await fetch(url);
     const text = await resp.text();
-    state.setlist.push({ id: Date.now(), title: name.replace('.txt',''), body: text });
+    state.setlist.push({ id: Date.now(), title: name.replace('.txt',''), body: text, originalBody: text });
     state.currentIndex = state.setlist.length - 1;
+    state.currentTranspose = 0;
     saveLocal();
+    renderAll();
+    clearSearchInput();
+  }
+
+  // --- TRANSPOSITOR LOGIC ---
+  const scale = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+  function transpose(delta) {
+    const curr = state.setlist[state.currentIndex];
+    if (!curr) return;
+    
+    state.currentTranspose += delta;
+    const transposed = curr.originalBody.replace(/\[([^\]]+)\]/g, (match, chord) => {
+        return "[" + chord.replace(/[A-G]#?/g, (note) => {
+            let idx = scale.indexOf(note);
+            if (idx === -1) return note;
+            let newIdx = (idx + delta) % scale.length;
+            if (newIdx < 0) newIdx += scale.length;
+            return scale[newIdx];
+        }) + "]";
+    });
+    
+    curr.body = transposed;
     renderAll();
   }
 
+  // --- UI RENDER ---
   function renderAll() {
     const sl = document.getElementById('setList');
     sl.innerHTML = "";
@@ -177,28 +226,26 @@
       if(idx === state.currentIndex) item.style.borderColor = 'var(--accent)';
       item.innerHTML = `
         <div style="flex:1; display:flex; align-items:center;" onclick="seleccionar(${idx})">
-            <span style="color:var(--muted); margin-right:10px;">☰</span>
-            <span>${s.title}</span>
+            <span style="color:var(--muted); margin-right:12px; cursor:grab;">☰</span>
+            <span style="font-weight:bold;">${s.title}</span>
         </div>
-        <button class="btn small danger" style="margin-left:8px;" onclick="removeSong(${idx}, event)">✕</button>
+        <button class="btn small danger" onclick="removeSong(${idx}, event)">✕</button>
       `;
       sl.appendChild(item);
     });
+    
     const curr = state.setlist[state.currentIndex];
-    document.getElementById('viewTitle').innerText = curr ? curr.title : "Selecciona canción";
-    document.getElementById('viewContent').innerHTML = curr ? curr.body.replace(/\[([^\]]+)\]/g, '<span class="chord">[$1]</span>') : "";
-    document.getElementById('viewContent').style.fontSize = state.currentFontSize + 'px';
+    document.getElementById('viewTitle').innerText = curr ? curr.title : "Selecciona una canción";
+    const viewer = document.getElementById('viewContent');
+    viewer.innerHTML = curr ? curr.body.replace(/\[([^\]]+)\]/g, '<span class="chord">[$1]</span>') : "";
+    viewer.style.fontSize = state.currentFontSize + 'px';
   }
 
-  // --- NUEVA FUNCIÓN: ELIMINAR CANCIÓN ---
   function removeSong(idx, event) {
-    event.stopPropagation(); // Evita que se seleccione la canción al darle a la X
+    event.stopPropagation();
     state.setlist.splice(idx, 1);
-    if (state.currentIndex >= state.setlist.length) {
-        state.currentIndex = state.setlist.length - 1;
-    }
-    saveLocal();
-    renderAll();
+    state.currentIndex = state.setlist.length > 0 ? 0 : -1;
+    saveLocal(); renderAll();
   }
 
   function initSortable() {
@@ -213,7 +260,7 @@
     });
   }
 
-  function seleccionar(idx) { state.currentIndex = idx; renderAll(); }
+  function seleccionar(idx) { state.currentIndex = idx; state.currentTranspose = 0; renderAll(); }
   function saveLocal() { localStorage.setItem('tabs_setlist', JSON.stringify(state.setlist)); }
   function clearSetlist() { if(confirm("¿Vaciar setlist completo?")) { state.setlist = []; state.currentIndex = -1; saveLocal(); renderAll(); } }
   function nextSong() { if(state.currentIndex < state.setlist.length-1) seleccionar(state.currentIndex+1); }
