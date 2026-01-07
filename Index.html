@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>2.59 TabApp – Banco + Setlist</title>
+  <title>3.20 TabApp – Drive Edition</title>
   <style>
     :root{
       --bg:#0b0d12; --card:#121622; --muted:#98a2b3; --text:#e6e9ef;
@@ -19,142 +19,32 @@
     .wrap{max-width:1180px; margin:0 auto; padding:16px;}
     .row{display:flex; gap:14px; align-items:center; flex-wrap:wrap;}
     h1{font-size:18px; margin:0; letter-spacing:.3px;}
-    .pill{padding:6px 10px; border:1px solid var(--line); border-radius:999px; color:var(--muted); font-size:12px;}
     .grid{display:grid; grid-template-columns: 1.1fr .9fr; gap:14px; padding:16px;}
     @media (max-width: 980px){ .grid{grid-template-columns:1fr; } }
-
-    .card{background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01)); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow);}
-    .card .hd{padding:14px 14px 10px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center; gap:10px;}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01)); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); margin-bottom:14px;}
+    .card .hd{padding:14px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center;}
     .card .bd{padding:14px;}
-    .sub{color:var(--muted); font-size:12px;}
-    .btn{appearance:none; border:1px solid var(--line); background:rgba(255,255,255,.03); color:var(--text);
-      padding:10px 12px; border-radius:14px; cursor:pointer; transition:transform .05s ease, background .15s ease, border-color .15s ease;
-      display:inline-flex; align-items:center; gap:8px; font-weight:650; }
-    .btn:active{transform:translateY(1px) scale(.99);}
-    .btn:hover{background:rgba(255,255,255,.06); border-color:#2d3552;}
+    .btn{appearance:none; border:1px solid var(--line); background:rgba(255,255,255,.03); color:var(--text); padding:10px 12px; border-radius:14px; cursor:pointer; font-weight:650;}
     .btn.accent{background:rgba(255,213,74,.15); border-color:rgba(255,213,74,.45);}
-    .btn.accent:hover{background:rgba(255,213,74,.22);}
-    .btn.danger{background:rgba(255,92,119,.12); border-color:rgba(255,92,119,.4);}
-    .btn.ok{background:rgba(51,209,122,.12); border-color:rgba(51,209,122,.4);}
-    .btn.small{padding:8px 10px; border-radius:12px; font-size:13px;}
-
-    .input, textarea{
-      width:100%; padding:12px 12px; border-radius:14px; border:1px solid var(--line);
-      background:rgba(255,255,255,.02); color:var(--text); outline:none;
-    }
-    .input:focus, textarea:focus{border-color:#3c4a7c; box-shadow:0 0 0 4px rgba(60,74,124,.25);}
-    textarea{min-height:200px; font-family:var(--mono); line-height:1.35; font-size:13px; resize:vertical;}
-    .two{display:grid; grid-template-columns: 1fr 1fr; gap:10px;}
-    @media (max-width: 560px){ .two{grid-template-columns:1fr;} }
-
+    .input, textarea{width:100%; padding:12px; border-radius:14px; border:1px solid var(--line); background:rgba(255,255,255,.02); color:var(--text); outline:none;}
+    textarea{min-height:300px; font-family:var(--mono); font-size:14px;}
     .list{display:flex; flex-direction:column; gap:10px;}
-    .item{
-      border:1px solid var(--line); border-radius:16px; padding:12px; background:rgba(255,255,255,.02);
-      display:flex; justify-content:space-between; gap:10px; align-items:flex-start;
-    }
-    .item .meta{display:flex; flex-direction:column; gap:4px; min-width:0;}
-    .title{font-weight:750; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-    .tags{display:flex; gap:8px; flex-wrap:wrap; color:var(--muted); font-size:12px;}
-    .kbd{font-family:var(--mono); font-size:12px; border:1px solid var(--line); padding:2px 6px; border-radius:8px; color:var(--muted);}
-    .actions{display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;}
-    .drag{cursor:grab;}
-    .drag:active{cursor:grabbing;}
-    .drop-hint{border:1px dashed rgba(255,213,74,.55);}
-
-    .viewer{
-      border-radius:18px; border:1px solid var(--line); background:rgba(0,0,0,.2);
-      padding:14px; min-height:360px;
-    }
-    .viewer h2{margin:0 0 4px; font-size:18px;}
-    .viewer .info{color:var(--muted); font-size:12px; display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;}
-    .viewer pre{
-      margin:0; white-space:pre-wrap; word-break:break-word;
-      font-family:var(--mono); font-size:14px; line-height:1.55;
-    }
-    .bar{display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between; margin-top:12px;}
-    .bar .left, .bar .right{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
-    .muted{color:var(--muted);}
-
-    .modal-back{position:fixed; inset:0; background:rgba(0,0,0,.6); display:none; align-items:center; justify-content:center; padding:16px; z-index:99;}
-    .modal{max-width:900px; width:100%; max-height:92vh; overflow:auto;}
-    .modal .hd{position:sticky; top:0; background:rgba(18,22,34,.98);}
-
-    .toast{position:fixed; bottom:16px; left:50%; transform:translateX(-50%); background:rgba(18,22,34,.95);
-      border:1px solid var(--line); border-radius:999px; padding:10px 14px; color:var(--text); display:none; z-index:200;}
-    .hint{font-size:12px; color:var(--muted); margin-top:8px;}
-    .divider{height:1px; background:var(--line); margin:14px 0;}
-    .badge{display:inline-flex; align-items:center; gap:6px; padding:4px 8px; border:1px solid var(--line); border-radius:999px; font-size:12px; color:var(--muted);}
-    a{color:inherit}
-
-    .searching{
-      padding:12px 14px;
-      border-radius:16px;
-      border:1px solid rgba(255,213,74,.6);
-      background: rgba(255,213,74,.14);
-      font-weight:900;
-      letter-spacing:.4px;
-      text-transform:uppercase;
-      display:flex;
-      align-items:center;
-      gap:10px;
-    }
-    .dot{
-      width:10px; height:10px; border-radius:999px;
-      background: var(--accent);
-      box-shadow: 0 0 18px rgba(255,213,74,.55);
-    }
-
-    /* Preview inline debajo del resultado */
-    .inlinePanel{
-      margin-top:10px;
-      border:1px solid var(--line);
-      border-radius:16px;
-      overflow:hidden;
-      background:rgba(0,0,0,.18);
-    }
-    .inlineBar{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:10px;
-      padding:10px 12px;
-      border-bottom:1px solid var(--line);
-      background:rgba(18,22,34,.92);
-    }
-    .inlineTitle{
-      font-weight:800;
-      font-size:13px;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      white-space:nowrap;
-    }
-    .inlineFrame{
-      width:100%;
-      height:420px;
-      border:0;
-      background:#000;
-    }
-    .inlineHint{
-      padding:10px 12px;
-      font-size:12px;
-      color:var(--muted);
-      border-top:1px solid var(--line);
-    }
+    .item{border:1px solid var(--line); border-radius:16px; padding:12px; background:rgba(255,255,255,.02); display:flex; justify-content:space-between; align-items:center;}
+    .viewer pre{white-space:pre-wrap; font-family:var(--mono); font-size:16px; line-height:1.5;}
+    .chord{color:var(--accent); font-weight:bold;}
+    .modal-back{position:fixed; inset:0; background:rgba(0,0,0,.8); display:none; align-items:center; justify-content:center; z-index:99;}
+    .modal{width:90%; max-width:800px; background:var(--bg); border-radius:var(--radius); padding:20px;}
   </style>
 </head>
 <body>
+
 <header>
   <div class="wrap">
     <div class="row" style="justify-content:space-between;">
+      <h1>TabApp + Google Drive</h1>
       <div class="row">
-        <h1>TabApp – Banco + Setlist</h1>
-        <span class="pill">Banco primero • Online después</span>
-      </div>
-      <div class="row">
-        <button class="btn accent small" id="btnNewSong">＋ Guardar en banco</button>
-        <button class="btn small" id="btnExport">Exportar</button>
-        <button class="btn small" id="btnImport">Importar</button>
-        <button class="btn danger small" id="btnReset">Reset</button>
+        <button class="btn accent" id="btnAuth" style="display:none;">Conectar Google Drive</button>
+        <button class="btn" id="btnSignOut" style="display:none;">Salir</button>
       </div>
     </div>
   </div>
@@ -162,933 +52,154 @@
 
 <main class="wrap">
   <div class="grid">
-    <!-- LEFT -->
     <section class="card">
-      <div class="hd">
-        <div>
-          <div style="font-weight:800">Buscar</div>
-          <div class="sub">Escribí: si está en tu banco sale arriba; si no, salen opciones online para ver y luego guardar.</div>
-        </div>
-        <div class="row">
-          <span class="kbd">/</span><span class="sub">Buscar</span>
-        </div>
-      </div>
+      <div class="hd"><b>Buscador en tu Drive</b></div>
       <div class="bd">
-        <label class="sub">Búsqueda única (banco + online)</label>
-        <input class="input" id="searchUnified" placeholder="Ej: has aumentado danilo montero acordes" />
-        <div class="hint">Tip: agregá “acordes”, “cifra” o “tab” al final para afinar.</div>
-
-        <div class="divider"></div>
-
-        <div class="list" id="unifiedResults"></div>
-
-        <div class="divider"></div>
-
-        <div class="row" style="justify-content:space-between;">
-          <div>
-            <div style="font-weight:800">Tu banco (rápido)</div>
-            <div class="sub">Botón ＋ para meterla al setlist.</div>
-          </div>
-        </div>
-        <div style="height:12px"></div>
-        <div class="list" id="libraryList"></div>
+        <input class="input" id="searchDrive" placeholder="Buscar canción en mis .txt..." />
+        <div id="driveStatus" style="font-size:12px; color:var(--muted); margin-top:8px;"></div>
+        <div class="list" id="driveResults" style="margin-top:14px;"></div>
       </div>
     </section>
 
-    <!-- RIGHT -->
     <section class="card">
-      <div class="hd">
-        <div>
-          <div style="font-weight:800">Setlist</div>
-          <div class="sub">Arrastrá para reordenar. Next/Prev para navegar.</div>
-        </div>
-        <div class="row">
-          <button class="btn small" id="btnClearSet">Vaciar set</button>
-        </div>
-      </div>
+      <div class="hd"><b>Setlist / Visor</b></div>
       <div class="bd">
         <div class="list" id="setList"></div>
-        <div style="height:14px"></div>
-
+        <hr style="border:0; border-top:1px solid var(--line); margin:20px 0;">
         <div class="viewer">
-          <h2 id="viewTitle">Nada seleccionado</h2>
-          <div class="info" id="viewInfo"></div>
-
-          <div class="two" style="margin:10px 0;">
-            <button class="btn small" id="btnPrev">⟵ Previous</button>
-            <button class="btn small" id="btnNext">Next ⟶</button>
+          <h2 id="viewTitle">Selecciona una canción</h2>
+          <div class="row" style="margin-bottom:10px;">
+            <button class="btn" id="btnPrev">Anterior</button>
+            <button class="btn" id="btnNext">Siguiente</button>
+            <button class="btn" id="btnEdit">Editar</button>
           </div>
-
-          <div class="bar">
-            <div class="left">
-              <button class="btn small" id="btnTransposeDown">− Transpose</button>
-              <button class="btn small" id="btnTransposeUp">＋ Transpose</button>
-              <span class="muted" id="transposeLabel">Transposición: 0</span>
-            </div>
-            <div class="right">
-              <button class="btn small" id="btnEditCurrent">Editar</button>
-              <button class="btn danger small" id="btnRemoveCurrent">Quitar del set</button>
-            </div>
-          </div>
-
-          <div style="height:12px"></div>
-          <pre id="viewContent" aria-label="Tab"></pre>
-
-          <div style="height:12px"></div>
-          <button class="btn small" id="btnDownloadTxt">Descargar canción actual .txt</button>
-          <div class="hint">Luego subís ese .txt a tu Google Drive manualmente (por ahora).</div>
+          <pre id="viewContent"></pre>
         </div>
       </div>
     </section>
   </div>
 </main>
 
-<!-- Modal: Song Editor -->
 <div class="modal-back" id="modalBack">
-  <div class="card modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-    <div class="hd">
-      <div>
-        <div id="modalTitle" style="font-weight:900">Guardar en banco</div>
-        <div class="sub">Pegá tu versión (ChordPro estilo <span class="kbd">[G]</span>) + (opcional) link de fuente.</div>
-      </div>
-      <div class="row">
-        <button class="btn small" id="btnCloseModal">Cerrar</button>
-      </div>
-    </div>
-    <div class="bd">
-      <div class="two">
-        <div>
-          <label class="sub">Título</label>
-          <input class="input" id="songTitle" placeholder="Has aumentado" />
-        </div>
-        <div>
-          <label class="sub">Artista / Versión</label>
-          <input class="input" id="songArtist" placeholder="Danilo Montero • (Versión banda)" />
-        </div>
-      </div>
-
-      <div style="height:10px"></div>
-
-      <div class="two">
-        <div>
-          <label class="sub">Tonalidad (opcional)</label>
-          <input class="input" id="songKey" placeholder="G" />
-        </div>
-        <div>
-          <label class="sub">Fuente (URL opcional)</label>
-          <input class="input" id="songSource" placeholder="https://…" />
-        </div>
-      </div>
-
-      <div style="height:10px"></div>
-
-      <div class="two">
-        <div>
-          <label class="sub">Tags (coma)</label>
-          <input class="input" id="songTags" placeholder="domingo, alegre, adoración" />
-        </div>
-        <div>
-          <label class="sub">Notas (opcional)</label>
-          <input class="input" id="songNotes" placeholder="Intro 2 compases • corte en puente…" />
-        </div>
-      </div>
-
-      <div style="height:10px"></div>
-
-      <label class="sub">Contenido (tu versión)</label>
-      <textarea id="songBody" spellcheck="false" placeholder="[G]Verso..."></textarea>
-
-      <div style="height:12px"></div>
-      <div class="row" style="justify-content:space-between;">
-        <div class="row">
-          <button class="btn ok" id="btnSaveSong">Guardar</button>
-          <button class="btn" id="btnSaveAndAdd">Guardar + Agregar al set</button>
-        </div>
-        <div class="row">
-          <button class="btn danger" id="btnDeleteSong" style="display:none;">Borrar</button>
-        </div>
-      </div>
+  <div class="modal">
+    <h3>Editar Canción</h3>
+    <input class="input" id="editTitle" style="margin-bottom:10px;">
+    <textarea id="editBody"></textarea>
+    <div class="row" style="margin-top:10px; justify-content:flex-end;">
+      <button class="btn" onclick="closeEditor()">Cerrar</button>
+      <button class="btn accent" onclick="saveSong()">Guardar</button>
     </div>
   </div>
 </div>
-
-<!-- Modal: Import/Export -->
-<div class="modal-back" id="importBack">
-  <div class="card modal">
-    <div class="hd">
-      <div>
-        <div style="font-weight:900">Importar / Exportar</div>
-        <div class="sub">Pegá JSON para restaurar tu banco/setlist.</div>
-      </div>
-      <div class="row">
-        <button class="btn small" id="btnCloseImport">Cerrar</button>
-      </div>
-    </div>
-    <div class="bd">
-      <textarea id="importText" spellcheck="false" placeholder="{ ... }"></textarea>
-      <div style="height:12px"></div>
-      <div class="row" style="justify-content:space-between;">
-        <button class="btn ok" id="btnDoImport">Importar</button>
-        <div class="row">
-          <button class="btn" id="btnCopyExport">Copiar export</button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="toast" id="toast"></div>
 
 <script>
-/* ==========================
-   TabApp – Banco + Online (proxy)
-   ========================== */
+  // CONFIGURACIÓN (Tus datos)
+  const CLIENT_ID = '95122523294-nqd6v1n18o4mba2dus66vorql322gckp.apps.googleusercontent.com';
+  const DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"];
+  const SCOPES = 'https://www.googleapis.com/auth/drive.readonly';
 
-// PEGÁ AQUÍ TU WEB APP URL DEL APPS SCRIPT (termina con /exec)
-const SEARCH_PROXY_URL = "https://script.google.com/macros/s/AKfycbwkURCIhV_AgX2a-cOtxddhDhHo3W5MiRtDcLCaUn2vXkoX7YhUTGEudHJ4Hj9iEb9E/exec";
-
-const STORE_KEY = "tabapp_bank_setlist_v3";
-
-// hosts normalizados (sin www.)
-const ALLOWED_HOSTS = new Set([
-  "institutocanzion.com",
-  "cifraclub.com",
-  "acordes.lacuerda.net",
-  "chords.lacuerda.net",
-  "acordesdcanciones.com/"
-]);
-
-const state = {
-  songs: [],
-  setlist: [],
-  currentIndex: -1,
-  transpose: 0,
-  q: "",
-  webResults: [],
-  searching: false
-};
-
-const el = (id) => document.getElementById(id);
-
-const toast = (msg) => {
-  const t = el("toast");
-  t.textContent = msg;
-  t.style.display = "block";
-  clearTimeout(toast._tm);
-  toast._tm = setTimeout(()=> t.style.display="none", 2200);
-};
-
-function uid(){ return Math.random().toString(16).slice(2) + Date.now().toString(16); }
-
-function escapeHtml(str){
-  return String(str).replace(/[&<>"']/g, s=>({
-    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
-  }[s]));
-}
-
-function hostOf(url){
-  try{ return new URL(url).host.replace(/^www\./,""); }catch{ return ""; }
-}
-
-function load(){
-  const raw = localStorage.getItem(STORE_KEY);
-  if(raw){
-    try{
-      const data = JSON.parse(raw);
-      state.songs = Array.isArray(data.songs) ? data.songs : [];
-      state.setlist = Array.isArray(data.setlist) ? data.setlist : [];
-      state.currentIndex = Number.isInteger(data.currentIndex) ? data.currentIndex : -1;
-      state.transpose = Number.isInteger(data.transpose) ? data.transpose : 0;
-    }catch(e){ save(); }
-  }else{
-    seedDemo();
-    save();
-  }
-}
-
-function save(){
-  localStorage.setItem(STORE_KEY, JSON.stringify({
-    songs: state.songs,
-    setlist: state.setlist,
-    currentIndex: state.currentIndex,
-    transpose: state.transpose
-  }));
-}
-
-function seedDemo(){
-  const id = uid();
-  state.songs = [{
-    id,
-    title:"Demo: Pegá tu versión",
-    artist:"Versión banda",
-    key:"G",
-    tags:["demo"],
-    notes:"Intro 2 compases",
-    source:"",
-    body:"[G]Verso\n[C]Coro\n[D]Puente\n\nTip: buscá online, abrí versión, y pegá TU arreglo acá.",
-    createdAt:Date.now(),
-    updatedAt:Date.now()
-  }];
-  state.setlist = [id];
-  state.currentIndex = 0;
-  state.transpose = 0;
-}
-
-/* ====== Transpose (básico) ====== */
-const NOTE_SHARPS = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
-const NOTE_FLATS  = ["C","Db","D","Eb","E","F","Gb","G","Ab","A","Bb","B"];
-
-function chordToIndex(letter, accidental){
-  const name = letter + (accidental||"");
-  let idx = NOTE_SHARPS.indexOf(name);
-  if(idx !== -1) return idx;
-  idx = NOTE_FLATS.indexOf(name);
-  if(idx !== -1) return idx;
-  return null;
-}
-function indexToNote(idx, preferFlats){
-  idx = (idx % 12 + 12) % 12;
-  return preferFlats ? NOTE_FLATS[idx] : NOTE_SHARPS[idx];
-}
-function transposeChordSymbol(symbol, semitones){
-  const preferFlats = symbol.includes("b") && !symbol.includes("#");
-  const tokens = symbol.split("/");
-  const out = tokens.map(tok=>{
-    const m = tok.match(/^([A-G])([#b]?)(.*)$/);
-    if(!m) return tok;
-    const idx = chordToIndex(m[1], m[2]||"");
-    if(idx === null) return tok;
-    const newNote = indexToNote(idx + semitones, preferFlats);
-    return newNote + (m[3]||"");
-  });
-  return out.join("/");
-}
-function transposeChordProText(text, semitones){
-  return text.replace(/\[([^\]]+)\]/g, (m, chord)=>{
-    const t = transposeChordSymbol(chord.trim(), semitones);
-    return "[" + t + "]";
-  });
-}
-
-function looksLikeTabsFront(title, url){
-  const t = (title||"").toLowerCase();
-  const u = (url||"").toLowerCase();
+  let tokenClient;
+  let gapiInited = false;
+  let gsiInited = false;
   
-  // Si el URL contiene acordesweb, descartar de inmediato
-  if (u.includes("acordesweb.com")) return false;
+  const state = {
+    songs: JSON.parse(localStorage.getItem('tabs_db') || '[]'),
+    setlist: [],
+    currentIndex: -1
+  };
 
-  const ok = ["acorde","acordes","cifra","chords","tab","tabs"].some(k => t.includes(k) || u.includes(k));
-  const bad = ["letra","lyrics","video","videoclip"].some(k => t.includes(k) || u.includes(k));
-  return ok && !bad;
-}
-
-function toggleInlinePreview(containerEl, url, title){
-  let panel = containerEl.querySelector(".inlinePanel");
-  if(panel){ panel.remove(); return; }
-
-  panel = document.createElement("div");
-  panel.className = "inlinePanel";
-  panel.innerHTML = `
-    <div class="inlineBar">
-      <div class="inlineTitle">${escapeHtml(title || "Vista previa")}</div>
-      <button class="btn small danger" data-close-inline>Cerrar</button>
-    </div>
-    <iframe class="inlineFrame" src="${escapeHtml(url)}" title="Vista previa"></iframe>
-    <div class="inlineHint">
-      Si no carga, ese sitio bloquea verse dentro de otras páginas (normal). En ese caso usá “Añadir” y guardá la fuente.
-    </div>
-  `;
-  containerEl.appendChild(panel);
-  panel.querySelector("[data-close-inline]").addEventListener("click", ()=> panel.remove());
-}
-/* ====== Local matches ====== */
-function localMatchesFor(q){
-  const qq = q.trim().toLowerCase();
-  if(!qq) return [];
-  return state.songs
-    .filter(s=>{
-      const hay = [s.title||"", s.artist||"", (s.tags||[]).join(" "), s.notes||"", s.source||""].join(" ").toLowerCase();
-      return hay.includes(qq);
-    })
-    .sort((a,b)=> (b.updatedAt||0)-(a.updatedAt||0));
-}
-
-function filteredSongsForQuickList(){
-  return state.songs.slice().sort((a,b)=> (b.updatedAt||0)-(a.updatedAt||0)).slice(0, 12);
-}
-
-/* ====== Setlist ops ====== */
-function addToSet(songId){
-  state.setlist.push(songId);
-  if(state.currentIndex === -1) state.currentIndex = 0;
-  save();
-  renderAll();
-  toast("Agregada al set ✅");
-}
-
-function removeFromSet(index){
-  if(index < 0 || index >= state.setlist.length) return;
-  state.setlist.splice(index,1);
-  if(state.setlist.length === 0){
-    state.currentIndex = -1;
-    state.transpose = 0;
-  }else{
-    state.currentIndex = Math.min(state.currentIndex, state.setlist.length - 1);
-  }
-  save();
-  renderAll();
-}
-
-function setCurrent(index){
-  if(index < 0 || index >= state.setlist.length) return;
-  state.currentIndex = index;
-  state.transpose = 0;
-  save();
-  renderAll();
-}
-
-function currentSong(){
-  if(state.currentIndex < 0) return null;
-  const id = state.setlist[state.currentIndex];
-  return state.songs.find(s=>s.id===id) || null;
-}
-
-/* ====== Unified Results Render ====== */
-function renderUnifiedResults(localMatches, webMatches){
-  const box = el("unifiedResults");
-  box.innerHTML = "";
-
-  const hasLocal = !!(localMatches && localMatches.length);
-  const hasWeb = !!(webMatches && webMatches.length);
-
-  if(!state.q.trim()){
-    box.innerHTML = `<div class="sub">Escribí para buscar. Primero verás tu banco; si no alcanza, verás opciones online.</div>`;
-    return;
+  // Inicialización de APIs
+  function gapiLoaded() { gapi.load('client', () => { gapi.client.init({discoveryDocs: DISCOVERY_DOCS}).then(() => { gapiInited = true; checkAuth(); })}); }
+  function gsiLoaded() { 
+    tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: CLIENT_ID, scope: SCOPES, callback: (resp) => { if (resp.error) return; buscarEnDrive(); document.getElementById('btnAuth').style.display='none'; document.getElementById('btnSignOut').style.display='block'; }
+    });
+    gsiInited = true;
+    checkAuth();
   }
 
-  if(!hasLocal && !hasWeb){
-    if(state.searching){
-      box.innerHTML = `
-        <div class="searching">
-          <span class="dot"></span>
-          Buscando…
-        </div>`;
-    }else{
-      box.innerHTML = `<div class="sub">Sin resultados para esta búsqueda.</div>`;
+  function checkAuth() { if(gapiInited && gsiInited) document.getElementById('btnAuth').style.display = 'block'; }
+
+  document.getElementById('btnAuth').onclick = () => tokenClient.requestAccessToken({prompt: 'consent'});
+  document.getElementById('btnSignOut').onclick = () => { google.accounts.oauth2.revokeToken(gapi.client.getToken().access_token); gapi.client.setToken(''); location.reload(); };
+
+  // BUSCADOR DRIVE
+  document.getElementById('searchDrive').oninput = (e) => {
+    const q = e.target.value;
+    if (q.length < 2) return;
+    buscarEnDrive(q);
+  };
+
+  async function buscarEnDrive(nameQ = "") {
+    let q = "mimeType = 'text/plain' and trashed = false";
+    if (nameQ) q += ` and name contains '${nameQ}'`;
+    
+    const response = await gapi.client.drive.files.list({ q: q, fields: 'files(id, name)' });
+    const files = response.result.files;
+    const resDiv = document.getElementById('driveResults');
+    resDiv.innerHTML = "";
+
+    files.forEach(f => {
+      const item = document.createElement('div');
+      item.className = 'item';
+      item.innerHTML = `<span>${f.name}</span><button class="btn accent" onclick="importar('${f.id}', '${f.name}')">Importar</button>`;
+      resDiv.appendChild(item);
+    });
+  }
+
+  async function importar(id, name) {
+    const resp = await gapi.client.drive.files.get({ fileId: id, alt: 'media' });
+    const newSong = { id: Date.now(), title: name.replace('.txt',''), body: resp.body };
+    state.songs.push(newSong);
+    state.setlist.push(newSong);
+    state.currentIndex = state.setlist.length - 1;
+    saveLocal();
+    renderAll();
+  }
+
+  // LOGICA APP
+  function renderAll() {
+    const sl = document.getElementById('setList');
+    sl.innerHTML = "";
+    state.setlist.forEach((s, idx) => {
+      const item = document.createElement('div');
+      item.className = 'item';
+      if(idx === state.currentIndex) item.style.borderColor = 'var(--accent)';
+      item.innerHTML = `<span>${s.title}</span><button class="btn" onclick="state.currentIndex=${idx}; renderAll()">Ver</button>`;
+      sl.appendChild(item);
+    });
+
+    const curr = state.setlist[state.currentIndex];
+    if (curr) {
+      document.getElementById('viewTitle').innerText = curr.title;
+      // Resaltar acordes [C]
+      document.getElementById('viewContent').innerHTML = curr.body.replace(/\[([^\]]+)\]/g, '<span class="chord">[$1]</span>');
     }
-    return;
   }
 
-  // Banco
-  if(hasLocal){
-    const h = document.createElement("div");
-    h.className = "sub";
-    h.innerHTML = `📚 En tu banco`;
-    box.appendChild(h);
+  function saveLocal() { localStorage.setItem('tabs_db', JSON.stringify(state.songs)); }
 
-    localMatches.slice(0,6).forEach(s=>{
-      const node = document.createElement("div");
-      node.className = "item";
-      node.innerHTML = `
-        <div class="meta" style="min-width:0;">
-          <div class="title">${escapeHtml(s.title||"Sin título")}</div>
-          <div class="tags">
-            ${s.artist ? `<span>🎤 ${escapeHtml(s.artist)}</span>` : ""}
-            ${s.key ? `<span>🎼 <span class="kbd">${escapeHtml(s.key)}</span></span>` : ""}
-            ${s.source ? `<span class="badge">🔗 ${escapeHtml(hostOf(s.source) || "fuente")}</span>` : ""}
-            <span class="badge">Banco</span>
-          </div>
-        </div>
-        <div class="actions">
-          <button class="btn small accent" data-add="${s.id}">＋</button>
-          <button class="btn small" data-edit="${s.id}">Editar</button>
-        </div>
-      `;
-      box.appendChild(node);
-    });
-
-    box.querySelectorAll("[data-add]").forEach(b=> b.addEventListener("click", e=>{
-      addToSet(e.currentTarget.getAttribute("data-add"));
-    }));
-    box.querySelectorAll("[data-edit]").forEach(b=> b.addEventListener("click", e=>{
-      openEditor(e.currentTarget.getAttribute("data-edit"));
-    }));
+  // Modales
+  document.getElementById('btnEdit').onclick = () => {
+    const s = state.setlist[state.currentIndex];
+    if(!s) return;
+    document.getElementById('editTitle').value = s.title;
+    document.getElementById('editBody').value = s.body;
+    document.getElementById('modalBack').style.display = 'flex';
+  };
+  function closeEditor() { document.getElementById('modalBack').style.display = 'none'; }
+  function saveSong() {
+    const s = state.setlist[state.currentIndex];
+    s.title = document.getElementById('editTitle').value;
+    s.body = document.getElementById('editBody').value;
+    saveLocal(); renderAll(); closeEditor();
   }
 
-  // Online
-  if(hasWeb){
-    const h = document.createElement("div");
-    h.className = "sub";
-    h.style.marginTop = "10px";
-    h.innerHTML = `🌐 Online`;
-    box.appendChild(h);
-
-    webMatches.slice(0,10).forEach((r,i)=>{
-      const node = document.createElement("div");
-      node.className = "item";
-      node.innerHTML = `
-        <div class="meta" style="min-width:0;">
-          <div class="title">${escapeHtml(r.title || "Resultado")}</div>
-          <div class="tags">
-            <span>🌐 ${escapeHtml(r.host || hostOf(r.url) || "sitio")}</span>
-          </div>
-        </div>
-        <div class="actions">
-          <button class="btn small" data-preview="${i}">Ver aquí</button>
-          <button class="btn small ok" data-addfrom="${i}">Añadir</button>
-        </div>
-      `;
-      box.appendChild(node);
-    });
-
-    box.querySelectorAll("[data-preview]").forEach(btn =>
-      btn.addEventListener("click", e=>{
-        const idx = parseInt(e.currentTarget.getAttribute("data-preview"),10);
-        const r = webMatches[idx];
-        const itemEl = e.currentTarget.closest(".item");
-        toggleInlinePreview(itemEl, r.url, `${r.host || "sitio"} • ${r.title || ""}`.trim());
-      })
-    );
-
-    box.querySelectorAll("[data-addfrom]").forEach(btn =>
-      btn.addEventListener("click", e=>{
-        const idx = parseInt(e.currentTarget.getAttribute("data-addfrom"),10);
-        const r = webMatches[idx];
-        openEditor(null, {
-          titleGuess: r.title || state.q,
-          artistGuess: "",
-          source: r.url
-        });
-      })
-    );
-  }
-}
-
-/* ====== Library quick list ====== */
-function renderLibrary(){
-  const box = el("libraryList");
-  box.innerHTML = "";
-  const list = filteredSongsForQuickList();
-  if(list.length === 0){
-    box.innerHTML = `<div class="sub">Tu banco está vacío. Guardá una canción con “＋ Guardar en banco”.</div>`;
-    return;
-  }
-  for(const s of list){
-    const node = document.createElement("div");
-    node.className = "item";
-    node.innerHTML = `
-      <div class="meta" style="min-width:0;">
-        <div class="title">${escapeHtml(s.title || "Sin título")}</div>
-        <div class="tags">
-          ${s.artist ? `<span>🎤 ${escapeHtml(s.artist)}</span>` : ""}
-          ${s.key ? `<span>🎼 Key: <span class="kbd">${escapeHtml(s.key)}</span></span>` : ""}
-          ${s.source ? `<span class="badge">🔗 ${escapeHtml(hostOf(s.source) || "fuente")}</span>` : ""}
-        </div>
-      </div>
-      <div class="actions">
-        <button class="btn small accent" data-add="${s.id}">＋</button>
-        <button class="btn small" data-edit="${s.id}">Editar</button>
-      </div>
-    `;
-    box.appendChild(node);
-  }
-  box.querySelectorAll("[data-add]").forEach(b=> b.addEventListener("click", e=>{
-    addToSet(e.currentTarget.getAttribute("data-add"));
-  }));
-  box.querySelectorAll("[data-edit]").forEach(b=> b.addEventListener("click", e=>{
-    openEditor(e.currentTarget.getAttribute("data-edit"));
-  }));
-}
-
-/* ====== Setlist render ====== */
-function renderSetlist(){
-  const box = el("setList");
-  box.innerHTML = "";
-  if(state.setlist.length === 0){
-    box.innerHTML = `<div class="sub">Setlist vacío. Tocá <span class="kbd">＋</span> en una canción de tu banco.</div>`;
-    return;
-  }
-  state.setlist.forEach((songId, idx)=>{
-    const s = state.songs.find(x=>x.id===songId);
-    const title = s ? s.title : "(No encontrada)";
-    const artist = s?.artist || "";
-    const key = s?.key || "";
-    const node = document.createElement("div");
-    node.className = "item drag";
-    node.draggable = true;
-    if(idx === state.currentIndex) node.style.borderColor = "rgba(255,213,74,.55)";
-    node.dataset.index = String(idx);
-    node.innerHTML = `
-      <div class="meta" style="min-width:0;">
-        <div class="title">${escapeHtml(String(idx+1).padStart(2,"0"))}. ${escapeHtml(title)}</div>
-        <div class="tags">
-          ${artist ? `<span>🎤 ${escapeHtml(artist)}</span>` : ""}
-          ${key ? `<span>🎼 <span class="kbd">${escapeHtml(key)}</span></span>` : ""}
-        </div>
-      </div>
-      <div class="actions">
-        <button class="btn small" data-open="${idx}">Abrir</button>
-        <button class="btn small danger" data-rm="${idx}">Quitar</button>
-      </div>
-    `;
-    box.appendChild(node);
-  });
-
-  box.querySelectorAll("[data-open]").forEach(b=> b.addEventListener("click", e=>{
-    setCurrent(parseInt(e.currentTarget.getAttribute("data-open"),10));
-  }));
-  box.querySelectorAll("[data-rm]").forEach(b=> b.addEventListener("click", e=>{
-    removeFromSet(parseInt(e.currentTarget.getAttribute("data-rm"),10));
-  }));
-
-  let dragIndex = null;
-  box.querySelectorAll(".item.drag").forEach(item=>{
-    item.addEventListener("dragstart", (e)=>{
-      dragIndex = parseInt(item.dataset.index,10);
-      e.dataTransfer.effectAllowed = "move";
-      item.classList.add("drop-hint");
-    });
-    item.addEventListener("dragend", ()=>{
-      dragIndex = null;
-      box.querySelectorAll(".item.drag").forEach(n=> n.classList.remove("drop-hint"));
-    });
-    item.addEventListener("dragover", (e)=>{ e.preventDefault(); e.dataTransfer.dropEffect="move"; });
-    item.addEventListener("drop", (e)=>{
-      e.preventDefault();
-      const dropIndex = parseInt(item.dataset.index,10);
-      if(dragIndex === null || dropIndex === dragIndex) return;
-      const [moved] = state.setlist.splice(dragIndex,1);
-      state.setlist.splice(dropIndex,0,moved);
-
-      if(state.currentIndex === dragIndex) state.currentIndex = dropIndex;
-      else if(dragIndex < state.currentIndex && dropIndex >= state.currentIndex) state.currentIndex -= 1;
-      else if(dragIndex > state.currentIndex && dropIndex <= state.currentIndex) state.currentIndex += 1;
-
-      save();
-      renderAll();
-    });
-  });
-}
-
-/* ====== Viewer render ====== */
-function renderViewer(){
-  const s = currentSong();
-  const titleEl = el("viewTitle");
-  const infoEl = el("viewInfo");
-  const contentEl = el("viewContent");
-
-  if(!s){
-    titleEl.textContent = "Nada seleccionado";
-    infoEl.innerHTML = `<span class="muted">Agregá canciones al setlist.</span>`;
-    contentEl.textContent = "";
-    el("btnEditCurrent").disabled = true;
-    el("btnRemoveCurrent").disabled = true;
-    return;
-  }
-  el("btnEditCurrent").disabled = false;
-  el("btnRemoveCurrent").disabled = false;
-
-  titleEl.textContent = s.title || "Sin título";
-  const bits = [];
-  if(s.artist) bits.push(`🎤 ${escapeHtml(s.artist)}`);
-  if(s.key) bits.push(`🎼 Key: <span class="kbd">${escapeHtml(s.key)}</span>`);
-  if(s.notes) bits.push(`📝 ${escapeHtml(s.notes)}`);
-  if(s.source) bits.push(`🔗 ${escapeHtml(hostOf(s.source) || "fuente")}`);
-  bits.push(`🧭 ${state.currentIndex+1}/${state.setlist.length}`);
-  infoEl.innerHTML = bits.map(x=>`<span>${x}</span>`).join("");
-
-  contentEl.textContent = transposeChordProText(s.body || "", state.transpose);
-  el("transposeLabel").textContent = `Transposición: ${state.transpose}`;
-}
-
-/* ====== Web search via proxy ====== */
-async function webSearchViaProxy(q){
-  if(!SEARCH_PROXY_URL) return [];
-  try{
-    const res = await fetch(`${SEARCH_PROXY_URL}?q=${encodeURIComponent(q)}`);
-    if(!res.ok) throw new Error("HTTP " + res.status);
-    const data = await res.json();
-    const results = Array.isArray(data.results) ? data.results : [];
-    return results
-      .map(r=>{
-        const url = r?.url || "";
-        const host = hostOf(url);
-        return { title: r?.title || url, url, host };
-      })
-      .filter(r => r.url && r.host && ALLOWED_HOSTS.has(r.host))
-      .filter(r => looksLikeTabsFront(r.title, r.url))
-      .slice(0, 10);
-  } catch (e) {
-    console.warn("Proxy error:", e);
-    toast("Proxy falló o no devolvió resultados");
-    return [];
-  }
-}
-
-/* ====== Unified Search Runner ====== */
-let webDebounce = null;
-let requestToken = 0;
-
-async function runUnifiedSearch(q){
-  state.q = q || "";
-
-  // Si no hay query: limpia
-  if(!state.q.trim()){
-    state.searching = false;
-    state.webResults = [];
-    renderUnifiedResults([], []);
-    return;
-  }
-
-  // Mostrar inmediato (banco) y estado buscando
-  state.searching = true;
-  renderUnifiedResults(localMatchesFor(state.q), []);
-
-  clearTimeout(webDebounce);
-  webDebounce = setTimeout(async ()=>{
-    const token = ++requestToken;
-    const web = await webSearchViaProxy(state.q);
-    if(token !== requestToken) return;
-    state.webResults = web;
-    state.searching = false;
-    renderUnifiedResults(localMatchesFor(state.q), state.webResults);
-  }, 450);
-}
-
-/* ====== Editor ====== */
-let editingId = null;
-
-function openEditor(songId=null, prefill=null){
-  editingId = songId;
-  el("modalBack").style.display = "flex";
-
-  const delBtn = el("btnDeleteSong");
-  if(songId){
-    const s = state.songs.find(x=>x.id===songId);
-    el("modalTitle").textContent = "Editar canción";
-    el("songTitle").value = s?.title || "";
-    el("songArtist").value = s?.artist || "";
-    el("songKey").value = s?.key || "";
-    el("songSource").value = s?.source || "";
-    el("songTags").value = (s?.tags || []).join(", ");
-    el("songNotes").value = s?.notes || "";
-    el("songBody").value = s?.body || "";
-    delBtn.style.display = "inline-flex";
-  }else{
-    el("modalTitle").textContent = "Guardar en banco";
-    el("songTitle").value = prefill?.titleGuess || "";
-    el("songArtist").value = prefill?.artistGuess || "";
-    el("songKey").value = "";
-    el("songSource").value = prefill?.source || "";
-    el("songTags").value = "";
-    el("songNotes").value = "";
-    el("songBody").value = "";
-    delBtn.style.display = "none";
-  }
-  setTimeout(()=> el("songTitle").focus(), 50);
-}
-
-function closeEditor(){
-  el("modalBack").style.display = "none";
-  editingId = null;
-}
-
-function upsertSong(){
-  const title = el("songTitle").value.trim();
-  const artist = el("songArtist").value.trim();
-  const key = el("songKey").value.trim();
-  const source = el("songSource").value.trim();
-  const tags = el("songTags").value.split(",").map(t=>t.trim()).filter(Boolean);
-  const notes = el("songNotes").value.trim();
-  const body = el("songBody").value;
-
-  if(!title){ toast("Poné un título 🙂"); el("songTitle").focus(); return null; }
-
-  const now = Date.now();
-  if(editingId){
-    const s = state.songs.find(x=>x.id===editingId);
-    if(!s) return null;
-    Object.assign(s, { title, artist, key, source, tags, notes, body, updatedAt: now });
-    save(); renderAll(); toast("Guardado ✅");
-    return s.id;
-  }else{
-    const id = uid();
-    state.songs.unshift({ id, title, artist, key, source, tags, notes, body, createdAt: now, updatedAt: now });
-    save(); renderAll(); toast("Creada ✅");
-    return id;
-  }
-}
-
-function deleteSong(id){
-  const idx = state.songs.findIndex(x=>x.id===id);
-  if(idx === -1) return;
-  state.songs.splice(idx,1);
-  const beforeLen = state.setlist.length;
-  state.setlist = state.setlist.filter(x=>x!==id);
-  if(state.setlist.length !== beforeLen){
-    state.currentIndex = Math.min(state.currentIndex, state.setlist.length-1);
-    if(state.setlist.length === 0) state.currentIndex = -1;
-  }
-  save(); renderAll(); toast("Borrada 🗑️");
-}
-
-/* ====== Import/Export ====== */
-function exportData(){
-  return JSON.stringify({
-    version: 3,
-    exportedAt: new Date().toISOString(),
-    songs: state.songs,
-    setlist: state.setlist,
-    currentIndex: state.currentIndex,
-    transpose: state.transpose
-  }, null, 2);
-}
-
-function openImport(){
-  el("importBack").style.display = "flex";
-  el("importText").value = exportData();
-  setTimeout(()=> el("importText").select(), 50);
-}
-
-function closeImport(){ el("importBack").style.display = "none"; }
-
-function doImport(){
-  const raw = el("importText").value.trim();
-  if(!raw){ toast("Pegá un JSON"); return; }
-  try{
-    const data = JSON.parse(raw);
-    if(!Array.isArray(data.songs) || !Array.isArray(data.setlist)){ toast("Formato inválido"); return; }
-    state.songs = data.songs;
-    state.setlist = data.setlist;
-    state.currentIndex = Number.isInteger(data.currentIndex) ? data.currentIndex : -1;
-    state.transpose = Number.isInteger(data.transpose) ? data.transpose : 0;
-    save(); renderAll(); toast("Importado ✅");
-  }catch(e){ toast("JSON inválido"); }
-}
-
-async function copyToClipboard(text){
-  try{ await navigator.clipboard.writeText(text); toast("Copiado 📋"); }
-  catch{ toast("No se pudo copiar"); }
-}
-
-/* ====== TXT download ====== */
-function downloadCurrentTxt(){
-  const s = currentSong();
-  if(!s){ toast("No hay canción abierta"); return; }
-  const safe = (s.title || "cancion").replace(/[^\w\s-]/g,"").trim().replace(/\s+/g,"_");
-  const filename = `${safe}.txt`;
-  const content =
-`Título: ${s.title || ""}
-Artista/Versión: ${s.artist || ""}
-Key: ${s.key || ""}
-Fuente: ${s.source || ""}
-Notas: ${s.notes || ""}
-Tags: ${(s.tags||[]).join(", ")}
-
---- CONTENIDO ---
-${s.body || ""}`;
-
-  const blob = new Blob([content], {type:"text/plain;charset=utf-8"});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url; a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
-  toast("Descargado .txt ✅");
-}
-
-/* ====== Render all ====== */
-function renderAll(){
-  renderLibrary();
-  renderSetlist();
-  renderViewer();
-  renderUnifiedResults(localMatchesFor(state.q), state.webResults);
-}
-
-/* ====== Events ====== */
-el("btnNewSong").addEventListener("click", ()=> openEditor(null));
-el("btnCloseModal").addEventListener("click", closeEditor);
-el("modalBack").addEventListener("click", (e)=>{ if(e.target === el("modalBack")) closeEditor(); });
-
-el("btnSaveSong").addEventListener("click", ()=>{ const id = upsertSong(); if(id) closeEditor(); });
-el("btnSaveAndAdd").addEventListener("click", ()=>{ const id = upsertSong(); if(id){ closeEditor(); addToSet(id); } });
-
-el("btnDeleteSong").addEventListener("click", ()=>{
-  if(!editingId) return;
-  const s = state.songs.find(x=>x.id===editingId);
-  const ok = confirm(`¿Borrar "${s?.title || "canción"}"? También la quita del setlist.`);
-  if(ok){ deleteSong(editingId); closeEditor(); }
-});
-
-el("searchUnified").addEventListener("input", (e)=> runUnifiedSearch(e.target.value || ""));
-
-document.addEventListener("keydown", (e)=>{
-  if(e.key === "/" && document.activeElement?.tagName !== "INPUT" && document.activeElement?.tagName !== "TEXTAREA"){
-    e.preventDefault(); el("searchUnified").focus();
-  }
-  if(e.key === "Escape"){
-    if(el("modalBack").style.display === "flex") closeEditor();
-    if(el("importBack").style.display === "flex") closeImport();
-  }
-  if(e.key === "ArrowRight") el("btnNext").click();
-  if(e.key === "ArrowLeft") el("btnPrev").click();
-});
-
-el("btnNext").addEventListener("click", ()=>{
-  if(state.setlist.length === 0) return;
-  state.currentIndex = Math.min(state.currentIndex + 1, state.setlist.length - 1);
-  state.transpose = 0;
-  save(); renderAll();
-});
-el("btnPrev").addEventListener("click", ()=>{
-  if(state.setlist.length === 0) return;
-  state.currentIndex = Math.max(state.currentIndex - 1, 0);
-  state.transpose = 0;
-  save(); renderAll();
-});
-el("btnTransposeUp").addEventListener("click", ()=>{
-  if(!currentSong()) return;
-  state.transpose = Math.min(state.transpose + 1, 11);
-  save(); renderViewer();
-});
-el("btnTransposeDown").addEventListener("click", ()=>{
-  if(!currentSong()) return;
-  state.transpose = Math.max(state.transpose - 1, -11);
-  save(); renderViewer();
-});
-el("btnEditCurrent").addEventListener("click", ()=>{ const s = currentSong(); if(s) openEditor(s.id); });
-el("btnRemoveCurrent").addEventListener("click", ()=>{ if(state.currentIndex < 0) return; removeFromSet(state.currentIndex); });
-el("btnDownloadTxt").addEventListener("click", downloadCurrentTxt);
-
-el("btnClearSet").addEventListener("click", ()=>{
-  const ok = confirm("¿Vaciar setlist?");
-  if(!ok) return;
-  state.setlist = [];
-  state.currentIndex = -1;
-  state.transpose = 0;
-  save(); renderAll();
-});
-
-el("btnReset").addEventListener("click", ()=>{
-  const ok = confirm("Reset total (borra banco y set en este navegador). ¿Seguro?");
-  if(!ok) return;
-  localStorage.removeItem(STORE_KEY);
-  location.reload();
-});
-
-el("btnExport").addEventListener("click", openImport);
-el("btnImport").addEventListener("click", openImport);
-el("btnCloseImport").addEventListener("click", closeImport);
-el("importBack").addEventListener("click", (e)=>{ if(e.target === el("importBack")) closeImport(); });
-el("btnDoImport").addEventListener("click", doImport);
-el("btnCopyExport").addEventListener("click", ()=> copyToClipboard(el("importText").value));
-
-/* ====== Boot ====== */
-load();
-renderAll();
-
+  document.getElementById('btnNext').onclick = () => { if(state.currentIndex < state.setlist.length-1) {state.currentIndex++; renderAll();} };
+  document.getElementById('btnPrev').onclick = () => { if(state.currentIndex > 0) {state.currentIndex--; renderAll();} };
 </script>
+
+<script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
+<script async defer src="https://accounts.google.com/gsi/client" onload="gsiLoaded()"></script>
 </body>
 </html>
