@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>5.14 TabApp Pro v3.51</title>
+  <title>5.18 TabApp Pro v3.52</title>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
     :root{
@@ -17,35 +17,45 @@
     *{box-sizing:border-box}
     body{margin:0; font-family:var(--sans); background:radial-gradient(1200px 700px at 20% 0%, #1b2240 0%, var(--bg) 55%); color:var(--text);}
     header{position:sticky; top:0; backdrop-filter: blur(10px); background:rgba(11,13,18,.65); border-bottom:1px solid var(--line); z-index:10;}
-    .wrap{max-width:100%; margin:0 auto; padding:8px;}
-    .row{display:flex; gap:14px; align-items:center; flex-wrap:wrap;}
-    h1{font-size:18px; margin:0; letter-spacing:.3px;}
-    .grid{display:grid; grid-template-columns: 1.1fr .9fr; gap:10px; padding:0px;}
-    @media (max-width: 980px) {
-      .grid {
-        grid-template-columns: 1fr;
-      }
-      .wrap {
-        padding: 4px; /* Margen casi inexistente en móviles para maximizar lectura */
-      }
-      .card .bd {
-        padding: 8px; /* Reduce el espacio entre el borde del card y el visor */
-      }
+    
+    /* --- ANCHO MÁXIMO --- */
+    .wrap{max-width: 100%; margin: 0; padding: 12px;}
+    .grid{display:grid; grid-template-columns: 1.1fr .9fr; gap:12px; padding:0;}
+    
+    @media (max-width: 980px){ 
+        .grid{grid-template-columns:1fr;}
+        .wrap{padding: 6px;}
     }
+
     .card{background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01)); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); margin-bottom:14px;}
     .card .hd{padding:14px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center;}
-    .card .bd{padding:14px;}
+    .card .bd{padding:12px;}
+    
     .btn{appearance:none; border:1px solid var(--line); background:rgba(255,255,255,.03); color:var(--text); padding:10px 12px; border-radius:14px; cursor:pointer; font-weight:650; display:inline-flex; align-items:center; justify-content:center; transition: 0.2s; user-select: none;}
     .btn:active{transform: scale(0.95);}
     .btn.accent{background:rgba(255,213,74,.15); border-color:rgba(255,213,74,.45);}
+    .btn.danger{background:rgba(255,92,119,.1); border-color:rgba(255,92,119,0.3); color:var(--danger);}
     .btn.small{padding: 6px 10px; font-size: 12px;}
+    
     .input{width:100%; padding:12px; border-radius:14px; border:1px solid var(--line); background:rgba(255,255,255,.02); color:var(--text); outline:none;}
     .list{display:flex; flex-direction:column; gap:10px;}
     .item{border:1px solid var(--line); border-radius:16px; padding:12px; background:rgba(255,255,255,.03); display:flex; justify-content:space-between; align-items:center; cursor: grab;}
-    .sortable-ghost { opacity: 0.3; background: var(--accent); }
-    .viewer { min-height: 80vh; display: flex; flex-direction: column; }
-    .viewer-tools { display: flex; gap: 10px; margin-bottom: 15px; align-items: center; flex-wrap: wrap; }
-    #viewContent { flex-grow: 1; background: rgba(0,0,0,0.25); padding: 15px 10px; border-radius: 14px; border: 1px solid var(--line); overflow-y: auto; white-space: pre-wrap; font-family: var(--mono); font-size: 18px; line-height: 1.55; width: 100%;}
+    
+    /* --- VISOR MAXIMIZADO --- */
+    .viewer { min-height: 85vh; display: flex; flex-direction: column; }
+    #viewContent { 
+        flex-grow: 1; 
+        background: rgba(0,0,0,0.3); 
+        padding: 20px 15px; 
+        border-radius: 14px; 
+        border: 1px solid var(--line); 
+        overflow-y: auto; 
+        white-space: pre-wrap; 
+        font-family: var(--mono); 
+        font-size: 18px; 
+        line-height: 1.55; 
+        width: 100%;
+    }
     .chord{color:var(--accent); font-weight:bold;}
   </style>
 </head>
@@ -54,7 +64,7 @@
 <header>
   <div class="wrap">
     <div class="row" style="justify-content:space-between;">
-      <h1>🎸 TabApp Pro v3.51</h1>
+      <h1>🎸 TabApp Pro v3.52</h1>
       <span id="status" style="font-size:12px; color:var(--muted);">Iniciando...</span>
     </div>
   </div>
@@ -63,9 +73,9 @@
 <main class="wrap">
   <div class="grid">
     <section class="card">
-      <div class="hd"><b>Buscador (Sin acentos)</b></div>
+      <div class="hd"><b>Biblioteca</b></div>
       <div class="bd">
-        <input class="input" id="searchDrive" placeholder="Ej: Jesus (sin tilde)" />
+        <input class="input" id="searchDrive" placeholder="Buscar canción..." />
         <div class="list" id="driveResults" style="margin-top:14px;"></div>
       </div>
     </section>
@@ -73,14 +83,14 @@
     <section class="card">
       <div class="hd">
         <b>Setlist</b>
-        <button class="btn small" onclick="clearSetlist()">Vaciar</button>
+        <button class="btn small danger" onclick="clearSetlist()">Vaciar Todo</button>
       </div>
       <div class="bd">
         <div class="list" id="setList"></div>
         <hr style="border:0; border-top:1px solid var(--line); margin:20px 0;">
         <div class="viewer">
-          <h2 id="viewTitle">Cargando...</h2>
-          <div class="viewer-tools">
+          <h2 id="viewTitle" style="margin-top:0;">Selecciona canción</h2>
+          <div class="viewer-tools" style="margin-bottom:15px; display:flex; gap:10px;">
             <button class="btn" onclick="prevSong()">⟵</button>
             <button class="btn" onclick="nextSong()">⟶</button>
             <button class="btn small" onclick="changeFontSize(-2)">A-</button>
@@ -116,7 +126,7 @@
         renderAll();
         initSortable();
       } catch (e) {
-        document.getElementById('status').innerText = "Error API Key ❌";
+        document.getElementById('status').innerText = "Error API ❌";
       }
     });
   }
@@ -124,9 +134,7 @@
   async function cargarBiblioteca() {
     const response = await gapi.client.drive.files.list({
       q: `'${FOLDER_ID}' in parents and mimeType = 'text/plain' and trashed = false`,
-      fields: 'files(id, name)',
-      orderBy: 'name',
-      pageSize: 1000
+      fields: 'files(id, name)', orderBy: 'name', pageSize: 1000
     });
     state.allSongs = response.result.files || [];
     mostrarResultados(state.allSongs);
@@ -138,6 +146,7 @@
     lista.forEach(f => {
       const item = document.createElement('div');
       item.className = 'item';
+      item.style.cursor = 'default';
       item.innerHTML = `<span>${f.name.replace('.txt','')}</span><button class="btn accent small" onclick="importar('${f.id}', '${f.name}')">Añadir</button>`;
       resDiv.appendChild(item);
     });
@@ -166,7 +175,13 @@
       const item = document.createElement('div');
       item.className = 'item';
       if(idx === state.currentIndex) item.style.borderColor = 'var(--accent)';
-      item.innerHTML = `<div style="flex:1" onclick="seleccionar(${idx})">☰ ${s.title}</div>`;
+      item.innerHTML = `
+        <div style="flex:1; display:flex; align-items:center;" onclick="seleccionar(${idx})">
+            <span style="color:var(--muted); margin-right:10px;">☰</span>
+            <span>${s.title}</span>
+        </div>
+        <button class="btn small danger" style="margin-left:8px;" onclick="removeSong(${idx}, event)">✕</button>
+      `;
       sl.appendChild(item);
     });
     const curr = state.setlist[state.currentIndex];
@@ -175,9 +190,20 @@
     document.getElementById('viewContent').style.fontSize = state.currentFontSize + 'px';
   }
 
+  // --- NUEVA FUNCIÓN: ELIMINAR CANCIÓN ---
+  function removeSong(idx, event) {
+    event.stopPropagation(); // Evita que se seleccione la canción al darle a la X
+    state.setlist.splice(idx, 1);
+    if (state.currentIndex >= state.setlist.length) {
+        state.currentIndex = state.setlist.length - 1;
+    }
+    saveLocal();
+    renderAll();
+  }
+
   function initSortable() {
     Sortable.create(document.getElementById('setList'), {
-      animation: 150, delay: 500, delayOnTouchOnly: true,
+      animation: 150, delay: 400, delayOnTouchOnly: true,
       onEnd: (evt) => {
         const item = state.setlist.splice(evt.oldIndex, 1)[0];
         state.setlist.splice(evt.newIndex, 0, item);
@@ -189,7 +215,7 @@
 
   function seleccionar(idx) { state.currentIndex = idx; renderAll(); }
   function saveLocal() { localStorage.setItem('tabs_setlist', JSON.stringify(state.setlist)); }
-  function clearSetlist() { if(confirm("¿Vaciar?")) { state.setlist = []; state.currentIndex = -1; saveLocal(); renderAll(); } }
+  function clearSetlist() { if(confirm("¿Vaciar setlist completo?")) { state.setlist = []; state.currentIndex = -1; saveLocal(); renderAll(); } }
   function nextSong() { if(state.currentIndex < state.setlist.length-1) seleccionar(state.currentIndex+1); }
   function prevSong() { if(state.currentIndex > 0) seleccionar(state.currentIndex-1); }
   function changeFontSize(d) { state.currentFontSize += d; localStorage.setItem('pref_font_size', state.currentFontSize); renderAll(); }
