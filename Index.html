@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>3.47 TabApp – Drive Edition</title>
+  <title>4.11 TabApp – Drive Edition</title>
   <style>
     :root{
       --bg:#0b0d12; --card:#121622; --muted:#98a2b3; --text:#e6e9ef;
@@ -21,19 +21,61 @@
     h1{font-size:18px; margin:0; letter-spacing:.3px;}
     .grid{display:grid; grid-template-columns: 1.1fr .9fr; gap:14px; padding:16px;}
     @media (max-width: 980px){ .grid{grid-template-columns:1fr; } }
+    
     .card{background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01)); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); margin-bottom:14px;}
     .card .hd{padding:14px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center;}
     .card .bd{padding:14px;}
-    .btn{appearance:none; border:1px solid var(--line); background:rgba(255,255,255,.03); color:var(--text); padding:10px 12px; border-radius:14px; cursor:pointer; font-weight:650;}
+    
+    .btn{appearance:none; border:1px solid var(--line); background:rgba(255,255,255,.03); color:var(--text); padding:10px 12px; border-radius:14px; cursor:pointer; font-weight:650; display:inline-flex; align-items:center; justify-content:center; transition: 0.2s;}
+    .btn:active{transform: scale(0.95);}
     .btn.accent{background:rgba(255,213,74,.15); border-color:rgba(255,213,74,.45);}
+    .btn.small{padding: 6px 10px; font-size: 13px;}
+    
     .input, textarea{width:100%; padding:12px; border-radius:14px; border:1px solid var(--line); background:rgba(255,255,255,.02); color:var(--text); outline:none;}
     textarea{min-height:300px; font-family:var(--mono); font-size:14px;}
+    
     .list{display:flex; flex-direction:column; gap:10px;}
     .item{border:1px solid var(--line); border-radius:16px; padding:12px; background:rgba(255,255,255,.02); display:flex; justify-content:space-between; align-items:center;}
-    .viewer pre{white-space:pre-wrap; font-family:var(--mono); font-size:16px; line-height:1.5;}
+    
+    /* --- MEJORAS DEL VISOR --- */
+    .viewer {
+      min-height: 80vh; 
+      display: flex;
+      flex-direction: column;
+    }
+    .viewer-tools {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .font-controls {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(255,255,255,0.05);
+      padding: 5px 10px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+    }
+    #viewContent {
+      flex-grow: 1;
+      background: rgba(0,0,0,0.25);
+      padding: 20px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      overflow-y: auto;
+      white-space: pre-wrap;
+      font-family: var(--mono);
+      font-size: 18px; 
+      line-height: 1.55;
+    }
     .chord{color:var(--accent); font-weight:bold;}
+    
     .modal-back{position:fixed; inset:0; background:rgba(0,0,0,.8); display:none; align-items:center; justify-content:center; z-index:99;}
     .modal{width:90%; max-width:800px; background:var(--bg); border-radius:var(--radius); padding:20px;}
+    .sub{color:var(--muted); font-size:12px;}
   </style>
 </head>
 <body>
@@ -41,7 +83,7 @@
 <header>
   <div class="wrap">
     <div class="row" style="justify-content:space-between;">
-      <h1>TabApp + Google Drive</h1>
+      <h1>🎸 TabApp + Drive</h1>
       <div class="row">
         <button class="btn accent" id="btnAuth" style="display:none;">Conectar Google Drive</button>
         <button class="btn" id="btnSignOut" style="display:none;">Salir</button>
@@ -55,25 +97,37 @@
     <section class="card">
       <div class="hd"><b>Buscador en tu Drive</b></div>
       <div class="bd">
-        <input class="input" id="searchDrive" placeholder="Buscar canción en mis .txt..." />
+        <input class="input" id="searchDrive" placeholder="Escribe para buscar en carpeta..." />
         <div id="driveStatus" style="font-size:12px; color:var(--muted); margin-top:8px;"></div>
         <div class="list" id="driveResults" style="margin-top:14px;"></div>
       </div>
     </section>
 
     <section class="card">
-      <div class="hd"><b>Setlist / Visor</b></div>
+      <div class="hd">
+        <b>Setlist del Día</b>
+        <button class="btn small" onclick="clearSetlist()">Vaciar Set</button>
+      </div>
       <div class="bd">
         <div class="list" id="setList"></div>
         <hr style="border:0; border-top:1px solid var(--line); margin:20px 0;">
         <div class="viewer">
           <h2 id="viewTitle">Selecciona una canción</h2>
-          <div class="row" style="margin-bottom:10px;">
-            <button class="btn" id="btnPrev">Anterior</button>
-            <button class="btn" id="btnNext">Siguiente</button>
-            <button class="btn" id="btnEdit">Editar</button>
-          </div>
-          <pre id="viewContent"></pre>
+  
+            <div class="viewer-tools">
+              <button class="btn" id="btnPrev">⟵</button>
+              <button class="btn" id="btnNext">⟶</button>
+              
+              <div class="font-controls">
+                <span style="font-size: 12px; color: var(--muted);">Zoom:</span>
+                <button class="btn small" onclick="changeFontSize(-2)">A-</button>
+                <button class="btn small" onclick="changeFontSize(2)">A+</button>
+              </div>
+              
+              <button class="btn" id="btnEdit">Editar</button>
+            </div>
+          
+            <pre id="viewContent"></pre>
         </div>
       </div>
     </section>
@@ -82,7 +136,7 @@
 
 <div class="modal-back" id="modalBack">
   <div class="modal">
-    <h3>Editar Canción</h3>
+    <h3>Editar temporalmente</h3>
     <input class="input" id="editTitle" style="margin-bottom:10px;">
     <textarea id="editBody"></textarea>
     <div class="row" style="margin-top:10px; justify-content:flex-end;">
@@ -93,8 +147,9 @@
 </div>
 
 <script>
-  // CONFIGURACIÓN (Tus datos)
+  // CONFIGURACIÓN
   const CLIENT_ID = '95122523294-nqd6v1n18o4mba2dus66vorql322gckp.apps.googleusercontent.com';
+  const FOLDER_ID = '1x6zy_Bor6i9qBhUIl27ZIG0E1qdf5Ye6'; 
   const DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"];
   const SCOPES = 'https://www.googleapis.com/auth/drive.readonly';
 
@@ -103,69 +158,53 @@
   let gsiInited = false;
   
   const state = {
-    songs: JSON.parse(localStorage.getItem('tabs_db') || '[]'),
-    setlist: [],
+    setlist: JSON.parse(localStorage.getItem('tabs_setlist') || '[]'),
     currentIndex: -1
   };
 
-  // Inicialización de APIs
+  // --- INICIALIZACIÓN DE GOOGLE ---
   function gapiLoaded() { gapi.load('client', () => { gapi.client.init({discoveryDocs: DISCOVERY_DOCS}).then(() => { gapiInited = true; checkAuth(); })}); }
   function gsiLoaded() { 
     tokenClient = google.accounts.oauth2.initTokenClient({
-      client_id: CLIENT_ID, scope: SCOPES, callback: (resp) => { if (resp.error) return; buscarEnDrive(); document.getElementById('btnAuth').style.display='none'; document.getElementById('btnSignOut').style.display='block'; }
+      client_id: CLIENT_ID, scope: SCOPES, callback: (resp) => { 
+        if (resp.error) return; 
+        buscarEnDrive(); 
+        document.getElementById('btnAuth').style.display='none'; 
+        document.getElementById('btnSignOut').style.display='block'; 
+      }
     });
     gsiInited = true;
     checkAuth();
   }
 
   function checkAuth() { if(gapiInited && gsiInited) document.getElementById('btnAuth').style.display = 'block'; }
-
   document.getElementById('btnAuth').onclick = () => tokenClient.requestAccessToken({prompt: 'consent'});
-  document.getElementById('btnSignOut').onclick = () => { google.accounts.oauth2.revokeToken(gapi.client.getToken().access_token); gapi.client.setToken(''); location.reload(); };
+  document.getElementById('btnSignOut').onclick = () => { gapi.client.setToken(''); location.reload(); };
 
-  // Disparar búsqueda al escribir (con un pequeño retraso para no saturar la API)
+  // --- BUSCADOR DRIVE ---
   let searchTimeout;
   document.getElementById('searchDrive').oninput = (e) => {
       clearTimeout(searchTimeout);
       const query = e.target.value;
-      searchTimeout = setTimeout(() => {
-          buscarEnDrive(query);
-      }, 400); // Espera 400ms después de que dejes de escribir
+      searchTimeout = setTimeout(() => { buscarEnDrive(query); }, 400);
   };
 
-const FOLDER_ID = '1x6zy_Bor6i9qBhUIl27ZIG0E1qdf5Ye6'; 
-
-async function buscarEnDrive(nameQ = "") {
-    // 1. Mostrar estado de "buscando"
+  async function buscarEnDrive(nameQ = "") {
     const resDiv = document.getElementById('driveResults');
-    resDiv.innerHTML = "<div class='sub'>Buscando en Drive...</div>";
-
+    resDiv.innerHTML = "<div class='sub'>Buscando...</div>";
     try {
-        // 2. Construir la consulta (Query)
-        // Buscamos archivos .txt que NO estén en la papelera y estén en TU carpeta
         let q = `'${FOLDER_ID}' in parents and mimeType = 'text/plain' and trashed = false`;
+        if (nameQ.trim() !== "") q += ` and name contains '${nameQ}'`;
         
-        // Si el usuario escribió algo, filtramos por nombre (name contains)
-        if (nameQ.trim() !== "") {
-            q += ` and name contains '${nameQ}'`;
-        }
-        
-        const response = await gapi.client.drive.files.list({
-            q: q,
-            fields: 'files(id, name)',
-            pageSize: 20,
-            orderBy: 'name' // Ordenar alfabéticamente
-        });
-
+        const response = await gapi.client.drive.files.list({ q: q, fields: 'files(id, name)', orderBy: 'name' });
         const files = response.result.files;
-        resDiv.innerHTML = ""; // Limpiar mensaje de carga
+        resDiv.innerHTML = "";
 
         if (!files || files.length === 0) {
-            resDiv.innerHTML = "<div class='sub'>No se encontraron archivos .txt.</div>";
+            resDiv.innerHTML = "<div class='sub'>No se encontraron canciones.</div>";
             return;
         }
 
-        // 3. Renderizar resultados
         files.forEach(f => {
             const item = document.createElement('div');
             item.className = 'item';
@@ -173,27 +212,35 @@ async function buscarEnDrive(nameQ = "") {
                 <div style="min-width:0; flex:1;">
                     <span style="font-weight:bold;">${f.name.replace('.txt','')}</span>
                 </div>
-                <button class="btn accent small" onclick="importar('${f.id}', '${f.name}')">Añadir</button>
-            `;
+                <button class="btn accent small" onclick="importar('${f.id}', '${f.name}')">Añadir</button>`;
             resDiv.appendChild(item);
         });
-    } catch (err) {
-        console.error("Error en la búsqueda de Drive:", err);
-        resDiv.innerHTML = "<div class='danger'>Error al conectar con la carpeta.</div>";
-    }
-}
+    } catch (err) { resDiv.innerHTML = "<div class='sub' style='color:var(--danger)'>Error de conexión</div>"; }
+  }
 
   async function importar(id, name) {
     const resp = await gapi.client.drive.files.get({ fileId: id, alt: 'media' });
     const newSong = { id: Date.now(), title: name.replace('.txt',''), body: resp.body };
-    state.songs.push(newSong);
     state.setlist.push(newSong);
     state.currentIndex = state.setlist.length - 1;
     saveLocal();
     renderAll();
   }
 
-  // LOGICA APP
+  // --- LOGICA DE TAMAÑO DE LETRA ---
+  let currentFontSize = 18; 
+  function changeFontSize(delta) {
+      currentFontSize += delta;
+      if (currentFontSize < 10) currentFontSize = 10;
+      if (currentFontSize > 45) currentFontSize = 45;
+      const content = document.getElementById('viewContent');
+      if (content) {
+          content.style.fontSize = currentFontSize + 'px';
+          localStorage.setItem('pref_font_size', currentFontSize);
+      }
+  }
+
+  // --- NAVEGACIÓN Y RENDER ---
   function renderAll() {
     const sl = document.getElementById('setList');
     sl.innerHTML = "";
@@ -201,19 +248,23 @@ async function buscarEnDrive(nameQ = "") {
       const item = document.createElement('div');
       item.className = 'item';
       if(idx === state.currentIndex) item.style.borderColor = 'var(--accent)';
-      item.innerHTML = `<span>${s.title}</span><button class="btn" onclick="state.currentIndex=${idx}; renderAll()">Ver</button>`;
+      item.innerHTML = `<span>${idx + 1}. ${s.title}</span><button class="btn small" onclick="seleccionar(${idx})">Ver</button>`;
       sl.appendChild(item);
     });
 
     const curr = state.setlist[state.currentIndex];
     if (curr) {
       document.getElementById('viewTitle').innerText = curr.title;
-      // Resaltar acordes [C]
       document.getElementById('viewContent').innerHTML = curr.body.replace(/\[([^\]]+)\]/g, '<span class="chord">[$1]</span>');
     }
   }
 
-  function saveLocal() { localStorage.setItem('tabs_db', JSON.stringify(state.songs)); }
+  function seleccionar(idx) { state.currentIndex = idx; renderAll(); }
+  function saveLocal() { localStorage.setItem('tabs_setlist', JSON.stringify(state.setlist)); }
+  function clearSetlist() { if(confirm("¿Vaciar lista del día?")) { state.setlist = []; state.currentIndex = -1; saveLocal(); renderAll(); } }
+
+  document.getElementById('btnNext').onclick = () => { if(state.currentIndex < state.setlist.length-1) {state.currentIndex++; renderAll();} };
+  document.getElementById('btnPrev').onclick = () => { if(state.currentIndex > 0) {state.currentIndex--; renderAll();} };
 
   // Modales
   document.getElementById('btnEdit').onclick = () => {
@@ -231,8 +282,18 @@ async function buscarEnDrive(nameQ = "") {
     saveLocal(); renderAll(); closeEditor();
   }
 
-  document.getElementById('btnNext').onclick = () => { if(state.currentIndex < state.setlist.length-1) {state.currentIndex++; renderAll();} };
-  document.getElementById('btnPrev').onclick = () => { if(state.currentIndex > 0) {state.currentIndex--; renderAll();} };
+  // Al cargar
+  window.addEventListener('load', () => {
+      const savedSize = localStorage.getItem('pref_font_size');
+      if (savedSize) {
+          currentFontSize = parseInt(savedSize);
+          document.getElementById('viewContent').style.fontSize = currentFontSize + 'px';
+      }
+      if(state.setlist.length > 0) {
+          state.currentIndex = 0;
+          renderAll();
+      }
+  });
 </script>
 
 <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
