@@ -3,7 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>4.11 TabApp – Drive Edition</title>
+  <title>4.55 TabApp – Pro Edition</title>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
     :root{
       --bg:#0b0d12; --card:#121622; --muted:#98a2b3; --text:#e6e9ef;
@@ -26,56 +27,25 @@
     .card .hd{padding:14px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center;}
     .card .bd{padding:14px;}
     
-    .btn{appearance:none; border:1px solid var(--line); background:rgba(255,255,255,.03); color:var(--text); padding:10px 12px; border-radius:14px; cursor:pointer; font-weight:650; display:inline-flex; align-items:center; justify-content:center; transition: 0.2s;}
+    .btn{appearance:none; border:1px solid var(--line); background:rgba(255,255,255,.03); color:var(--text); padding:10px 12px; border-radius:14px; cursor:pointer; font-weight:650; display:inline-flex; align-items:center; justify-content:center; transition: 0.2s; user-select: none;}
     .btn:active{transform: scale(0.95);}
     .btn.accent{background:rgba(255,213,74,.15); border-color:rgba(255,213,74,.45);}
-    .btn.small{padding: 6px 10px; font-size: 13px;}
+    .btn.small{padding: 6px 10px; font-size: 12px;}
     
-    .input, textarea{width:100%; padding:12px; border-radius:14px; border:1px solid var(--line); background:rgba(255,255,255,.02); color:var(--text); outline:none;}
-    textarea{min-height:300px; font-family:var(--mono); font-size:14px;}
+    .input{width:100%; padding:12px; border-radius:14px; border:1px solid var(--line); background:rgba(255,255,255,.02); color:var(--text); outline:none;}
     
     .list{display:flex; flex-direction:column; gap:10px;}
-    .item{border:1px solid var(--line); border-radius:16px; padding:12px; background:rgba(255,255,255,.02); display:flex; justify-content:space-between; align-items:center;}
+    .item{border:1px solid var(--line); border-radius:16px; padding:12px; background:rgba(255,255,255,.03); display:flex; justify-content:space-between; align-items:center; cursor: grab;}
+    .item:active { cursor: grabbing; }
     
-    /* --- MEJORAS DEL VISOR --- */
-    .viewer {
-      min-height: 80vh; 
-      display: flex;
-      flex-direction: column;
-    }
-    .viewer-tools {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 15px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-    .font-controls {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      background: rgba(255,255,255,0.05);
-      padding: 5px 10px;
-      border-radius: 12px;
-      border: 1px solid var(--line);
-    }
-    #viewContent {
-      flex-grow: 1;
-      background: rgba(0,0,0,0.25);
-      padding: 20px;
-      border-radius: 14px;
-      border: 1px solid var(--line);
-      overflow-y: auto;
-      white-space: pre-wrap;
-      font-family: var(--mono);
-      font-size: 18px; 
-      line-height: 1.55;
-    }
+    /* Indicador visual de que se puede arrastrar */
+    .sortable-ghost { opacity: 0.3; background: var(--accent); }
+
+    .viewer { min-height: 80vh; display: flex; flex-direction: column; }
+    .viewer-tools { display: flex; gap: 10px; margin-bottom: 15px; align-items: center; flex-wrap: wrap; }
+    .font-controls { display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 12px; border: 1px solid var(--line); }
+    #viewContent { flex-grow: 1; background: rgba(0,0,0,0.25); padding: 20px; border-radius: 14px; border: 1px solid var(--line); overflow-y: auto; white-space: pre-wrap; font-family: var(--mono); font-size: 18px; line-height: 1.55; }
     .chord{color:var(--accent); font-weight:bold;}
-    
-    .modal-back{position:fixed; inset:0; background:rgba(0,0,0,.8); display:none; align-items:center; justify-content:center; z-index:99;}
-    .modal{width:90%; max-width:800px; background:var(--bg); border-radius:var(--radius); padding:20px;}
-    .sub{color:var(--muted); font-size:12px;}
   </style>
 </head>
 <body>
@@ -83,11 +53,8 @@
 <header>
   <div class="wrap">
     <div class="row" style="justify-content:space-between;">
-      <h1>🎸 TabApp + Drive</h1>
-      <div class="row">
-        <button class="btn accent" id="btnAuth" style="display:none;">Conectar Google Drive</button>
-        <button class="btn" id="btnSignOut" style="display:none;">Salir</button>
-      </div>
+      <h1>🎸 TabApp Pro</h1>
+      <span id="status" style="font-size:12px; color:var(--muted);">Cargando API...</span>
     </div>
   </div>
 </header>
@@ -95,152 +62,110 @@
 <main class="wrap">
   <div class="grid">
     <section class="card">
-      <div class="hd"><b>Buscador en tu Drive</b></div>
+      <div class="hd"><b>Buscador en Drive</b></div>
       <div class="bd">
-        <input class="input" id="searchDrive" placeholder="Escribe para buscar en carpeta..." />
-        <div id="driveStatus" style="font-size:12px; color:var(--muted); margin-top:8px;"></div>
+        <input class="input" id="searchDrive" placeholder="Buscar canción..." />
         <div class="list" id="driveResults" style="margin-top:14px;"></div>
       </div>
     </section>
 
     <section class="card">
       <div class="hd">
-        <b>Setlist del Día</b>
-        <button class="btn small" onclick="clearSetlist()">Vaciar Set</button>
+        <b>Setlist (Arrastra para reordenar)</b>
+        <button class="btn small" onclick="clearSetlist()">Vaciar</button>
       </div>
       <div class="bd">
         <div class="list" id="setList"></div>
         <hr style="border:0; border-top:1px solid var(--line); margin:20px 0;">
         <div class="viewer">
           <h2 id="viewTitle">Selecciona una canción</h2>
-  
-            <div class="viewer-tools">
-              <button class="btn" id="btnPrev">⟵</button>
-              <button class="btn" id="btnNext">⟶</button>
-              
-              <div class="font-controls">
-                <span style="font-size: 12px; color: var(--muted);">Zoom:</span>
-                <button class="btn small" onclick="changeFontSize(-2)">A-</button>
-                <button class="btn small" onclick="changeFontSize(2)">A+</button>
-              </div>
-              
-              <button class="btn" id="btnEdit">Editar</button>
+          <div class="viewer-tools">
+            <button class="btn" onclick="prevSong()">⟵</button>
+            <button class="btn" onclick="nextSong()">⟶</button>
+            <div class="font-controls">
+              <button class="btn small" onclick="changeFontSize(-2)">A-</button>
+              <button class="btn small" onclick="changeFontSize(2)">A+</button>
             </div>
-          
-            <pre id="viewContent"></pre>
+          </div>
+          <pre id="viewContent"></pre>
         </div>
       </div>
     </section>
   </div>
 </main>
 
-<div class="modal-back" id="modalBack">
-  <div class="modal">
-    <h3>Editar temporalmente</h3>
-    <input class="input" id="editTitle" style="margin-bottom:10px;">
-    <textarea id="editBody"></textarea>
-    <div class="row" style="margin-top:10px; justify-content:flex-end;">
-      <button class="btn" onclick="closeEditor()">Cerrar</button>
-      <button class="btn accent" onclick="saveSong()">Guardar</button>
-    </div>
-  </div>
-</div>
-
 <script>
-  // CONFIGURACIÓN
-  const CLIENT_ID = '95122523294-nqd6v1n18o4mba2dus66vorql322gckp.apps.googleusercontent.com';
+  // --- CONFIGURACIÓN ---
+  const API_KEY = 'AIzaSyC74SgLN0OFD8zytCktOTCyVdRZZmdL-S0';
   const FOLDER_ID = '1x6zy_Bor6i9qBhUIl27ZIG0E1qdf5Ye6'; 
   const DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"];
-  const SCOPES = 'https://www.googleapis.com/auth/drive.readonly';
 
-  let tokenClient;
-  let gapiInited = false;
-  let gsiInited = false;
-  
   const state = {
     setlist: JSON.parse(localStorage.getItem('tabs_setlist') || '[]'),
-    currentIndex: -1
+    currentIndex: -1,
+    currentFontSize: parseInt(localStorage.getItem('pref_font_size') || '18')
   };
 
-  // --- INICIALIZACIÓN DE GOOGLE ---
-  function gapiLoaded() { gapi.load('client', () => { gapi.client.init({discoveryDocs: DISCOVERY_DOCS}).then(() => { gapiInited = true; checkAuth(); })}); }
-  function gsiLoaded() { 
-    tokenClient = google.accounts.oauth2.initTokenClient({
-      client_id: CLIENT_ID, scope: SCOPES, callback: (resp) => { 
-        if (resp.error) return; 
-        buscarEnDrive(); 
-        document.getElementById('btnAuth').style.display='none'; 
-        document.getElementById('btnSignOut').style.display='block'; 
-      }
+  // --- INICIALIZACIÓN ---
+  function startApp() {
+    gapi.load('client', async () => {
+      await gapi.client.init({ apiKey: API_KEY, discoveryDocs: DISCOVERY_DOCS });
+      document.getElementById('status').innerText = "Drive Online ✅";
+      buscarEnDrive("");
+      renderAll();
+      initSortable(); // Activar arrastre
     });
-    gsiInited = true;
-    checkAuth();
   }
 
-  function checkAuth() { if(gapiInited && gsiInited) document.getElementById('btnAuth').style.display = 'block'; }
-  document.getElementById('btnAuth').onclick = () => tokenClient.requestAccessToken({prompt: 'consent'});
-  document.getElementById('btnSignOut').onclick = () => { gapi.client.setToken(''); location.reload(); };
+  // --- ARRASTRAR Y REORDENAR (Long Press) ---
+  function initSortable() {
+    const el = document.getElementById('setList');
+    Sortable.create(el, {
+      animation: 150,
+      delay: 500, // 500ms de pulsación para empezar a mover (evita errores al hacer scroll)
+      delayOnTouchOnly: true,
+      ghostClass: 'sortable-ghost',
+      onEnd: (evt) => {
+        // Reordenar el array interno basado en el movimiento visual
+        const movedItem = state.setlist.splice(evt.oldIndex, 1)[0];
+        state.setlist.splice(evt.newIndex, 0, movedItem);
+        state.currentIndex = evt.newIndex; // Actualizar índice para que no se pierda la vista
+        saveLocal();
+        renderAll();
+      }
+    });
+  }
 
-  // --- BUSCADOR DRIVE ---
-  let searchTimeout;
-  document.getElementById('searchDrive').oninput = (e) => {
-      clearTimeout(searchTimeout);
-      const query = e.target.value;
-      searchTimeout = setTimeout(() => { buscarEnDrive(query); }, 400);
-  };
-
+  // --- BUSCADOR ---
   async function buscarEnDrive(nameQ = "") {
     const resDiv = document.getElementById('driveResults');
-    resDiv.innerHTML = "<div class='sub'>Buscando...</div>";
     try {
-        let q = `'${FOLDER_ID}' in parents and mimeType = 'text/plain' and trashed = false`;
-        if (nameQ.trim() !== "") q += ` and name contains '${nameQ}'`;
-        
-        const response = await gapi.client.drive.files.list({ q: q, fields: 'files(id, name)', orderBy: 'name' });
-        const files = response.result.files;
-        resDiv.innerHTML = "";
-
-        if (!files || files.length === 0) {
-            resDiv.innerHTML = "<div class='sub'>No se encontraron canciones.</div>";
-            return;
-        }
-
-        files.forEach(f => {
-            const item = document.createElement('div');
-            item.className = 'item';
-            item.innerHTML = `
-                <div style="min-width:0; flex:1;">
-                    <span style="font-weight:bold;">${f.name.replace('.txt','')}</span>
-                </div>
-                <button class="btn accent small" onclick="importar('${f.id}', '${f.name}')">Añadir</button>`;
-            resDiv.appendChild(item);
-        });
-    } catch (err) { resDiv.innerHTML = "<div class='sub' style='color:var(--danger)'>Error de conexión</div>"; }
+      let q = `'${FOLDER_ID}' in parents and mimeType = 'text/plain' and trashed = false`;
+      if (nameQ.trim() !== "") q += ` and name contains '${nameQ}'`;
+      const response = await gapi.client.drive.files.list({ q: q, fields: 'files(id, name)', orderBy: 'name' });
+      const files = response.result.files || [];
+      resDiv.innerHTML = "";
+      files.forEach(f => {
+        const item = document.createElement('div');
+        item.className = 'item';
+        item.style.cursor = 'default';
+        item.innerHTML = `<span>${f.name.replace('.txt','')}</span><button class="btn accent small" onclick="importar('${f.id}', '${f.name}')">Añadir</button>`;
+        resDiv.appendChild(item);
+      });
+    } catch (e) { resDiv.innerHTML = "Error de conexión."; }
   }
 
   async function importar(id, name) {
-    const resp = await gapi.client.drive.files.get({ fileId: id, alt: 'media' });
-    const newSong = { id: Date.now(), title: name.replace('.txt',''), body: resp.body };
-    state.setlist.push(newSong);
+    const url = `https://www.googleapis.com/drive/v3/files/${id}?alt=media&key=${API_KEY}`;
+    const resp = await fetch(url);
+    const text = await resp.text();
+    state.setlist.push({ id: Date.now(), title: name.replace('.txt',''), body: text });
     state.currentIndex = state.setlist.length - 1;
     saveLocal();
     renderAll();
   }
 
-  // --- LOGICA DE TAMAÑO DE LETRA ---
-  let currentFontSize = 18; 
-  function changeFontSize(delta) {
-      currentFontSize += delta;
-      if (currentFontSize < 10) currentFontSize = 10;
-      if (currentFontSize > 45) currentFontSize = 45;
-      const content = document.getElementById('viewContent');
-      if (content) {
-          content.style.fontSize = currentFontSize + 'px';
-          localStorage.setItem('pref_font_size', currentFontSize);
-      }
-  }
-
-  // --- NAVEGACIÓN Y RENDER ---
+  // --- UI Y RENDER ---
   function renderAll() {
     const sl = document.getElementById('setList');
     sl.innerHTML = "";
@@ -248,7 +173,13 @@
       const item = document.createElement('div');
       item.className = 'item';
       if(idx === state.currentIndex) item.style.borderColor = 'var(--accent)';
-      item.innerHTML = `<span>${idx + 1}. ${s.title}</span><button class="btn small" onclick="seleccionar(${idx})">Ver</button>`;
+      item.innerHTML = `
+        <div style="flex:1" onclick="seleccionar(${idx})">
+          <span style="color:var(--muted); font-size:12px; margin-right:8px;">☰</span>
+          <span>${s.title}</span>
+        </div>
+        <button class="btn small" onclick="seleccionar(${idx})">Ver</button>
+      `;
       sl.appendChild(item);
     });
 
@@ -256,47 +187,27 @@
     if (curr) {
       document.getElementById('viewTitle').innerText = curr.title;
       document.getElementById('viewContent').innerHTML = curr.body.replace(/\[([^\]]+)\]/g, '<span class="chord">[$1]</span>');
+      document.getElementById('viewContent').style.fontSize = state.currentFontSize + 'px';
+    } else {
+      document.getElementById('viewTitle').innerText = "Selecciona una canción";
+      document.getElementById('viewContent').innerText = "";
     }
+  }
+
+  function changeFontSize(delta) {
+    state.currentFontSize = Math.min(Math.max(state.currentFontSize + delta, 10), 45);
+    localStorage.setItem('pref_font_size', state.currentFontSize);
+    renderAll();
   }
 
   function seleccionar(idx) { state.currentIndex = idx; renderAll(); }
   function saveLocal() { localStorage.setItem('tabs_setlist', JSON.stringify(state.setlist)); }
-  function clearSetlist() { if(confirm("¿Vaciar lista del día?")) { state.setlist = []; state.currentIndex = -1; saveLocal(); renderAll(); } }
+  function clearSetlist() { if(confirm("¿Vaciar setlist?")) { state.setlist = []; state.currentIndex = -1; saveLocal(); renderAll(); } }
+  function nextSong() { if(state.currentIndex < state.setlist.length - 1) seleccionar(state.currentIndex + 1); }
+  function prevSong() { if(state.currentIndex > 0) seleccionar(state.currentIndex - 1); }
 
-  document.getElementById('btnNext').onclick = () => { if(state.currentIndex < state.setlist.length-1) {state.currentIndex++; renderAll();} };
-  document.getElementById('btnPrev').onclick = () => { if(state.currentIndex > 0) {state.currentIndex--; renderAll();} };
-
-  // Modales
-  document.getElementById('btnEdit').onclick = () => {
-    const s = state.setlist[state.currentIndex];
-    if(!s) return;
-    document.getElementById('editTitle').value = s.title;
-    document.getElementById('editBody').value = s.body;
-    document.getElementById('modalBack').style.display = 'flex';
-  };
-  function closeEditor() { document.getElementById('modalBack').style.display = 'none'; }
-  function saveSong() {
-    const s = state.setlist[state.currentIndex];
-    s.title = document.getElementById('editTitle').value;
-    s.body = document.getElementById('editBody').value;
-    saveLocal(); renderAll(); closeEditor();
-  }
-
-  // Al cargar
-  window.addEventListener('load', () => {
-      const savedSize = localStorage.getItem('pref_font_size');
-      if (savedSize) {
-          currentFontSize = parseInt(savedSize);
-          document.getElementById('viewContent').style.fontSize = currentFontSize + 'px';
-      }
-      if(state.setlist.length > 0) {
-          state.currentIndex = 0;
-          renderAll();
-      }
-  });
+  document.getElementById('searchDrive').oninput = (e) => buscarEnDrive(e.target.value);
 </script>
-
-<script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
-<script async defer src="https://accounts.google.com/gsi/client" onload="gsiLoaded()"></script>
+<script async defer src="https://apis.google.com/js/api.js" onload="startApp()"></script>
 </body>
 </html>
