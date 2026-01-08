@@ -3,6 +3,134 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>2.30 TabApp Pro v3.70</title>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+  <style>
+    :root{
+      --bg:#0b0d12; --card:#121622; --muted:#98a2b3; --text:#e6e9ef;
+      --line:#23283a; --accent:#ffd54a; --danger:#ff5c77;
+      --radius: 12px;
+      --mono: ui-monospace, 'Cascadia Code', 'Source Code Pro', monospace;
+    }
+    *{box-sizing:border-box}
+    body{margin:0; font-family:sans-serif; background:var(--bg); color:var(--text); transition: 0.3s;}
+    
+    /* HEADER NO ESTACIONARIO */
+    header{ background:var(--card); border-bottom:1px solid var(--line); padding: 10px; }
+    h1{font-size:16px; margin:0; color:var(--accent);}
+
+    .wrap{width:100%; padding: 8px;}
+    .card{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); margin-bottom:12px; overflow:hidden;}
+    .card-hd{padding:10px; border-bottom:1px solid var(--line); font-weight:bold; display:flex; justify-content:space-between; align-items:center;}
+    
+    /* VISOR MAXIMIZADO */
+    #viewContent { 
+      width:100%; background:rgba(0,0,0,0.4); padding:15px; border-radius:8px;
+      white-space:pre-wrap; font-family:var(--mono); line-height:1.6; border:1px solid var(--line);
+    }
+    .chord{color:var(--accent); font-weight:bold;}
+
+    /* BOTONES */
+    .btn{ background:var(--line); border:1px solid #333; color:white; padding:8px 12px; border-radius:8px; cursor:pointer; font-size:14px;}
+    .btn-group{display:flex; gap:5px; flex-wrap:wrap; margin-bottom:10px;}
+    .scroll-ctrl{background:rgba(255,213,74,0.1); border-color:var(--accent); color:var(--accent);}
+
+    /* OCULTAR ELEMENTOS PARA LECTURA */
+    .reading-mode header, .reading-mode .card-hd { display: none; }
+  </style>
+</head>
+<body>
+
+<header id="mainHeader">
+  <div style="display:flex; justify-content:space-between; align-items:center;">
+    <h1>🎸 TabApp v3.70</h1>
+    <div id="status" style="font-size:10px; color:var(--muted);">Cargando API...</div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="card" id="searchSection">
+    <div class="card-hd">Biblioteca <input type="text" id="searchInput" placeholder="Buscar..." style="background:none; border:none; color:white; outline:none; text-align:right;"></div>
+    <div id="searchResults" style="max-height:150px; overflow-y:auto; display:none;"></div>
+  </section>
+
+  <section class="card">
+    <div class="card-hd">Setlist <button class="btn" style="font-size:10px;" onclick="clearSetlist()">Vaciar</button></div>
+    <div id="setList" style="padding:10px;"></div>
+  </section>
+
+  <section class="card">
+    <div class="card-hd" id="songTitle">Selecciona una canción</div>
+    <div style="padding:10px;">
+      <div class="btn-group">
+        <button class="btn" onclick="prevSong()">⟵</button>
+        <button class="btn" onclick="nextSong()">⟶</button>
+        <button class="btn" onclick="changeFontSize(2)">A+</button>
+        <button class="btn" onclick="changeFontSize(-2)">A-</button>
+      </div>
+      
+      <div class="btn-group">
+        <button class="btn scroll-ctrl" id="btnScroll" onclick="toggleScroll()">▶ Autoscroll</button>
+        <button class="btn" onclick="changeScrollSpeed(-1)">S-</button>
+        <button class="btn" onclick="changeScrollSpeed(1)">S+</button>
+        <span id="speedLabel" style="font-size:10px; align-self:center;">Vel: 1</span>
+      </div>
+
+      <pre id="viewContent"></pre>
+    </div>
+  </section>
+</main>
+
+<script>
+  // Configuración de la API y Drive aquí... (mantén tus credenciales)
+  let scrollInterval = null;
+  let scrollSpeed = 1;
+
+  function toggleScroll() {
+    const btn = document.getElementById('btnScroll');
+    if (scrollInterval) {
+      clearInterval(scrollInterval);
+      scrollInterval = null;
+      btn.innerText = "▶ Autoscroll";
+    } else {
+      btn.innerText = "⏸ Detener";
+      scrollInterval = setInterval(() => {
+        window.scrollBy(0, scrollSpeed);
+      }, 50);
+    }
+  }
+
+  function changeScrollSpeed(delta) {
+    scrollSpeed = Math.max(1, scrollSpeed + delta);
+    document.getElementById('speedLabel').innerText = "Vel: " + scrollSpeed;
+  }
+
+  function changeFontSize(delta) {
+    const view = document.getElementById('viewContent');
+    const currentSize = parseInt(window.getComputedStyle(view).fontSize);
+    view.style.fontSize = (currentSize + delta) + "px";
+  }
+
+  // Lógica para ocultar el header al bajar (Dinámico)
+  let lastScroll = 0;
+  window.addEventListener('scroll', () => {
+    const header = document.getElementById('mainHeader');
+    if (window.scrollY > 100) {
+      header.style.display = 'none';
+    } else {
+      header.style.display = 'block';
+    }
+  });
+
+  // Reutiliza tus funciones de gapi, cargarBiblioteca, renderAll y sortable del código anterior
+</script>
+<script async defer src="https://apis.google.com/js/api.js" onload="startApp()"></script>
+</body>
+</html><!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>6.0 TabApp Pro v3.54 - Multi-Source</title>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
