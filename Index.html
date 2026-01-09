@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>TabApp Pro v3.80 - Clean Edition</title>
+  <title>TabApp Pro v3.81 - Sticky Controls</title>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
     :root{
@@ -26,60 +26,47 @@
     .card .hd{ padding:12px; border-bottom:1px solid var(--line); font-weight: bold; display: flex; justify-content: space-between; align-items: center; font-size: 14px;}
     .card .bd{ padding:10px; }
 
-    /* BOTÓN BASE MEJORADO */
     .btn{ 
-      appearance:none; 
-      border: 1px solid rgba(255, 255, 255, 0.4); 
-      background: rgba(255, 255, 255, 0.05); 
-      color: var(--text); 
-      padding: 10px; 
-      border-radius: 10px; 
-      cursor: pointer; 
-      transition: 0.2s; 
-      font-size: 14px; 
-      display: inline-flex; 
-      align-items: center; 
-      justify-content: center; 
-      font-weight: 600; 
-      min-width: 44px;
+      appearance:none; border: 1px solid rgba(255, 255, 255, 0.4); background: rgba(255, 255, 255, 0.05); 
+      color: var(--text); padding: 10px; border-radius: 10px; cursor: pointer; transition: 0.2s; 
+      font-size: 14px; display: inline-flex; align-items: center; justify-content: center; font-weight: 600; min-width: 44px;
     }
     .btn:active{ transform: scale(0.92); }
 
-    /* COLORES ESPECÍFICOS PARA LOS BOTONES */
-    .btn-nav { background-color: #004173 !important; border-color: rgba(255,255,255,0.7) !important; }
-    .btn-tone { background-color: #630b57 !important; border-color: rgba(255,255,255,0.7) !important; }
-    .btn-font { background-color: #2E6F40 !important; border-color: rgba(255,255,255,0.7) !important; }
-    .btn-scroll { background-color: #d09306 !important; border-color: rgba(255,255,255,0.7) !important; }
-    
+    /* COLORES DE BOTONES */
+    .btn-nav { background-color: #004173 !important; }
+    .btn-tone { background-color: #630b57 !important; }
+    .btn-font { background-color: #2E6F40 !important; }
+    .btn-scroll { background-color: #d09306 !important; }
     .btn.danger{ border-color: var(--danger); color: var(--danger); min-width: 32px; padding: 5px; background: none; }
 
     .input{ width:100%; padding:12px; border-radius:10px; border:1px solid var(--line); background:rgba(0,0,0,.3); color:white; outline:none; font-size: 16px; }
-    
     .item{ border:1px solid var(--line); border-radius:12px; padding:10px; background:rgba(255,255,255,0.03); display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px; cursor: grab; font-size: 14px;}
     
-    /* CONTENEDORES LIMPIOS */
-    .viewer-tools { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 12px; }
+    /* PANEL DE CONTROL FLOTANTE (STICKY) */
+    .viewer-tools { 
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; 
+      position: sticky; top: 0; z-index: 100; 
+      background: var(--bg); padding: 10px 0;
+      border-bottom: 1px solid var(--line);
+    }
     .tool-group { 
-      display: flex; 
-      gap: 8px; 
-      justify-content: center; 
-      align-items: center; 
-      padding: 10px; 
-      border-radius: 14px; 
-      border: 1px solid rgba(255, 255, 255, 0.15); /* Borde casi invisible, muy elegante */
-      background: rgba(255, 255, 255, 0.02); 
+      display: flex; gap: 8px; justify-content: center; align-items: center; padding: 10px; 
+      border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.15); background: rgba(255, 255, 255, 0.02); 
     }
     
-    #viewContent { background: rgba(0,0,0,.4); padding: 20px 10px; border-radius: 12px; white-space: pre-wrap; font-family: var(--mono); line-height: 1.6; border: 1px solid var(--line); }
+    #info-display { text-align: center; margin-top: 10px; }
+    #current-song-info { font-weight: bold; color: var(--accent); font-size: 14px; display: block; margin-bottom: 4px; }
+    #speedLabel { font-size: 10px; color: var(--muted); font-weight: bold; }
+
+    #viewContent { background: rgba(0,0,0,.4); padding: 20px 10px; border-radius: 12px; white-space: pre-wrap; font-family: var(--mono); line-height: 1.6; border: 1px solid var(--line); margin-top: 10px; }
     .chord{ color:var(--accent); font-weight:bold; }
   </style>
 </head>
 <body>
 
 <header>
-  <div class="wrap">
-      <h1>🎸 TabApp Pro v3.80</h1>
-  </div>
+  <div class="wrap"><h1>🎸 TabApp Pro v3.81</h1></div>
 </header>
 
 <main class="wrap">
@@ -98,33 +85,19 @@
     </section>
 
     <section class="card" style="grid-column: 1 / -1;">
-      <div class="hd" id="viewTitle" style="color:var(--accent); justify-content: center; font-size: 18px;">Selecciona una canción</div>
       <div class="bd">
         <div class="viewer-tools">
-          
-          <div class="tool-group">
-            <button class="btn btn-nav" onclick="prevSong()">⟵</button>
-            <button class="btn btn-nav" onclick="nextSong()">⟶</button>
-          </div>
-
-          <div class="tool-group">
-            <button class="btn btn-tone" onclick="transpose(-1)">♭</button>
-            <button class="btn btn-tone" onclick="transpose(1)">♯</button>
-          </div>
-
-          <div class="tool-group">
-            <button class="btn btn-font" onclick="changeFontSize(-2)">A-</button>
-            <button class="btn btn-font" onclick="changeFontSize(2)">A+</button>
-          </div>
-
-          <div class="tool-group">
-            <button class="btn btn-scroll" onclick="adjScroll(-0.1)">S-</button>
-            <button class="btn btn-scroll" id="scrollBtn" onclick="toggleScroll()" style="color:var(--accent);">▶</button>
-            <button class="btn btn-scroll" onclick="adjScroll(0.1)">S+</button>
-          </div>
-
+          <div class="tool-group"><button class="btn btn-nav" onclick="prevSong()">⟵</button><button class="btn btn-nav" onclick="nextSong()">⟶</button></div>
+          <div class="tool-group"><button class="btn btn-tone" onclick="transpose(-1)">♭</button><button class="btn btn-tone" onclick="transpose(1)">♯</button></div>
+          <div class="tool-group"><button class="btn btn-font" onclick="changeFontSize(-2)">A-</button><button class="btn btn-font" onclick="changeFontSize(2)">A+</button></div>
+          <div class="tool-group"><button class="btn btn-scroll" onclick="adjScroll(-0.1)">S-</button><button class="btn btn-scroll" id="scrollBtn" onclick="toggleScroll()" style="color:var(--accent);">▶</button><button class="btn btn-scroll" onclick="adjScroll(0.1)">S+</button></div>
         </div>
-        <div id="speedLabel" style="text-align:center; font-size:10px; color:var(--muted); margin-bottom:10px; font-weight: bold;">Velocidad: 0.5x</div>
+
+        <div id="info-display">
+          <span id="current-song-info">Selecciona una canción</span>
+          <div id="speedLabel">Velocidad: 0.5x</div>
+        </div>
+
         <pre id="viewContent"></pre>
       </div>
     </section>
@@ -132,7 +105,6 @@
 </main>
 
 <script>
-  // CONFIGURACIÓN DRIVE (Mantenla igual)
   const API_KEY = 'AIzaSyC74SgLN0OFD8zytCktOTCyVdRZZmdL-S0';
   const FOLDER_ID = '1x6zy_Bor6i9qBhUIl27ZIG0E1qdf5Ye6';
   const DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"];
@@ -157,10 +129,7 @@
   }
 
   async function cargarBiblioteca() {
-    const res = await gapi.client.drive.files.list({
-      q: `'${FOLDER_ID}' in parents and trashed = false`,
-      fields: 'files(id, name)', orderBy: 'name', pageSize: 1000
-    });
+    const res = await gapi.client.drive.files.list({ q: `'${FOLDER_ID}' in parents and trashed = false`, fields: 'files(id, name)', orderBy: 'name', pageSize: 1000 });
     state.allSongs = res.result.files || [];
   }
 
@@ -229,12 +198,12 @@
       sl.appendChild(div);
     });
     const curr = state.setlist[state.currentIndex];
-    document.getElementById('viewTitle').innerText = curr ? curr.title : "Selecciona una canción";
+    document.getElementById('current-song-info').innerText = curr ? curr.title : "Selecciona una canción";
     document.getElementById('viewContent').innerHTML = curr ? curr.body.replace(/\[([^\]]+)\]/g, '<span class="chord">[$1]</span>') : "";
     document.getElementById('viewContent').style.fontSize = state.currentFontSize + 'px';
   }
 
-  function seleccionar(idx) { state.currentIndex = idx; renderAll(); window.scrollTo({top: document.getElementById('viewTitle').offsetTop - 20, behavior: 'smooth'});}
+  function seleccionar(idx) { state.currentIndex = idx; renderAll(); }
   function removeSong(idx, e) { e.stopPropagation(); state.setlist.splice(idx, 1); state.currentIndex = -1; saveLocal(); renderAll(); }
   function clearSetlist() { if(confirm("¿Vaciar?")) { state.setlist = []; state.currentIndex = -1; saveLocal(); renderAll(); } }
   function saveLocal() { localStorage.setItem('tabs_setlist', JSON.stringify(state.setlist)); }
