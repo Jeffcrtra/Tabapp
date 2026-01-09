@@ -3,119 +3,182 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>TabApp Pro v3.76</title>
+  <title>TabApp Pro v3.77</title>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
     :root{
       --bg:#0b0d12; --card:#121622; --muted:#98a2b3; --text:#e6e9ef;
-      --line:#23283a; --accent:#ffd54a; --radius: 18px;
+      --line:#23283a; --accent:#ffd54a; --danger:#ff5c77; --radius: 18px;
       --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
       --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
     }
     *{box-sizing:border-box}
     body{margin:0; font-family:var(--sans); background:var(--bg); color:var(--text); overflow-x: hidden;}
     
-    /* HEADER NO FLOTANTE: Sube con la página */
-    header{ background:var(--card); border-bottom:1px solid var(--line); padding: 15px 0; width: 100%; }
-    header .wrap { display: flex; justify-content: space-between; align-items: center; }
-    h1{ font-size: 22px; margin: 0; color: var(--text); display: flex; align-items: center; gap: 10px; }
+    /* Header que sube con la página */
+    header{ background:var(--card); border-bottom:1px solid var(--line); padding: 20px 0; width: 100%; }
+    h1{ font-size: 24px; margin: 0; text-align: center; color: var(--text); }
 
-    .wrap{ padding: 10px; max-width: 1000px; margin: 0 auto; }
-    .card{ background:rgba(255,255,255,.02); border:1px solid var(--line); border-radius:var(--radius); margin-bottom:14px; overflow: hidden;}
-    .card .hd{ padding:14px; border-bottom:1px solid var(--line); font-weight: bold; display: flex; justify-content: space-between; align-items: center;}
-    .card .bd{ padding:12px; }
+    .wrap{ padding: 15px; max-width: 1200px; margin: 0 auto; }
+    .grid{ display:grid; grid-template-columns: 1fr; gap:15px; }
+    @media (min-width: 980px){ .grid{grid-template-columns: 1fr 1fr;} }
 
-    /* BOTONES */
-    .btn{ appearance:none; border:1px solid var(--line); background:rgba(255,255,255,.05); color:var(--text); padding:10px 15px; border-radius:12px; cursor:pointer; transition: 0.2s; font-size: 14px; display: inline-flex; align-items: center; justify-content: center; gap: 5px;}
-    .btn:active{ transform: scale(0.95); }
-    .btn.accent{ border-color: var(--accent); color: var(--accent); }
-    .btn.small{ padding: 6px 10px; font-size: 12px; border-radius: 8px; }
+    .card{ background:rgba(255,255,255,.02); border:1px solid var(--line); border-radius:var(--radius); margin-bottom:15px; overflow: hidden;}
+    .card .hd{ padding:15px; border-bottom:1px solid var(--line); font-weight: bold; display: flex; justify-content: space-between; align-items: center;}
+    .card .bd{ padding:15px; }
 
-    .input{ width:100%; padding:12px; border-radius:12px; border:1px solid var(--line); background:rgba(0,0,0,.2); color:white; outline:none; }
+    .btn{ appearance:none; border:1px solid var(--line); background:rgba(255,255,255,.05); color:var(--text); padding:12px 18px; border-radius:14px; cursor:pointer; transition: 0.2s; font-size: 15px; display: inline-flex; align-items: center; justify-content: center; font-weight: 600; }
+    .btn:active{ transform: scale(0.94); }
+    .btn.accent{ border-color: var(--accent); color: var(--accent); background: rgba(255,213,74,0.05); }
+    .btn.danger{ border-color: var(--danger); color: var(--danger); padding: 8px 12px; }
+
+    .input{ width:100%; padding:15px; border-radius:14px; border:1px solid var(--line); background:rgba(0,0,0,.3); color:white; outline:none; font-size: 16px; }
     
-    /* VISOR */
-    #viewContent { 
-      background: rgba(0,0,0,.3); padding: 20px; border-radius: 12px; 
-      white-space: pre-wrap; font-family: var(--mono); line-height: 1.7; 
-      font-size: 18px; border: 1px solid var(--line); min-height: 300px;
-    }
-    .chord{ color:var(--accent); font-weight:bold; }
+    .item{ border:1px solid var(--line); border-radius:16px; padding:12px; background:rgba(255,255,255,0.03); display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px; cursor: grab; }
     
+    /* Visor */
     .viewer-tools { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-    .tool-group { display: flex; gap: 8px; justify-content: center; align-items: center; background: rgba(255,255,255,0.03); padding: 8px; border-radius: 12px; border: 1px solid var(--line); }
+    .tool-group { display: flex; gap: 8px; justify-content: center; align-items: center; background: rgba(255,255,255,0.03); padding: 10px; border-radius: 14px; border: 1px solid var(--line); }
+    #viewContent { background: rgba(0,0,0,.4); padding: 25px 15px; border-radius: 16px; white-space: pre-wrap; font-family: var(--mono); line-height: 1.6; border: 1px solid var(--line); overflow-y: visible; }
+    .chord{ color:var(--accent); font-weight:bold; }
   </style>
 </head>
 <body>
 
 <header>
   <div class="wrap">
-      <h1>🎸 TabApp Pro v3.76</h1>
-      <span id="status" style="font-size:12px; color:var(--muted);">Cargando...</span>
+      <h1>🎸 TabApp Pro v3.77</h1>
+      <div id="status" style="text-align:center; font-size:12px; color:var(--muted); margin-top:5px;">Iniciando Drive...</div>
   </div>
 </header>
 
 <main class="wrap">
+  <div class="grid">
     <section class="card">
       <div class="hd">Buscador Inteligente</div>
       <div class="bd">
-        <input class="input" id="searchDrive" placeholder="Buscar en Drive..." autocomplete="off" />
-        <div id="driveResults" style="margin-top:10px; display:none; flex-direction:column; gap:8px;"></div>
+        <input class="input" id="searchDrive" placeholder="Buscar canción en Drive..." autocomplete="off" />
+        <div id="driveResults" style="margin-top:15px; display:none; flex-direction:column; gap:10px;"></div>
       </div>
     </section>
 
     <section class="card">
-      <div class="hd">Setlist <button class="btn small" onclick="clearSetlist()">Vaciar</button></div>
+      <div class="hd">Setlist <button class="btn accent" style="padding: 6px 12px; font-size: 12px;" onclick="clearSetlist()">Vaciar</button></div>
       <div class="bd" id="setList"></div>
     </section>
 
-    <section class="card">
-      <div class="hd" id="viewTitle" style="color:var(--accent)">Selecciona una canción</div>
+    <section class="card" style="grid-column: 1 / -1;">
+      <div class="hd" id="viewTitle" style="color:var(--accent); justify-content: center; font-size: 1.4rem;">Selecciona una canción</div>
       <div class="bd">
         <div class="viewer-tools">
           <div class="tool-group">
-            <button class="btn small" onclick="changeFontSize(-2)">A-</button>
-            <button class="btn small" onclick="changeFontSize(2)">A+</button>
+            <button class="btn" onclick="prevSong()">⟵</button>
+            <button class="btn" onclick="nextSong()">⟶</button>
           </div>
           <div class="tool-group">
-            <button class="btn small accent" id="scrollBtn" onclick="toggleScroll()">▶ Play</button>
-            <button class="btn small" onclick="adjScroll(-0.1)">S-</button>
+            <button class="btn accent" onclick="transpose(-1)">♭</button>
+            <button class="btn accent" onclick="transpose(1)">♯</button>
+          </div>
+          <div class="tool-group">
+            <button class="btn" onclick="changeFontSize(-2)">A-</button>
+            <span style="font-size:12px;">Letra</span>
+            <button class="btn" onclick="changeFontSize(2)">A+</button>
+          </div>
+          <div class="tool-group">
+            <button class="btn accent" id="scrollBtn" onclick="toggleScroll()">▶ Play</button>
+            <button class="btn" onclick="adjScroll(-0.1)">S-</button>
             <span id="speedInd" style="font-size:11px;">0.5x</span>
-            <button class="btn small" onclick="adjScroll(0.1)">S+</button>
+            <button class="btn" onclick="adjScroll(0.1)">S+</button>
           </div>
         </div>
         <pre id="viewContent"></pre>
       </div>
     </section>
+  </div>
 </main>
 
 <script>
-  // Tu API KEY y FOLDER ID (Mantenlos igual)
   const API_KEY = 'AIzaSyC74SgLN0OFD8zytCktOTCyVdRZZmdL-S0';
   const FOLDER_ID = '1x6zy_Bor6i9qBhUIl27ZIG0E1qdf5Ye6';
+  const DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"];
 
   const state = {
     setlist: JSON.parse(localStorage.getItem('tabs_setlist') || '[]'),
     allSongs: [], currentIndex: -1, currentFontSize: 18,
-    scrollInt: null, scrollSpeed: 0.5 
+    scrollInt: null, scrollSpeed: 0.5
   };
 
-  // FIX SCROLL: Ahora mueve la ventana global para que el efecto sea visible
+  const normalizar = (str) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
+  function startApp() {
+    gapi.load('client', async () => {
+      try {
+        await gapi.client.init({ apiKey: API_KEY, discoveryDocs: DISCOVERY_DOCS });
+        document.getElementById('status').innerText = "Google Drive Conectado ✅";
+        await cargarBiblioteca();
+        renderAll();
+        initSortable();
+      } catch (e) { document.getElementById('status').innerText = "Error de Conexión"; }
+    });
+  }
+
+  async function cargarBiblioteca() {
+    const res = await gapi.client.drive.files.list({
+      q: `'${FOLDER_ID}' in parents and trashed = false`,
+      fields: 'files(id, name)', orderBy: 'name', pageSize: 1000
+    });
+    state.allSongs = res.result.files || [];
+  }
+
+  // --- BUSQUEDA ---
+  document.getElementById('searchDrive').oninput = (e) => {
+    const val = normalizar(e.target.value);
+    const resDiv = document.getElementById('driveResults');
+    if (!val) { resDiv.style.display = "none"; return; }
+    
+    const filtrados = state.allSongs.filter(f => normalizar(f.name).includes(val));
+    resDiv.style.display = "flex";
+    resDiv.innerHTML = "";
+    filtrados.forEach(f => {
+      const div = document.createElement('div');
+      div.className = 'item';
+      div.innerHTML = `<span>${f.name.replace('.txt','')}</span><button class="btn accent" style="padding:6px 10px;" onclick="importar('${f.id}', '${f.name}')">Añadir</button>`;
+      resDiv.appendChild(div);
+    });
+  };
+
+  async function importar(id, name) {
+    const resp = await fetch(`https://www.googleapis.com/drive/v3/files/${id}?alt=media&key=${API_KEY}`);
+    const text = await resp.text();
+    state.setlist.push({ id: Date.now(), title: name.replace('.txt',''), body: text, original: text });
+    saveLocal(); renderAll();
+    document.getElementById('searchDrive').value = "";
+    document.getElementById('driveResults').style.display = "none";
+  }
+
+  // --- TRANSPOSTIOR ---
+  const scale = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+  function transpose(delta) {
+    const curr = state.setlist[state.currentIndex];
+    if (!curr) return;
+    curr.body = curr.body.replace(/\[([^\]]+)\]/g, (match, chord) => {
+      return "[" + chord.replace(/[A-G]#?/g, (note) => {
+        let idx = scale.indexOf(note);
+        return idx === -1 ? note : scale[(idx + delta + 12) % 12];
+      }) + "]";
+    });
+    renderAll();
+  }
+
+  // --- SCROLL ---
   function toggleScroll() {
     const btn = document.getElementById('scrollBtn');
     if (state.scrollInt) {
-      clearInterval(state.scrollInt);
-      state.scrollInt = null;
+      clearInterval(state.scrollInt); state.scrollInt = null;
       btn.innerText = "▶ Play";
     } else {
       btn.innerText = "⏸ Stop";
-      // La página baja 1 pixel cada X milisegundos basado en la velocidad
-      state.scrollInt = setInterval(() => {
-        window.scrollBy(0, 1);
-        // Si llegamos al final, detener
-        if ((window.innerHeight + window.pageYOffset) >= document.body.offsetHeight) {
-            toggleScroll();
-        }
-      }, 50 / state.scrollSpeed);
+      state.scrollInt = setInterval(() => { window.scrollBy(0, 1); }, 50 / state.scrollSpeed);
     }
   }
 
@@ -125,45 +188,42 @@
     if (state.scrollInt) { toggleScroll(); toggleScroll(); }
   }
 
-  function changeFontSize(d) {
-    state.currentFontSize += d;
-    document.getElementById('viewContent').style.fontSize = state.currentFontSize + 'px';
-  }
-
-  // --- Lógica de Drive y Render (Simplificada para el ejemplo) ---
-  function startApp() {
-    gapi.load('client', async () => {
-      try {
-        await gapi.client.init({ apiKey: API_KEY, discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"] });
-        document.getElementById('status').innerText = "Online ✅";
-        renderAll();
-      } catch (e) { document.getElementById('status').innerText = "Error API"; }
-    });
-  }
-
   function renderAll() {
     const sl = document.getElementById('setList');
     sl.innerHTML = "";
     state.setlist.forEach((s, idx) => {
       const div = document.createElement('div');
-      div.className = 'btn';
-      div.style.width = "100%"; div.style.marginBottom = "5px";
-      div.innerText = s.title;
-      div.onclick = () => cargarCancion(idx);
+      div.className = 'item';
+      if(idx === state.currentIndex) div.style.borderColor = 'var(--accent)';
+      div.innerHTML = `<div style="flex:1" onclick="seleccionar(${idx})">☰ ${s.title}</div>
+                       <button class="btn danger" onclick="removeSong(${idx}, event)">✕</button>`;
       sl.appendChild(div);
     });
+    const curr = state.setlist[state.currentIndex];
+    document.getElementById('viewTitle').innerText = curr ? curr.title : "Selecciona una canción";
+    document.getElementById('viewContent').innerHTML = curr ? curr.body.replace(/\[([^\]]+)\]/g, '<span class="chord">[$1]</span>') : "";
+    document.getElementById('viewContent').style.fontSize = state.currentFontSize + 'px';
   }
 
-  async function cargarCancion(idx) {
-    state.currentIndex = idx;
-    const song = state.setlist[idx];
-    document.getElementById('viewTitle').innerText = song.title;
-    document.getElementById('viewContent').innerHTML = song.body.replace(/\[([^\]]+)\]/g, '<span class="chord">[$1]</span>');
-    // Al cargar canción, subir al visor para empezar de cero
-    document.getElementById('viewTitle').scrollIntoView({ behavior: 'smooth' });
-  }
+  function seleccionar(idx) { state.currentIndex = idx; renderAll(); }
+  function removeSong(idx, e) { e.stopPropagation(); state.setlist.splice(idx, 1); state.currentIndex = -1; saveLocal(); renderAll(); }
+  function clearSetlist() { if(confirm("¿Vaciar setlist?")) { state.setlist = []; state.currentIndex = -1; saveLocal(); renderAll(); } }
+  function saveLocal() { localStorage.setItem('tabs_setlist', JSON.stringify(state.setlist)); }
+  function changeFontSize(d) { state.currentFontSize += d; renderAll(); }
+  function nextSong() { if(state.currentIndex < state.setlist.length-1) seleccionar(state.currentIndex+1); }
+  function prevSong() { if(state.currentIndex > 0) seleccionar(state.currentIndex-1); }
 
-  function clearSetlist() { state.setlist = []; localStorage.removeItem('tabs_setlist'); renderAll(); }
+  function initSortable() {
+    Sortable.create(document.getElementById('setList'), {
+      animation: 150, handle: '.item',
+      onEnd: (evt) => {
+        const item = state.setlist.splice(evt.oldIndex, 1)[0];
+        state.setlist.splice(evt.newIndex, 0, item);
+        state.currentIndex = evt.newIndex;
+        saveLocal(); renderAll();
+      }
+    });
+  }
 </script>
 <script async defer src="https://apis.google.com/js/api.js" onload="startApp()"></script>
 </body>
