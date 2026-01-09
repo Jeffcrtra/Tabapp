@@ -3,43 +3,43 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>TabApp Pro v3.77</title>
+  <title>TabApp Pro v3.78</title>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
     :root{
       --bg:#0b0d12; --card:#121622; --muted:#98a2b3; --text:#e6e9ef;
-      --line:#23283a; --accent:#ffd54a; --danger:#ff5c77; --radius: 18px;
+      --line:#23283a; --accent:#ffd54a; --danger:#ff5c77; --radius: 14px;
       --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
       --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
     }
     *{box-sizing:border-box}
     body{margin:0; font-family:var(--sans); background:var(--bg); color:var(--text); overflow-x: hidden;}
     
-    /* Header que sube con la página */
-    header{ background:var(--card); border-bottom:1px solid var(--line); padding: 20px 0; width: 100%; }
-    h1{ font-size: 24px; margin: 0; text-align: center; color: var(--text); }
+    header{ background:var(--card); border-bottom:1px solid var(--line); padding: 15px 0; width: 100%; }
+    h1{ font-size: 20px; margin: 0; text-align: center; color: var(--text); }
 
-    .wrap{ padding: 15px; max-width: 1200px; margin: 0 auto; }
-    .grid{ display:grid; grid-template-columns: 1fr; gap:15px; }
-    @media (min-width: 980px){ .grid{grid-template-columns: 1fr 1fr;} }
+    .wrap{ padding: 10px; max-width: 1200px; margin: 0 auto; }
+    .grid{ display:grid; grid-template-columns: 1fr; gap:10px; }
+    @media (min-width: 768px){ .grid{grid-template-columns: 1fr 1fr;} }
 
-    .card{ background:rgba(255,255,255,.02); border:1px solid var(--line); border-radius:var(--radius); margin-bottom:15px; overflow: hidden;}
-    .card .hd{ padding:15px; border-bottom:1px solid var(--line); font-weight: bold; display: flex; justify-content: space-between; align-items: center;}
-    .card .bd{ padding:15px; }
+    .card{ background:rgba(255,255,255,.02); border:1px solid var(--line); border-radius:var(--radius); margin-bottom:10px; overflow: hidden;}
+    .card .hd{ padding:12px; border-bottom:1px solid var(--line); font-weight: bold; display: flex; justify-content: space-between; align-items: center; font-size: 14px;}
+    .card .bd{ padding:10px; }
 
-    .btn{ appearance:none; border:1px solid var(--line); background:rgba(255,255,255,.05); color:var(--text); padding:12px 18px; border-radius:14px; cursor:pointer; transition: 0.2s; font-size: 15px; display: inline-flex; align-items: center; justify-content: center; font-weight: 600; }
+    .btn{ appearance:none; border:1px solid var(--line); background:rgba(255,255,255,.05); color:var(--text); padding:10px; border-radius:10px; cursor:pointer; transition: 0.2s; font-size: 14px; display: inline-flex; align-items: center; justify-content: center; font-weight: 600; min-width: 44px;}
     .btn:active{ transform: scale(0.94); }
     .btn.accent{ border-color: var(--accent); color: var(--accent); background: rgba(255,213,74,0.05); }
-    .btn.danger{ border-color: var(--danger); color: var(--danger); padding: 8px 12px; }
+    .btn.danger{ border-color: var(--danger); color: var(--danger); min-width: 32px; padding: 5px; }
 
-    .input{ width:100%; padding:15px; border-radius:14px; border:1px solid var(--line); background:rgba(0,0,0,.3); color:white; outline:none; font-size: 16px; }
+    .input{ width:100%; padding:12px; border-radius:10px; border:1px solid var(--line); background:rgba(0,0,0,.3); color:white; outline:none; font-size: 16px; }
     
-    .item{ border:1px solid var(--line); border-radius:16px; padding:12px; background:rgba(255,255,255,0.03); display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px; cursor: grab; }
+    .item{ border:1px solid var(--line); border-radius:12px; padding:10px; background:rgba(255,255,255,0.03); display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px; cursor: grab; font-size: 14px;}
     
-    /* Visor */
-    .viewer-tools { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-    .tool-group { display: flex; gap: 8px; justify-content: center; align-items: center; background: rgba(255,255,255,0.03); padding: 10px; border-radius: 14px; border: 1px solid var(--line); }
-    #viewContent { background: rgba(0,0,0,.4); padding: 25px 15px; border-radius: 16px; white-space: pre-wrap; font-family: var(--mono); line-height: 1.6; border: 1px solid var(--line); overflow-y: visible; }
+    /* Herramientas Optimizadas para Móvil */
+    .viewer-tools { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 12px; }
+    .tool-group { display: flex; gap: 6px; justify-content: center; align-items: center; background: rgba(255,255,255,0.03); padding: 8px; border-radius: 12px; border: 1px solid var(--line); }
+    
+    #viewContent { background: rgba(0,0,0,.4); padding: 20px 10px; border-radius: 12px; white-space: pre-wrap; font-family: var(--mono); line-height: 1.6; border: 1px solid var(--line); }
     .chord{ color:var(--accent); font-weight:bold; }
   </style>
 </head>
@@ -47,28 +47,27 @@
 
 <header>
   <div class="wrap">
-      <h1>🎸 TabApp Pro v3.77</h1>
-      <div id="status" style="text-align:center; font-size:12px; color:var(--muted); margin-top:5px;">Iniciando Drive...</div>
+      <h1>🎸 TabApp Pro v3.78</h1>
   </div>
 </header>
 
 <main class="wrap">
   <div class="grid">
     <section class="card">
-      <div class="hd">Buscador Inteligente</div>
+      <div class="hd">Buscador</div>
       <div class="bd">
-        <input class="input" id="searchDrive" placeholder="Buscar canción en Drive..." autocomplete="off" />
-        <div id="driveResults" style="margin-top:15px; display:none; flex-direction:column; gap:10px;"></div>
+        <input class="input" id="searchDrive" placeholder="Buscar canción..." autocomplete="off" />
+        <div id="driveResults" style="margin-top:10px; display:none; flex-direction:column; gap:8px;"></div>
       </div>
     </section>
 
     <section class="card">
-      <div class="hd">Setlist <button class="btn accent" style="padding: 6px 12px; font-size: 12px;" onclick="clearSetlist()">Vaciar</button></div>
+      <div class="hd">Setlist <button class="btn accent" style="min-width:auto; padding: 4px 8px; font-size: 11px;" onclick="clearSetlist()">Vaciar</button></div>
       <div class="bd" id="setList"></div>
     </section>
 
     <section class="card" style="grid-column: 1 / -1;">
-      <div class="hd" id="viewTitle" style="color:var(--accent); justify-content: center; font-size: 1.4rem;">Selecciona una canción</div>
+      <div class="hd" id="viewTitle" style="color:var(--accent); justify-content: center;">Selecciona una canción</div>
       <div class="bd">
         <div class="viewer-tools">
           <div class="tool-group">
@@ -81,16 +80,15 @@
           </div>
           <div class="tool-group">
             <button class="btn" onclick="changeFontSize(-2)">A-</button>
-            <span style="font-size:12px;">Letra</span>
             <button class="btn" onclick="changeFontSize(2)">A+</button>
           </div>
           <div class="tool-group">
-            <button class="btn accent" id="scrollBtn" onclick="toggleScroll()">▶ Play</button>
             <button class="btn" onclick="adjScroll(-0.1)">S-</button>
-            <span id="speedInd" style="font-size:11px;">0.5x</span>
+            <button class="btn accent" id="scrollBtn" onclick="toggleScroll()">▶</button>
             <button class="btn" onclick="adjScroll(0.1)">S+</button>
           </div>
         </div>
+        <div id="speedLabel" style="text-align:center; font-size:10px; color:var(--muted); margin-bottom:10px;">Velocidad: 0.5x</div>
         <pre id="viewContent"></pre>
       </div>
     </section>
@@ -98,13 +96,14 @@
 </main>
 
 <script>
+  // Tu API KEY y FOLDER ID originales
   const API_KEY = 'AIzaSyC74SgLN0OFD8zytCktOTCyVdRZZmdL-S0';
   const FOLDER_ID = '1x6zy_Bor6i9qBhUIl27ZIG0E1qdf5Ye6';
   const DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"];
 
   const state = {
     setlist: JSON.parse(localStorage.getItem('tabs_setlist') || '[]'),
-    allSongs: [], currentIndex: -1, currentFontSize: 18,
+    allSongs: [], currentIndex: -1, currentFontSize: 16,
     scrollInt: null, scrollSpeed: 0.5
   };
 
@@ -114,11 +113,10 @@
     gapi.load('client', async () => {
       try {
         await gapi.client.init({ apiKey: API_KEY, discoveryDocs: DISCOVERY_DOCS });
-        document.getElementById('status').innerText = "Google Drive Conectado ✅";
         await cargarBiblioteca();
         renderAll();
         initSortable();
-      } catch (e) { document.getElementById('status').innerText = "Error de Conexión"; }
+      } catch (e) { console.error("Error Drive"); }
     });
   }
 
@@ -130,19 +128,16 @@
     state.allSongs = res.result.files || [];
   }
 
-  // --- BUSQUEDA ---
   document.getElementById('searchDrive').oninput = (e) => {
     const val = normalizar(e.target.value);
     const resDiv = document.getElementById('driveResults');
     if (!val) { resDiv.style.display = "none"; return; }
-    
     const filtrados = state.allSongs.filter(f => normalizar(f.name).includes(val));
-    resDiv.style.display = "flex";
-    resDiv.innerHTML = "";
+    resDiv.style.display = "flex"; resDiv.innerHTML = "";
     filtrados.forEach(f => {
       const div = document.createElement('div');
       div.className = 'item';
-      div.innerHTML = `<span>${f.name.replace('.txt','')}</span><button class="btn accent" style="padding:6px 10px;" onclick="importar('${f.id}', '${f.name}')">Añadir</button>`;
+      div.innerHTML = `<span>${f.name.replace('.txt','')}</span><button class="btn accent" style="padding:4px 8px; min-width:auto;" onclick="importar('${f.id}', '${f.name}')">Add</button>`;
       resDiv.appendChild(div);
     });
   };
@@ -150,13 +145,12 @@
   async function importar(id, name) {
     const resp = await fetch(`https://www.googleapis.com/drive/v3/files/${id}?alt=media&key=${API_KEY}`);
     const text = await resp.text();
-    state.setlist.push({ id: Date.now(), title: name.replace('.txt',''), body: text, original: text });
+    state.setlist.push({ id: Date.now(), title: name.replace('.txt',''), body: text });
     saveLocal(); renderAll();
     document.getElementById('searchDrive').value = "";
     document.getElementById('driveResults').style.display = "none";
   }
 
-  // --- TRANSPOSTIOR ---
   const scale = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
   function transpose(delta) {
     const curr = state.setlist[state.currentIndex];
@@ -170,21 +164,20 @@
     renderAll();
   }
 
-  // --- SCROLL ---
   function toggleScroll() {
     const btn = document.getElementById('scrollBtn');
     if (state.scrollInt) {
       clearInterval(state.scrollInt); state.scrollInt = null;
-      btn.innerText = "▶ Play";
+      btn.innerText = "▶";
     } else {
-      btn.innerText = "⏸ Stop";
+      btn.innerText = "⏸";
       state.scrollInt = setInterval(() => { window.scrollBy(0, 1); }, 50 / state.scrollSpeed);
     }
   }
 
   function adjScroll(delta) {
     state.scrollSpeed = Math.max(0.1, Math.min(3, state.scrollSpeed + delta));
-    document.getElementById('speedInd').innerText = state.scrollSpeed.toFixed(1) + "x";
+    document.getElementById('speedLabel').innerText = "Velocidad: " + state.scrollSpeed.toFixed(1) + "x";
     if (state.scrollInt) { toggleScroll(); toggleScroll(); }
   }
 
@@ -205,9 +198,9 @@
     document.getElementById('viewContent').style.fontSize = state.currentFontSize + 'px';
   }
 
-  function seleccionar(idx) { state.currentIndex = idx; renderAll(); }
+  function seleccionar(idx) { state.currentIndex = idx; renderAll(); window.scrollTo({top: document.getElementById('viewTitle').offsetTop - 20, behavior: 'smooth'});}
   function removeSong(idx, e) { e.stopPropagation(); state.setlist.splice(idx, 1); state.currentIndex = -1; saveLocal(); renderAll(); }
-  function clearSetlist() { if(confirm("¿Vaciar setlist?")) { state.setlist = []; state.currentIndex = -1; saveLocal(); renderAll(); } }
+  function clearSetlist() { if(confirm("¿Vaciar?")) { state.setlist = []; state.currentIndex = -1; saveLocal(); renderAll(); } }
   function saveLocal() { localStorage.setItem('tabs_setlist', JSON.stringify(state.setlist)); }
   function changeFontSize(d) { state.currentFontSize += d; renderAll(); }
   function nextSong() { if(state.currentIndex < state.setlist.length-1) seleccionar(state.currentIndex+1); }
