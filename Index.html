@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>TabApp Pro v3.81 - Sticky Controls</title>
+  <title>TabApp Pro v3.82 - Fixed Controls</title>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
     :root{
@@ -15,6 +15,7 @@
     *{box-sizing:border-box}
     body{margin:0; font-family:var(--sans); background:var(--bg); color:var(--text); overflow-x: hidden;}
     
+    /* Header normal que sube */
     header{ background:var(--card); border-bottom:1px solid var(--line); padding: 15px 0; width: 100%; }
     h1{ font-size: 20px; margin: 0; text-align: center; color: var(--text); }
 
@@ -43,35 +44,64 @@
     .input{ width:100%; padding:12px; border-radius:10px; border:1px solid var(--line); background:rgba(0,0,0,.3); color:white; outline:none; font-size: 16px; }
     .item{ border:1px solid var(--line); border-radius:12px; padding:10px; background:rgba(255,255,255,0.03); display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px; cursor: grab; font-size: 14px;}
     
-    /* PANEL DE CONTROL FLOTANTE (STICKY) */
-    .viewer-tools { 
-      display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; 
-      position: sticky; top: 0; z-index: 100; 
-      background: var(--bg); padding: 10px 0;
+    /* PANEL DE CONTROL FIXED (FLOTANTE REAL) */
+    .floating-tools { 
+      position: fixed; 
+      top: 0; left: 0; right: 0;
+      z-index: 999;
+      background: rgba(11, 13, 18, 0.95); /* Fondo casi opaco para legibilidad */
+      backdrop-filter: blur(8px);
       border-bottom: 1px solid var(--line);
-    }
-    .tool-group { 
-      display: flex; gap: 8px; justify-content: center; align-items: center; padding: 10px; 
-      border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.15); background: rgba(255, 255, 255, 0.02); 
+      padding: 10px;
+      display: none; /* Se activa solo cuando hay una canción */
     }
     
-    #info-display { text-align: center; margin-top: 10px; }
-    #current-song-info { font-weight: bold; color: var(--accent); font-size: 14px; display: block; margin-bottom: 4px; }
-    #speedLabel { font-size: 10px; color: var(--muted); font-weight: bold; }
+    .viewer-tools { 
+      display: grid; 
+      grid-template-columns: repeat(2, 1fr); 
+      gap: 6px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
 
-    #viewContent { background: rgba(0,0,0,.4); padding: 20px 10px; border-radius: 12px; white-space: pre-wrap; font-family: var(--mono); line-height: 1.6; border: 1px solid var(--line); margin-top: 10px; }
+    .tool-group { 
+      display: flex; gap: 6px; justify-content: center; align-items: center; padding: 6px; 
+      border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.15); background: rgba(255, 255, 255, 0.02); 
+    }
+    
+    #info-display { text-align: center; margin-top: 5px; }
+    #current-song-info { font-weight: bold; color: var(--accent); font-size: 13px; display: block; }
+    #speedLabel { font-size: 10px; color: var(--muted); }
+
+    /* Espaciado para que el visor no empiece debajo de los botones fijos */
+    .viewer-container { padding-top: 160px; } 
+
+    #viewContent { background: rgba(0,0,0,.4); padding: 20px 10px; border-radius: 12px; white-space: pre-wrap; font-family: var(--mono); line-height: 1.6; border: 1px solid var(--line); }
     .chord{ color:var(--accent); font-weight:bold; }
   </style>
 </head>
 <body>
 
-<header>
-  <div class="wrap"><h1>🎸 TabApp Pro v3.81</h1></div>
+<header id="mainHeader">
+  <div class="wrap"><h1>🎸 TabApp Pro v3.82</h1></div>
 </header>
+
+<div id="floatingPanel" class="floating-tools">
+    <div class="viewer-tools">
+      <div class="tool-group"><button class="btn btn-nav" onclick="prevSong()">⟵</button><button class="btn btn-nav" onclick="nextSong()">⟶</button></div>
+      <div class="tool-group"><button class="btn btn-tone" onclick="transpose(-1)">♭</button><button class="btn btn-tone" onclick="transpose(1)">♯</button></div>
+      <div class="tool-group"><button class="btn btn-font" onclick="changeFontSize(-2)">A-</button><button class="btn btn-font" onclick="changeFontSize(2)">A+</button></div>
+      <div class="tool-group"><button class="btn btn-scroll" onclick="adjScroll(-0.1)">S-</button><button class="btn btn-scroll" id="scrollBtn" onclick="toggleScroll()" style="color:var(--accent);">▶</button><button class="btn btn-scroll" onclick="adjScroll(0.1)">S+</button></div>
+    </div>
+    <div id="info-display">
+      <span id="current-song-info"></span>
+      <div id="speedLabel">Velocidad: 0.5x</div>
+    </div>
+</div>
 
 <main class="wrap">
   <div class="grid">
-    <section class="card">
+    <section class="card" id="searchCard">
       <div class="hd">Buscador</div>
       <div class="bd">
         <input class="input" id="searchDrive" placeholder="Buscar canción..." autocomplete="off" />
@@ -79,27 +109,16 @@
       </div>
     </section>
 
-    <section class="card">
+    <section class="card" id="setlistCard">
       <div class="hd">Setlist <button class="btn danger" style="min-width:auto; padding: 4px 8px; font-size: 11px;" onclick="clearSetlist()">Vaciar</button></div>
       <div class="bd" id="setList"></div>
     </section>
 
     <section class="card" style="grid-column: 1 / -1;">
-      <div class="bd">
-        <div class="viewer-tools">
-          <div class="tool-group"><button class="btn btn-nav" onclick="prevSong()">⟵</button><button class="btn btn-nav" onclick="nextSong()">⟶</button></div>
-          <div class="tool-group"><button class="btn btn-tone" onclick="transpose(-1)">♭</button><button class="btn btn-tone" onclick="transpose(1)">♯</button></div>
-          <div class="tool-group"><button class="btn btn-font" onclick="changeFontSize(-2)">A-</button><button class="btn btn-font" onclick="changeFontSize(2)">A+</button></div>
-          <div class="tool-group"><button class="btn btn-scroll" onclick="adjScroll(-0.1)">S-</button><button class="btn btn-scroll" id="scrollBtn" onclick="toggleScroll()" style="color:var(--accent);">▶</button><button class="btn btn-scroll" onclick="adjScroll(0.1)">S+</button></div>
-        </div>
-
-        <div id="info-display">
-          <span id="current-song-info">Selecciona una canción</span>
-          <div id="speedLabel">Velocidad: 0.5x</div>
-        </div>
-
+      <div class="bd viewer-container" id="viewerContainer" style="display:none;">
         <pre id="viewContent"></pre>
       </div>
+      <div id="emptyMsg" style="text-align:center; padding:40px; color:var(--muted);">Selecciona una canción del setlist</div>
     </section>
   </div>
 </main>
@@ -198,14 +217,24 @@
       sl.appendChild(div);
     });
     const curr = state.setlist[state.currentIndex];
-    document.getElementById('current-song-info').innerText = curr ? curr.title : "Selecciona una canción";
-    document.getElementById('viewContent').innerHTML = curr ? curr.body.replace(/\[([^\]]+)\]/g, '<span class="chord">[$1]</span>') : "";
-    document.getElementById('viewContent').style.fontSize = state.currentFontSize + 'px';
+    if(curr) {
+        document.getElementById('floatingPanel').style.display = "block";
+        document.getElementById('viewerContainer').style.display = "block";
+        document.getElementById('emptyMsg').style.display = "none";
+        document.getElementById('current-song-info').innerText = curr.title;
+        document.getElementById('viewContent').innerHTML = curr.body.replace(/\[([^\]]+)\]/g, '<span class="chord">[$1]</span>');
+        document.getElementById('viewContent').style.fontSize = state.currentFontSize + 'px';
+    }
   }
 
-  function seleccionar(idx) { state.currentIndex = idx; renderAll(); }
-  function removeSong(idx, e) { e.stopPropagation(); state.setlist.splice(idx, 1); state.currentIndex = -1; saveLocal(); renderAll(); }
-  function clearSetlist() { if(confirm("¿Vaciar?")) { state.setlist = []; state.currentIndex = -1; saveLocal(); renderAll(); } }
+  function seleccionar(idx) { 
+    state.currentIndex = idx; 
+    renderAll(); 
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  }
+  
+  function removeSong(idx, e) { e.stopPropagation(); state.setlist.splice(idx, 1); state.currentIndex = -1; saveLocal(); renderAll(); if(state.setlist.length === 0) location.reload(); }
+  function clearSetlist() { if(confirm("¿Vaciar?")) { state.setlist = []; state.currentIndex = -1; saveLocal(); location.reload(); } }
   function saveLocal() { localStorage.setItem('tabs_setlist', JSON.stringify(state.setlist)); }
   function changeFontSize(d) { state.currentFontSize += d; renderAll(); }
   function nextSong() { if(state.currentIndex < state.setlist.length-1) seleccionar(state.currentIndex+1); }
