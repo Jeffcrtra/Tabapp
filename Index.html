@@ -3,86 +3,261 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>9.58 TabApp v3.72</title>
+  <title>10.00  TabApp Pro v3.54 - Multi-Source</title>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
-    :root { --bg: #0b0d12; --card: #121622; --text: #e6e9ef; --accent: #ffd54a; --line: #23283a; }
-    body { font-family: sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 10px; }
-    header { border-bottom: 1px solid var(--line); padding-bottom: 10px; margin-bottom: 20px; }
-    h1 { font-size: 20px; color: var(--accent); margin: 0; }
-    .card { background: var(--card); border: 1px solid var(--line); border-radius: 8px; margin-bottom: 15px; padding: 12px; }
-    #viewContent { 
-      white-space: pre; font-family: 'Courier New', monospace; font-size: 16px; 
-      background: #000; padding: 15px; border-radius: 5px; overflow-x: auto; line-height: 1.5;
+    :root{
+      --bg:#0b0d12; --card:#121622; --muted:#98a2b3; --text:#e6e9ef;
+      --line:#23283a; --accent:#ffd54a; --ok:#33d17a; --danger:#ff5c77;
+      --radius: 18px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
     }
-    .btn { background: #23283a; color: white; border: 1px solid #444; padding: 8px 12px; border-radius: 5px; cursor: pointer; margin-right: 4px; }
-    .controls { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
-    .btn-scroll { border-color: var(--accent); color: var(--accent); }
-    input[type="text"] { background: #1a1f2e; border: 1px solid #333; color: white; padding: 10px; border-radius: 5px; width: 100%; }
-    .song-item { padding: 8px; border-bottom: 1px solid #222; cursor: pointer; }
+    *{box-sizing:border-box}
+    body{margin:0; font-family:var(--sans); background:radial-gradient(1200px 700px at 20% 0%, #1b2240 0%, var(--bg) 55%); color:var(--text); overflow-x: hidden;}
+    header{position:sticky; top:0; backdrop-filter: blur(10px); background:rgba(11,13,18,.65); border-bottom:1px solid var(--line); z-index:10;}
+    .wrap{max-width: 100%; margin: 0; padding: 10px;}
+    .grid{display:grid; grid-template-columns: 1fr; gap:12px;}
+    @media (min-width: 980px){ .grid{grid-template-columns: 1.1fr .9fr;} }
+
+    .card{background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01)); border:1px solid var(--line); border-radius:var(--radius); margin-bottom:14px;}
+    .card .hd{padding:14px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center;}
+    .card .bd{padding:12px;}
+    
+    .btn{appearance:none; border:1px solid var(--line); background:rgba(255,255,255,.03); color:var(--text); padding:12px 16px; border-radius:14px; cursor:pointer; font-weight:650; display:inline-flex; align-items:center; justify-content:center; transition: 0.2s; font-size: 15px;}
+    .btn:active{transform: scale(0.92);}
+    .btn.accent{background:rgba(255,213,74,.15); border-color:rgba(255,213,74,.45); color:var(--accent);}
+    .btn.danger{background:rgba(255,92,119,.1); border-color:rgba(255,92,119,0.3); color:var(--danger);}
+    .btn.small{padding: 8px 12px; font-size: 13px;}
+
+    .search-box { position: relative; width: 100%; }
+    .input{width:100%; padding:14px; border-radius:14px; border:1px solid var(--line); background:rgba(255,255,255,.02); color:var(--text); outline:none; font-size: 16px;}
+    
+    .item{border:1px solid var(--line); border-radius:16px; padding:14px; background:rgba(255,255,255,.03); display:flex; justify-content:space-between; align-items:center;}
+    
+    /* Panel de Servidores Externos */
+    .external-box { margin-top: 15px; padding: 15px; background: rgba(255,213,74,0.05); border: 1px dashed var(--accent); border-radius: 16px; display: none; }
+    .external-box h4 { margin: 0 0 10px 0; font-size: 14px; color: var(--accent); }
+    .external-grid { display: flex; flex-direction: column; gap: 8px; }
+
+    /* Modal / Popup */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; z-index: 100; padding: 20px; }
+    .modal-content { width: 100%; height: 100%; background: white; border-radius: 12px; position: relative; overflow: hidden; }
+    .modal-close { position: absolute; top: 10px; right: 10px; background: var(--danger); color: white; border: none; padding: 10px 15px; border-radius: 50%; cursor: pointer; font-weight: bold; z-index: 101; }
+    iframe { width: 100%; height: 100%; border: none; }
+
+    /* Visor */
+    .viewer { min-height: 85vh; display: flex; flex-direction: column; }
+    .viewer-tools { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
+    .tool-group { display: flex; gap: 12px; justify-content: center; align-items: center; background: rgba(255,255,255,0.03); padding: 10px; border-radius: 16px; border: 1px solid var(--line); }
+    #viewContent { flex-grow: 1; background: rgba(0,0,0,0.35); padding: 25px 15px; border-radius: 16px; border: 1px solid var(--line); overflow-y: auto; white-space: pre-wrap; font-family: var(--mono); line-height: 1.6; }
+    .chord{color:var(--accent); font-weight:bold;}
   </style>
 </head>
 <body>
 
+<div class="modal-overlay" id="extModal">
+    <button class="modal-close" onclick="closeExternal()">✕</button>
+    <div class="modal-content">
+        <iframe id="extFrame"></iframe>
+    </div>
+</div>
+
 <header>
-  <h1>🎸 TabApp v3.72</h1>
+  <div class="wrap"><div class="row" style="justify-content:space-between;"><h1>🎸 TabApp Pro v3.54</h1><span id="status" style="font-size:12px; color:var(--muted);">Cargando...</span></div></div>
 </header>
 
-<div class="card">
-  <input type="text" id="searchInput" placeholder="Buscar canción..." onkeyup="filterSongs()">
-  <div id="searchResults"></div>
-</div>
+<main class="wrap">
+  <div class="grid">
+    <section class="card">
+      <div class="hd"><b>Buscador Inteligente</b></div>
+      <div class="bd">
+        <div class="search-box">
+            <input class="input" id="searchDrive" placeholder="Buscar canción..." autocomplete="off" />
+        </div>
+        
+        <div id="driveResults" style="margin-top:14px; display:none; flex-direction:column; gap:10px;"></div>
 
-<div class="card">
-  <h2 id="songTitle" style="font-size: 18px; color: var(--accent); margin-top:0;">Selecciona una canción</h2>
-  
-  <div class="controls">
-    <div>
-      <span style="font-size:12px; color: #888;">Letra:</span>
-      <button class="btn" onclick="changeFont(2)">A+</button>
-      <button class="btn" onclick="changeFont(-2)">A-</button>
-    </div>
-    <div>
-      <span style="font-size:12px; color: #888;">Scroll:</span>
-      <button class="btn btn-scroll" id="scrollBtn" onclick="toggleAutoScroll()">▶ Play</button>
-      <button class="btn" onclick="adjScroll(1)">S+</button>
-      <button class="btn" onclick="adjScroll(-1)">S-</button>
-      <span id="speedInd" style="font-size: 11px; color: var(--accent);">Vel: 1</span>
-    </div>
+        <div class="external-box" id="externalBox">
+            <h4>No está en Drive. Buscar en:</h4>
+            <div class="external-grid">
+                <button class="btn small accent" onclick="openExternal('canzion')">Instituto CanZion</button>
+                <button class="btn small" onclick="openExternal('lacuerda_ch')">LaCuerda (Chords)</button>
+                <button class="btn small" onclick="openExternal('lacuerda_ac')">LaCuerda (Acordes)</button>
+                <button class="btn small" onclick="openExternal('cifraclub')">CifraClub</button>
+                <button class="btn small" onclick="openExternal('google')">Buscar en Google</button>
+            </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="hd"><b>Setlist</b> <button class="btn small danger" onclick="clearSetlist()">Vaciar</button></div>
+      <div class="bd">
+        <div id="setList" style="display:flex; flex-direction:column; gap:10px;"></div>
+        <hr style="border:0; border-top:1px solid var(--line); margin:25px 0;">
+        <div class="viewer">
+          <h2 id="viewTitle" style="text-align: center;">Selecciona una canción</h2>
+          <div class="viewer-tools">
+            <div class="tool-group"><button class="btn" onclick="prevSong()">⟵</button><button class="btn" onclick="nextSong()">⟶</button></div>
+            <div class="tool-group"><button class="btn accent" onclick="transpose(-1)">♭</button><button class="btn accent" onclick="transpose(1)">♯</button></div>
+            <div class="tool-group" style="grid-column: span 2;"><button class="btn" onclick="changeFontSize(-2)">A-</button>Letra<button class="btn" onclick="changeFontSize(2)">A+</button></div>
+          </div>
+          <pre id="viewContent"></pre>
+        </div>
+      </div>
+    </section>
   </div>
-
-  <pre id="viewContent">La letra aparecerá aquí...</pre>
-</div>
+</main>
 
 <script>
-  let scroller = null;
-  let speed = 1;
+  const API_KEY = 'AIzaSyC74SgLN0OFD8zytCktOTCyVdRZZmdL-S0';
+  const FOLDER_ID = '1x6zy_Bor6i9qBhUIl27ZIG0E1qdf5Ye6';
+  const DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"];
 
-  function changeFont(v) {
-    const pre = document.getElementById('viewContent');
-    const style = window.getComputedStyle(pre).fontSize;
-    pre.style.fontSize = (parseFloat(style) + v) + 'px';
+  const state = {
+    setlist: JSON.parse(localStorage.getItem('tabs_setlist') || '[]'),
+    allSongs: [], currentIndex: -1, currentFontSize: 18, currentTranspose: 0
+  };
+
+  const normalizar = (str) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
+  function startApp() {
+    gapi.load('client', async () => {
+      try {
+        await gapi.client.init({ apiKey: API_KEY, discoveryDocs: DISCOVERY_DOCS });
+        document.getElementById('status').innerText = "Drive Online ✅";
+        await cargarBiblioteca();
+        renderAll();
+        initSortable();
+      } catch (e) { document.getElementById('status').innerText = "Error API"; }
+    });
   }
 
-  function toggleAutoScroll() {
-    const btn = document.getElementById('scrollBtn');
-    if (scroller) {
-      clearInterval(scroller);
-      scroller = null;
-      btn.innerText = "▶ Play";
-    } else {
-      btn.innerText = "⏸ Stop";
-      scroller = setInterval(() => { window.scrollBy(0, speed); }, 50);
+  async function cargarBiblioteca() {
+    const response = await gapi.client.drive.files.list({
+      q: `'${FOLDER_ID}' in parents and mimeType = 'text/plain' and trashed = false`,
+      fields: 'files(id, name)', orderBy: 'name', pageSize: 1000
+    });
+    state.allSongs = response.result.files || [];
+  }
+
+  document.getElementById('searchDrive').oninput = (e) => {
+    const val = e.target.value;
+    const resDiv = document.getElementById('driveResults');
+    const extBox = document.getElementById('externalBox');
+
+    if (val.trim() === "") {
+        resDiv.style.display = "none";
+        extBox.style.display = "none";
+        return;
     }
+
+    const q = normalizar(val);
+    const filtrados = state.allSongs.filter(f => normalizar(f.name).includes(q));
+
+    if (filtrados.length > 0) {
+        resDiv.style.display = "flex";
+        extBox.style.display = "none";
+        mostrarResultados(filtrados);
+    } else {
+        resDiv.style.display = "none";
+        extBox.style.display = "block";
+    }
+  };
+
+  function mostrarResultados(lista) {
+    const resDiv = document.getElementById('driveResults');
+    resDiv.innerHTML = "";
+    lista.forEach(f => {
+      const item = document.createElement('div');
+      item.className = 'item';
+      item.innerHTML = `<span>${f.name.replace('.txt','')}</span><button class="btn accent small" onclick="importar('${f.id}', '${f.name}')">Añadir</button>`;
+      resDiv.appendChild(item);
+    });
   }
 
-  function adjScroll(v) {
-    speed = Math.max(1, speed + v);
-    document.getElementById('speedInd').innerText = "Vel: " + speed;
+  // --- LOGICA EXTERNA ---
+  function openExternal(source) {
+    const query = document.getElementById('searchDrive').value;
+    let url = "";
+    switch(source) {
+        case 'canzion': url = `https://www.institutocanzion.com/musica-y-acordes/buscar?q=${query}`; break;
+        case 'lacuerda_ch': url = `https://chords.lacuerda.net/busca.php?ter=${query}`; break;
+        case 'lacuerda_ac': url = `https://acordes.lacuerda.net/busca.php?ter=${query}`; break;
+        case 'cifraclub': url = `https://www.cifraclub.com/?q=${query}`; break;
+        case 'google': url = `https://www.google.com/search?q=${query}+acordes`; break;
+    }
+    document.getElementById('extFrame').src = url;
+    document.getElementById('extModal').style.display = "block";
   }
 
-  // --- RECUERDA INTEGRAR AQUÍ TUS FUNCIONES DE GAPI (GOOGLE DRIVE) ---
-  // (Cargar archivos, Listar archivos, etc., que ya tienes en tu GitHub)
+  function closeExternal() {
+    document.getElementById('extModal').style.display = "none";
+    document.getElementById('extFrame').src = "";
+  }
+
+  async function importar(id, name) {
+    const url = `https://www.googleapis.com/drive/v3/files/${id}?alt=media&key=${API_KEY}`;
+    const resp = await fetch(url);
+    const text = await resp.text();
+    state.setlist.push({ id: Date.now(), title: name.replace('.txt',''), body: text, originalBody: text });
+    state.currentIndex = state.setlist.length - 1;
+    saveLocal(); renderAll();
+    document.getElementById('searchDrive').value = "";
+    document.getElementById('driveResults').style.display = "none";
+  }
+
+  // --- TRANSPOSTIOR Y RENDER ---
+  const scale = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+  function transpose(delta) {
+    const curr = state.setlist[state.currentIndex];
+    if (!curr) return;
+    curr.body = curr.body.replace(/\[([^\]]+)\]/g, (match, chord) => {
+        return "[" + chord.replace(/[A-G]#?/g, (note) => {
+            let idx = scale.indexOf(note);
+            return idx === -1 ? note : scale[(idx + delta + 12) % 12];
+        }) + "]";
+    });
+    renderAll();
+  }
+
+  function renderAll() {
+    const sl = document.getElementById('setList');
+    sl.innerHTML = "";
+    state.setlist.forEach((s, idx) => {
+      const item = document.createElement('div');
+      item.className = 'item';
+      if(idx === state.currentIndex) item.style.borderColor = 'var(--accent)';
+      item.innerHTML = `<div style="flex:1" onclick="seleccionar(${idx})">☰ ${s.title}</div><button class="btn small danger" onclick="removeSong(${idx}, event)">✕</button>`;
+      sl.appendChild(item);
+    });
+    const curr = state.setlist[state.currentIndex];
+    document.getElementById('viewTitle').innerText = curr ? curr.title : "Selecciona canción";
+    document.getElementById('viewContent').innerHTML = curr ? curr.body.replace(/\[([^\]]+)\]/g, '<span class="chord">[$1]</span>') : "";
+    document.getElementById('viewContent').style.fontSize = state.currentFontSize + 'px';
+  }
+
+  function initSortable() {
+    Sortable.create(document.getElementById('setList'), {
+      animation: 150, delay: 400, delayOnTouchOnly: true,
+      onEnd: (evt) => {
+        const item = state.setlist.splice(evt.oldIndex, 1)[0];
+        state.setlist.splice(evt.newIndex, 0, item);
+        state.currentIndex = evt.newIndex;
+        saveLocal(); renderAll();
+      }
+    });
+  }
+
+  function seleccionar(idx) { state.currentIndex = idx; renderAll(); }
+  function saveLocal() { localStorage.setItem('tabs_setlist', JSON.stringify(state.setlist)); }
+  function clearSetlist() { if(confirm("¿Vaciar?")) { state.setlist = []; state.currentIndex = -1; saveLocal(); renderAll(); } }
+  function removeSong(idx, e) { e.stopPropagation(); state.setlist.splice(idx, 1); state.currentIndex = -1; saveLocal(); renderAll(); }
+  function nextSong() { if(state.currentIndex < state.setlist.length-1) seleccionar(state.currentIndex+1); }
+  function prevSong() { if(state.currentIndex > 0) seleccionar(state.currentIndex-1); }
+  function changeFontSize(d) { state.currentFontSize += d; renderAll(); }
 </script>
+<script async defer src="https://apis.google.com/js/api.js" onload="startApp()"></script>
 </body>
 </html>
