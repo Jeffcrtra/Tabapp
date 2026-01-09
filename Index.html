@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>TabApp Pro v3.78</title>
+  <title>TabApp Pro v3.79 - Design Edition</title>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
     :root{
@@ -26,18 +26,49 @@
     .card .hd{ padding:12px; border-bottom:1px solid var(--line); font-weight: bold; display: flex; justify-content: space-between; align-items: center; font-size: 14px;}
     .card .bd{ padding:10px; }
 
-    .btn{ appearance:none; border:1px solid var(--line); background:rgba(255,255,255,.05); color:var(--text); padding:10px; border-radius:10px; cursor:pointer; transition: 0.2s; font-size: 14px; display: inline-flex; align-items: center; justify-content: center; font-weight: 600; min-width: 44px;}
-    .btn:active{ transform: scale(0.94); }
-    .btn.accent{ border-color: var(--accent); color: var(--accent); background: rgba(255,213,74,0.05); }
+    /* BOTÓN BASE CON BORDE BLANCO */
+    .btn{ 
+      appearance:none; 
+      border: 1px solid rgba(255, 255, 255, 0.8); 
+      background: rgba(0, 0, 0, 0.25); 
+      color: var(--text); 
+      padding: 10px; 
+      border-radius: 10px; 
+      cursor: pointer; 
+      transition: 0.2s; 
+      font-size: 14px; 
+      display: inline-flex; 
+      align-items: center; 
+      justify-content: center; 
+      font-weight: 600; 
+      min-width: 44px;
+    }
+    .btn:active{ transform: scale(0.92); }
     .btn.danger{ border-color: var(--danger); color: var(--danger); min-width: 32px; padding: 5px; }
 
     .input{ width:100%; padding:12px; border-radius:10px; border:1px solid var(--line); background:rgba(0,0,0,.3); color:white; outline:none; font-size: 16px; }
     
     .item{ border:1px solid var(--line); border-radius:12px; padding:10px; background:rgba(255,255,255,0.03); display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px; cursor: grab; font-size: 14px;}
     
-    /* Herramientas Optimizadas para Móvil */
+    /* GRILLA DE HERRAMIENTAS */
     .viewer-tools { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 12px; }
-    .tool-group { display: flex; gap: 6px; justify-content: center; align-items: center; background: rgba(255,255,255,0.03); padding: 8px; border-radius: 12px; border: 1px solid var(--line); }
+
+    /* ESTILO DE CONTAINERS (TOOL GROUPS) */
+    .tool-group { 
+      display: flex; 
+      gap: 8px; 
+      justify-content: center; 
+      align-items: center; 
+      padding: 12px; 
+      border-radius: 14px; 
+      border: 1px solid rgba(255, 255, 255, 0.9); /* Borde blanco delgado */
+    }
+
+    /* COLORES DE CADA CONTAINER */
+    .group-nav { background-color: #004173 !important; }    /* Celeste */
+    .group-tone { background-color: #630b57 !important; }   /* Púrpura */
+    .group-font { background-color: #2E6F40 !important; }   /* Verde */
+    .group-scroll { background-color: #d09306 !important; } /* Amarillo Mostaza */
     
     #viewContent { background: rgba(0,0,0,.4); padding: 20px 10px; border-radius: 12px; white-space: pre-wrap; font-family: var(--mono); line-height: 1.6; border: 1px solid var(--line); }
     .chord{ color:var(--accent); font-weight:bold; }
@@ -47,7 +78,7 @@
 
 <header>
   <div class="wrap">
-      <h1>🎸 TabApp Pro v3.78</h1>
+      <h1>🎸 TabApp Pro v3.79</h1>
   </div>
 </header>
 
@@ -62,33 +93,38 @@
     </section>
 
     <section class="card">
-      <div class="hd">Setlist <button class="btn accent" style="min-width:auto; padding: 4px 8px; font-size: 11px;" onclick="clearSetlist()">Vaciar</button></div>
+      <div class="hd">Setlist <button class="btn" style="min-width:auto; padding: 4px 8px; font-size: 11px; border-color:var(--danger); color:var(--danger);" onclick="clearSetlist()">Vaciar</button></div>
       <div class="bd" id="setList"></div>
     </section>
 
     <section class="card" style="grid-column: 1 / -1;">
-      <div class="hd" id="viewTitle" style="color:var(--accent); justify-content: center;">Selecciona una canción</div>
+      <div class="hd" id="viewTitle" style="color:var(--accent); justify-content: center; font-size: 18px;">Selecciona una canción</div>
       <div class="bd">
         <div class="viewer-tools">
-          <div class="tool-group">
+          
+          <div class="tool-group group-nav">
             <button class="btn" onclick="prevSong()">⟵</button>
             <button class="btn" onclick="nextSong()">⟶</button>
           </div>
-          <div class="tool-group">
-            <button class="btn accent" onclick="transpose(-1)">♭</button>
-            <button class="btn accent" onclick="transpose(1)">♯</button>
+
+          <div class="tool-group group-tone">
+            <button class="btn" onclick="transpose(-1)">♭</button>
+            <button class="btn" onclick="transpose(1)">♯</button>
           </div>
-          <div class="tool-group">
+
+          <div class="tool-group group-font">
             <button class="btn" onclick="changeFontSize(-2)">A-</button>
             <button class="btn" onclick="changeFontSize(2)">A+</button>
           </div>
-          <div class="tool-group">
+
+          <div class="tool-group group-scroll">
             <button class="btn" onclick="adjScroll(-0.1)">S-</button>
-            <button class="btn accent" id="scrollBtn" onclick="toggleScroll()">▶</button>
+            <button class="btn" id="scrollBtn" onclick="toggleScroll()" style="color:var(--accent); border-color:var(--accent);">▶</button>
             <button class="btn" onclick="adjScroll(0.1)">S+</button>
           </div>
+
         </div>
-        <div id="speedLabel" style="text-align:center; font-size:10px; color:var(--muted); margin-bottom:10px;">Velocidad: 0.5x</div>
+        <div id="speedLabel" style="text-align:center; font-size:10px; color:var(--muted); margin-bottom:10px; font-weight: bold;">Velocidad: 0.5x</div>
         <pre id="viewContent"></pre>
       </div>
     </section>
@@ -96,7 +132,7 @@
 </main>
 
 <script>
-  // Tu API KEY y FOLDER ID originales
+  // CONFIGURACIÓN DRIVE
   const API_KEY = 'AIzaSyC74SgLN0OFD8zytCktOTCyVdRZZmdL-S0';
   const FOLDER_ID = '1x6zy_Bor6i9qBhUIl27ZIG0E1qdf5Ye6';
   const DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"];
@@ -137,7 +173,7 @@
     filtrados.forEach(f => {
       const div = document.createElement('div');
       div.className = 'item';
-      div.innerHTML = `<span>${f.name.replace('.txt','')}</span><button class="btn accent" style="padding:4px 8px; min-width:auto;" onclick="importar('${f.id}', '${f.name}')">Add</button>`;
+      div.innerHTML = `<span>${f.name.replace('.txt','')}</span><button class="btn" style="padding:4px 8px; min-width:auto; border-color:var(--accent); color:var(--accent);" onclick="importar('${f.id}', '${f.name}')">Add</button>`;
       resDiv.appendChild(div);
     });
   };
