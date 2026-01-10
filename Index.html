@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>9.33 Adoranza Pro v4.05</title>
+  <title>9.38 Adoranza Pro v4.05</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
@@ -269,8 +269,43 @@
     initSortable();
   };
 
-  function showRoles() { document.getElementById('roleSelector').style.display = 'flex'; clearInterval(state.metroInt); }
-  function setRole(role) { state.userRole = role; localStorage.setItem('adoranza_role', role); document.getElementById('roleSelector').style.display = 'none'; renderAll(); }
+  // Función para mostrar el selector (Botón Home)
+  function showRoles() {
+      const selector = document.getElementById('roleSelector');
+      if (selector) {
+          selector.style.display = 'flex';
+          // Detenemos procesos activos al volver al inicio
+          clearInterval(state.metroInt);
+          if (state.scrollInt) {
+              clearInterval(state.scrollInt);
+              state.scrollInt = null;
+              const sBtn = document.getElementById('scrollBtn');
+              if (sBtn) sBtn.innerText = "▶";
+          }
+      }
+  }
+  
+  // Función para establecer el rol y arrancar la App
+  function setRole(role) {
+      try {
+          console.log("Cambiando rol a:", role);
+          state.userRole = role;
+          localStorage.setItem('adoranza_role', role);
+          
+          const selector = document.getElementById('roleSelector');
+          if (selector) selector.style.display = 'none';
+  
+          // Forzamos el renderizado completo para aplicar cambios de rol
+          renderAll();
+          
+          // Pequeño truco: si hay una canción seleccionada, volvemos arriba
+          window.scrollTo({top: 0, behavior: 'smooth'});
+          
+      } catch (error) {
+          console.error("Error crítico al cambiar de rol:", error);
+          alert("Hubo un problema al iniciar el modo " + role + ". Revisa la consola.");
+      }
+  }
 
   // BUSCADOR
   document.getElementById('searchBox').oninput = async (e) => {
