@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-  <title>2.21 Adoranza Pro v4.16 - Full Edition</title>
+  <title>2.26 Adoranza Pro v4.16 - Full Edition</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
@@ -241,7 +241,7 @@
   function seleccionar(idx) { state.currentIndex = idx; state.half = false; renderAll(); window.scrollTo({top:0, behavior:'smooth'}); }
   function removeSong(idx) { state.setlist.splice(idx, 1); if (state.currentIndex === idx) state.currentIndex = -1; saveLocal(); renderAll(); }
   function saveLocal() { localStorage.setItem('adoranza_v4_setlist', JSON.stringify(state.setlist)); }
-  function clearSetlist() { state.setlist = []; state.currentIndex = -1; state.listName = ""; document.getElementById('list-name-badge').innerText = ""; saveLocal(); renderAll(); }
+  function clearSetlist() { state.setlist = []; state.currentIndex = -1; state.listName = ""; document.getElementById('list-name-badge').innerText = "» " + n; saveLocal(); renderAll(); }
   function changeFontSize(d) { state.currentFontSize += d; renderAll(); }
 
   // --- METRONOMO ---
@@ -313,7 +313,7 @@
     const { error } = await db.from('setlists_guardados').insert({ id_unico: uid, nombre_lista: n, canciones_ids: ids });
     if(!error) {
         state.listName = n; state.currentListID = uid;
-        document.getElementById('list-name-badge').innerText = "» ID: " + uid;
+        document.getElementById('list-name-badge').innerText = = "» " + data.nombre_lista;
         alert("Setlist Guardado! ID: " + uid);
     }
   }
@@ -323,7 +323,7 @@
     const { data, error } = await db.from('setlists_guardados').select('*').eq('id_unico', uid.toUpperCase()).single();
     if (data) {
         state.listName = data.nombre_lista; state.currentListID = uid;
-        document.getElementById('list-name-badge').innerText = "» ID: " + uid;
+        document.getElementById('list-name-badge').innerText = = "» " + data.nombre_lista;
         const { data: cans } = await db.from('canciones').select('*').in('id', data.canciones_ids);
         state.setlist = [];
         for(let id of data.canciones_ids) { const s = cans.find(x => x.id === id); if(s) await addToSetlist(s); }
