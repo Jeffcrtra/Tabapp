@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>01.15 Adoranza Pro v4.11</title>
+  <title>01.24 Adoranza Pro v4.11</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
@@ -20,7 +20,7 @@
     .role-grid { display: grid; gap: 14px; grid-template-columns: repeat(3, 1fr); width: min(95vw, 500px); }
     .role-btn { background: var(--card); border: 2px solid var(--line); padding: 15px 10px; border-radius: 20px; text-align: center; font-size: 28px; cursor: pointer; color: white; display: flex; flex-direction: column; align-items: center; transition: 0.3s; }
     .role-btn:hover { border-color: var(--accent); transform: translateY(-5px); }
-    .role-btn small { font-size: 10px; margin-top: 8px; color: var(--muted); font-weight: bold; }
+    .role-btn small { font-size: 10px; margin-top: 8px; color: var(--muted); font-weight: bold; line-height: 1.2; text-transform: uppercase; }
     
     #fixedControlPanel { position: fixed; top: 0; left: 0; right: 0; z-index: 999; background: rgba(11, 13, 18, 0.98); backdrop-filter: blur(10px); border-bottom: 2px solid var(--line); padding: 12px 10px; }
     .viewer-tools { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-width: 500px; margin: 0 auto; }
@@ -31,9 +31,16 @@
     .btn-tone { background-color: #630b57 !important; }
     .btn-font { background-color: #2E6F40 !important; }
     .btn-scroll { background-color: #d09306 !important; }
-    .btn-save { background-color: #1a1a1a; border-color: var(--success); color: var(--success); }
+    .btn-drums { background-color: #444 !important; border-color: var(--success); color: var(--success); }
     .btn-wa { background-color: #075e54; border-color: #25d366; color: white; }
-    
+    .btn.danger-x { border-color: var(--danger); color: var(--danger); background: rgba(255, 92, 119, 0.1); max-width: 40px; }
+
+    #metro-dots { margin-top: 10px; display: flex; justify-content: center; gap: 15px; height: 45px; align-items: center; }
+    .beat-dot { width: 35px; height: 35px; border-radius: 50%; background: #222; border: 2px solid #333; transition: 0.1s; }
+    .beat-active-red { background: var(--danger); box-shadow: 0 0 25px var(--danger); transform: scale(1.15); border-color: #fff; }
+    .beat-active-green { background: var(--success); box-shadow: 0 0 25px var(--success); transform: scale(1.15); border-color: #fff; }
+
+    #configPanel { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 10001; display: none; flex-direction: column; align-items: center; padding: 40px 20px; }
     .wrap { padding: 10px; max-width: 1200px; margin: 0 auto; }
     .grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
     @media (min-width: 768px) { .grid { grid-template-columns: 280px 1fr; } }
@@ -42,10 +49,9 @@
     .card .hd { padding: 10px; border-bottom: 1px solid var(--line); font-weight: bold; font-size: 13px; }
     .card .bd { padding: 10px; }
     
-    .item { border: 1px solid var(--line); border-radius: 12px; padding: 12px; background: rgba(255,255,255,0.03); display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; cursor: pointer; }
+    .item { border: 1px solid var(--line); border-radius: 12px; padding: 12px; background: rgba(255,255,255,0.03); display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; cursor: pointer; touch-action: none; }
     #viewContent { background: rgba(0,0,0,.4); padding: 25px; border-radius: 15px; white-space: pre-wrap; font-family: var(--mono); line-height: 1.6; border: 1px solid var(--line); min-height: 200px; }
     .chord { color: var(--accent); font-weight: bold; }
-    
     #list-name-badge { font-size: 10px; color: var(--accent); margin-top: 4px; display: block; font-weight: normal; }
   </style>
 </head>
@@ -55,8 +61,21 @@
     <h1 style="color:var(--accent); margin:0; font-size: 24px;">ADORANZA PRO v4.11</h1>
     <div class="role-grid">
         <div class="role-btn" onclick="setRole('vocal')">🎤<small>VOCAL</small></div>
-        <div class="role-btn" onclick="setRole('musico')">🎸<small>MÚSICO</small></div>
+        <div class="role-btn" onclick="setRole('musico')">🎸<small>PIANO<br>GUITARRA</small></div>
         <div class="role-btn" onclick="setRole('drums')">🥁<small>BATERÍA</small></div>
+        <div class="role-btn" onclick="verEstadisticas()" style="grid-column: span 1.5">📊<small>STATS</small></div>
+        <div class="role-btn" onclick="openConfig()" style="grid-column: span 1.5">⚙️<small>CONFIG</small></div>
+    </div>
+    <div style="position: absolute; bottom: 20px; font-size: 12px; color: var(--muted); text-align: center;">App creada por <a href="https://www.linkedin.com/in/jeffrey-trigueros-371191123/" target="_blank" style="color:var(--accent); text-decoration: none; font-weight: bold;">Jeffrey Trigueros</a></div>
+</div>
+
+<div id="configPanel">
+    <button class="btn btn-nav" style="margin-bottom: 30px; width: 120px;" onclick="closeConfig()">🏠 Home</button>
+    <div class="card" style="width: 100%; max-width: 400px;">
+        <div class="hd">Perfil de Usuario</div>
+        <div class="bd" style="text-align: center;">
+            <p id="uid-display" style="color:var(--accent); font-family:var(--mono); letter-spacing: 2px;"></p>
+        </div>
     </div>
 </div>
 
@@ -64,9 +83,16 @@
     <div class="viewer-tools">
       <div class="tool-group"><button class="btn btn-nav" onclick="prevSong()">⟵</button><button class="btn btn-nav" onclick="nextSong()">⟶</button></div>
       <div class="tool-group" id="tone-group"><button class="btn btn-tone" onclick="transpose(-1)">♭</button><button class="btn btn-tone" onclick="transpose(1)">♯</button></div>
+      <div class="tool-group" id="drums-group" style="display:none;"><button class="btn btn-drums" onclick="toggleMetroManual()" id="btnMetroState">▶</button><button class="btn btn-drums" onclick="halfTime()">1/2</button></div>
+      <div class="tool-group" style="grid-template-columns: 1fr;"><button class="btn btn-nav" onclick="showHome()">🏠 Inicio</button></div>
       <div class="tool-group"><button class="btn btn-font" onclick="changeFontSize(-2)">A-</button><button class="btn btn-font" onclick="changeFontSize(2)">A+</button></div>
+      <div class="tool-group triple"><button class="btn btn-scroll" onclick="adjScroll(-0.1)">S-</button><button class="btn btn-scroll" id="scrollBtn" onclick="toggleScroll()">AUTO</button><button class="btn btn-scroll" onclick="adjScroll(0.1)">S+</button></div>
     </div>
-    <div id="current-song-info" style="font-weight: bold; color: var(--accent); font-size: 14px; text-align: center; margin-top: 8px;">Adoranza Cloud</div>
+    <div id="volume-container" style="display:none; text-align:center; margin-top:10px;"><input type="range" id="volRange" min="0" max="1" step="0.05" value="0.5" style="width: 120px; vertical-align:middle;"></div>
+    <div id="info-display">
+      <div id="current-song-info" style="font-weight: bold; color: var(--accent); font-size: 14px; text-align: center; margin-top: 8px;">Adoranza Cloud</div>
+      <div id="metro-dots"></div>
+    </div>
 </div>
 
 <main class="wrap">
@@ -75,14 +101,10 @@
         <div class="hd">Buscador</div>
         <div class="bd"><input class="input" style="width:100%; background:#000; color:#fff; border:1px solid #333; padding:10px; border-radius:8px;" id="searchBox" placeholder="Buscar..." autocomplete="off" /><div id="results"></div></div>
     </section>
-
     <section class="card">
         <div class="hd">
             <div style="display:flex; justify-content: space-between; align-items: flex-start; width: 100%;">
-                <div>
-                    Setlist
-                    <span id="list-name-badge"></span>
-                </div>
+                <div>Setlist <span id="list-name-badge"></span></div>
                 <div style="display:flex; gap:4px;">
                     <button class="btn btn-save" style="width:auto; padding:0 6px; height:24px; font-size:10px;" onclick="guardarListaCloud()">Guardar</button>
                     <button class="btn" style="width:auto; padding:0 6px; height:24px; font-size:10px; background:#333;" onclick="cargarListaCloud()">Cargar</button>
@@ -93,7 +115,6 @@
         </div>
         <div class="bd" id="setlist-container"><div id="setList"></div></div>
     </section>
-    
     <section class="card" style="grid-column: 1 / -1; border:none; background:none;"><pre id="viewContent">Selecciona una canción.</pre></section>
   </div>
 </main>
@@ -106,21 +127,49 @@
 
   const state = {
     setlist: [], currentIndex: -1, currentFontSize: 18, userRole: 'musico',
-    listName: localStorage.getItem('adoranza_list_name') || ""
+    listName: "", metroInt: null, metroActive: false, currentBPM: 120, half: false,
+    userId: localStorage.getItem('adoranza_uid') || "AD-" + Math.random().toString(36).substr(2, 4).toUpperCase()
   };
 
   window.onload = async () => { 
-    if(state.listName) document.getElementById('list-name-badge').innerText = "» " + state.listName;
-    revisarLinkCompartido(); 
+    document.getElementById('uid-display').innerText = "ID: " + state.userId;
+    localStorage.setItem('adoranza_uid', state.userId);
+    initSortable();
+    await revisarLinkCompartido(); 
   };
 
-  function setRole(role) { state.userRole = role; document.getElementById('roleSelector').style.display = 'none'; renderAll(); }
+  function setRole(role) { 
+    state.userRole = role; 
+    document.getElementById('roleSelector').style.display = 'none'; 
+    document.getElementById('tone-group').style.display = (role === 'musico') ? 'grid' : 'none';
+    document.getElementById('drums-group').style.display = (role === 'drums') ? 'grid' : 'none';
+    document.getElementById('volume-container').style.display = (role === 'drums') ? 'block' : 'none';
+    renderAll(); 
+  }
+  function openConfig() { document.getElementById('configPanel').style.display = 'flex'; }
+  function closeConfig() { document.getElementById('configPanel').style.display = 'none'; }
+  function showHome() { document.getElementById('roleSelector').style.display = 'flex'; stopMetro(); }
+
+  document.getElementById('searchBox').oninput = async (e) => {
+    const val = e.target.value;
+    const resDiv = document.getElementById('results');
+    if (val.length < 2) { resDiv.innerHTML = ""; return; }
+    const { data } = await db.from('canciones').select('*').or(`titulo.ilike.%${val}%,artista.ilike.%${val}%`).limit(6);
+    resDiv.innerHTML = "";
+    data?.forEach(s => {
+      const d = document.createElement('div'); d.className = 'item';
+      d.innerHTML = `<div>${s.titulo}</div><button class="btn" style="max-width:40px;" onclick='addToSetlist(${JSON.stringify(s)})'>+</button>`;
+      resDiv.appendChild(d);
+    });
+  };
 
   async function addToSetlist(song) {
-    const resp = await fetch(BUCKET_URL + song.path_url);
-    const text = await resp.text();
-    state.setlist.push({ ...song, body: text.replace(/\{(\w+):\s*([^}]+)\}/g, '').trim() });
-    renderAll();
+    try {
+      const resp = await fetch(BUCKET_URL + song.path_url);
+      const text = await resp.text();
+      state.setlist.push({ ...song, body: text.replace(/\{(\w+):\s*([^}]+)\}/g, '').trim() });
+      renderAll();
+    } catch(e) { console.error("Error al cargar:", e); }
   }
 
   function renderAll() {
@@ -129,59 +178,122 @@
       const div = document.createElement('div');
       div.className = 'item';
       if(idx === state.currentIndex) div.style.borderColor = 'var(--accent)';
-      div.innerHTML = `<div onclick="seleccionar(${idx})">${s.titulo}</div>`;
+      div.innerHTML = `<div style="flex:1" onclick="seleccionar(${idx})">☰ ${s.titulo}</div><button class="btn danger-x" onclick="removeSong(${idx}, event)">✕</button>`;
       sl.appendChild(div);
     });
-
     const curr = state.setlist[state.currentIndex];
     const view = document.getElementById('viewContent');
-    if(curr) {
-      document.getElementById('current-song-info').innerText = curr.titulo;
+    if(curr && view) {
+      document.getElementById('current-song-info').innerText = curr.titulo + " | BPM: " + (state.half ? curr.bpm/2 : curr.bpm);
       let body = curr.body;
       if (state.userRole !== 'musico') {
         body = body.replace(/\[([^\]]+)\]/g, ''); 
-        const lines = body.split('\n');
+        const lines = body.split(/\r?\n/);
         const cleaned = [];
         for (let l of lines) { if (l.trim() !== "") cleaned.push(l); else if (cleaned.length > 0 && cleaned[cleaned.length-1] !== "") cleaned.push(""); }
         body = cleaned.join('\n');
-      } else {
-        body = body.replace(/\[([^\]]+)\]/g, '<span class="chord">[$1]</span>');
-      }
-      view.innerHTML = body;
+      } else { body = body.replace(/\[([^\]]+)\]/g, '<span class="chord">[$1]</span>'); }
+      view.innerHTML = body; view.style.fontSize = state.currentFontSize + 'px';
+      state.currentBPM = state.half ? curr.bpm/2 : curr.bpm;
+      if(state.userRole === 'drums' && state.metroActive) startMetro();
     }
   }
 
-  function seleccionar(idx) { state.currentIndex = idx; renderAll(); }
+  function seleccionar(idx) { state.currentIndex = idx; state.half = false; renderAll(); window.scrollTo({top:0, behavior:'smooth'}); }
+  function removeSong(idx, e) { e.stopPropagation(); state.setlist.splice(idx, 1); if (state.currentIndex === idx) state.currentIndex = -1; renderAll(); }
   function clearSetlist() { state.setlist = []; state.currentIndex = -1; state.listName = ""; document.getElementById('list-name-badge').innerText = ""; renderAll(); }
+  function changeFontSize(d) { state.currentFontSize += d; renderAll(); }
 
-  // WHATSAPP
-  function compartirWhatsApp() {
-    if (state.setlist.length === 0) return alert("Lista vacía");
-    const ids = state.setlist.map(s => s.id).join(',');
-    const nombre = state.listName || "Setlist";
-    const shareUrl = `${window.location.origin}${window.location.pathname}?list=${ids}&n=${encodeURIComponent(nombre)}`;
-    window.open(`https://wa.me/?text=${encodeURIComponent("*Setlist:* " + nombre + "\n" + shareUrl)}`, '_blank');
+  function toggleMetroManual() {
+    state.metroActive = !state.metroActive;
+    document.getElementById('btnMetroState').innerText = state.metroActive ? "⏹" : "▶";
+    state.metroActive ? startMetro() : stopMetro();
+  }
+  function halfTime() { state.half = !state.half; renderAll(); }
+
+  function startMetro() {
+    stopMetro();
+    const curr = state.setlist[state.currentIndex];
+    if(!curr) return;
+    const dots = document.getElementById('metro-dots'); dots.innerHTML = "";
+    const beats = parseInt(curr.time_signature) || 4;
+    for(let i=0; i<beats; i++) dots.innerHTML += `<div class="beat-dot" id="dot-${i}"></div>`;
+    let step = 0;
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    state.metroInt = setInterval(() => {
+      const vol = parseFloat(document.getElementById('volRange').value);
+      document.querySelectorAll('.beat-dot').forEach(d => d.className = 'beat-dot');
+      const dot = document.getElementById(`dot-${step}`);
+      if(dot) dot.classList.add(step === 0 ? 'beat-active-red' : 'beat-active-green');
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine'; osc.frequency.setValueAtTime(step === 0 ? 880 : 440, audioCtx.currentTime);
+      gain.gain.setValueAtTime(vol * 0.3, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+      step = (step + 1) % beats;
+    }, (60 / state.currentBPM) * 1000);
+  }
+  function stopMetro() { clearInterval(state.metroInt); if(document.getElementById('metro-dots')) document.getElementById('metro-dots').innerHTML = ""; }
+  function toggleScroll() { 
+    if(state.scrollInt) { clearInterval(state.scrollInt); state.scrollInt = null; document.getElementById('scrollBtn').innerText = "AUTO"; }
+    else { state.scrollInt = setInterval(() => window.scrollBy(0,1), 50/state.scrollSpeed); document.getElementById('scrollBtn').innerText = "PAUSA"; }
+  }
+  function adjScroll(d) { state.scrollSpeed = Math.max(0.1, state.scrollSpeed + d); }
+
+  function transpose(delta) {
+    const scale = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+    const curr = state.setlist[state.currentIndex];
+    if (!curr) return;
+    curr.body = curr.body.replace(/\[([^\]]+)\]/g, (m, chord) => {
+      return "[" + chord.replace(/[A-G]#?/g, (note) => {
+        let idx = scale.indexOf(note);
+        return idx === -1 ? note : scale[(idx + delta + 12) % 12];
+      }) + "]";
+    });
+    renderAll();
   }
 
-  // CARGAR DESDE URL
-  async function revisarLinkCompartido() {
-    const params = new URLSearchParams(window.location.search);
-    const listaIds = params.get('list');
-    const nombreUrl = params.get('n');
+  function compartirWhatsApp() {
+    const ids = state.setlist.map(s => s.id).join(',');
+    const n = state.listName || "Setlist";
+    const url = `${window.location.origin}${window.location.pathname}?list=${ids}&n=${encodeURIComponent(n)}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent("*Setlist:* " + n + "\n" + url)}`, '_blank');
+  }
 
-    if (listaIds) {
-        const idsArray = listaIds.split(',').map(Number);
-        const { data } = await db.from('canciones').select('*').in('id', idsArray);
+  async function revisarLinkCompartido() {
+    const p = new URLSearchParams(window.location.search);
+    const ids = p.get('list');
+    if (ids) {
+        const arr = ids.split(',').map(Number);
+        const { data } = await db.from('canciones').select('*').in('id', arr);
         if (data) {
-            if(nombreUrl) { state.listName = nombreUrl; document.getElementById('list-name-badge').innerText = "» " + nombreUrl; }
+            state.listName = p.get('n') || "Compartida";
+            document.getElementById('list-name-badge').innerText = "» " + state.listName;
             state.setlist = [];
-            for (let id of idsArray) {
-                const s = data.find(x => x.id === id);
-                if (s) await addToSetlist(s);
-            }
+            for (let id of arr) { const s = data.find(x => x.id === id); if (s) await addToSetlist(s); }
             window.history.replaceState({}, "", window.location.pathname);
         }
     }
+  }
+
+  function initSortable() {
+    const el = document.getElementById('setList');
+    if(el) Sortable.create(el, { 
+      animation: 150, 
+      handle: '.item',
+      onEnd: (evt) => {
+        const item = state.setlist.splice(evt.oldIndex, 1)[0];
+        state.setlist.splice(evt.newIndex, 0, item);
+        renderAll();
+      }
+    });
+  }
+
+  async function verEstadisticas() { 
+    const { data } = await db.from('canciones').select('titulo, veces_tocada').gt('veces_tocada', 0).order('veces_tocada', { ascending: false }).limit(5);
+    alert("TOP 5:\n" + data.map(s => `- ${s.titulo} (${s.veces_tocada})`).join('\n'));
   }
 
   async function guardarListaCloud() {
