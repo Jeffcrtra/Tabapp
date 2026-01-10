@@ -134,7 +134,7 @@
 <main class="wrap">
   <div class="grid">
     <section class="card"><div class="hd">Buscador</div><div class="bd"><input class="input" id="searchBox" placeholder="Buscar..." autocomplete="off" /><div id="results" style="margin-top:12px; display:none; flex-direction:column; gap:8px;"></div></div></section>
-    <section class="card"><div class="hd">Setlist<div style="display:flex; gap:5px;"><button class="btn btn-save" style="padding:4px 8px; font-size:10px; height: 25px;" onclick="guardarListaCloud()">Guardar</button><button class="btn" style="padding:4px 8px; font-size:10px; background:#333; height: 25px;" onclick="cargarListaCloud()">Cargar</button><button class="btn danger-x" style="padding:4px 8px; font-size:10px; height: 25px;" onclick="clearSetlist()">Vaciar</button></div></div><div class="bd" id="setlist-container"><div id="setList"></div></div></section>
+    <section class="card"><div class="hd">Setlist<div style="display:flex; gap:5px;"><button class="btn btn-save" style="padding:4px 8px; font-size:10px; height: 25px;" onclick="guardarListaCloud()">Guardar</button><button class="btn" style="padding:4px 8px; font-size:10px; background:#333; height: 25px;" onclick="cargarListaCloud()">Cargar</button><button class="btn danger-x" style="padding:4px 8px; font-size:10px; height: 25px;" onclick="clearSetlist()">Vaciar</button></div></div><div class="bd" id="setlist-container"><div id="setList"></div></div></section><button class="btn" style="padding:4px 8px; font-size:10px; background:#25D366; color:white; border:none;" onclick="compartirWhatsApp()"> WhatsApp</button>
     <section class="card" style="grid-column: 1 / -1; border:none; background:none;"><pre id="viewContent">Selecciona una canción.</pre></section>
   </div>
 </main>
@@ -362,6 +362,59 @@
     const { data } = await db.from('canciones').select('titulo, veces_tocada').gt('veces_tocada', 0).order('veces_tocada', { ascending: false }).limit(5);
     alert("TOP 5:\n" + data.map(s => `- ${s.titulo} (${s.veces_tocada})`).join('\n'));
   }
+
+  // 1. FUNCIÓN PARA ENVIAR POR WHATSAPP
+function compartirWhatsApp() {
+    if (state.setlist.length === 0) return alert("El setlist está vacío.");
+
+    // Extraemos solo los IDs de las canciones
+    const ids = state.setlist.map(s => s.id).join(',');
+    
+    // Construimos la URL base (detecta automáticamente dónde está alojada la app)
+    const baseUrl = window.location.origin + window.location.pathname;
+    const shareUrl = `${baseUrl}?list=${ids}`;
+    
+    const mensaje = encodeURIComponent(`🎸 *Setlist Adoranza Pro*\nTe comparto la lista de hoy:\n\n${shareUrl}`);
+    window.open(`https://wa.me/?text=${mensaje}`, '_blank');
+}
+
+// 2. FUNCIÓN PARA CARGAR DESDE URL (Ejecutar al cargar la página)
+async function revisarLinkCompartido() {
+    const params = new URLSearchParams(window.location.search);
+    const listaIds = params.get('list');
+
+    if (listaIds) {
+        const idsArray = listaIds.split(',').map(Number);
+        console.log("Detectado setlist compartido. IDs:", idsArray);
+        
+        // Consultar Supabase para traer los datos de esos IDs específicos
+        const { data, error } = await db.from('canciones').select('*').in('id', idsArray);
+
+        if (data && !error) {
+            // Limpiamos el setlist actual antes de cargar el compartido (opcional)
+            if(confirm("Se ha detectado un setlist compartido. ¿Deseas cargarlo? (Esto borrará tu lista actual)")) {
+                state.setlist = [];
+                
+                // IMPORTANTE: Respetar el orden original del link
+                for (let id of idsArray) {
+                    const song = data.find(s => s.id === id);
+                    if (song) await addToSetlist(song);
+                }
+                
+                // Limpiar la URL para que no vuelva a preguntar al refrescar
+                window.history.replaceState({}, document.title, window.location.pathname);
+                renderAll();
+            }
+        }
+    }
+}
+
+const originalOnload = window.onload;
+window.onload = () => {
+    if (originalOnload) originalOnload();
+    revisarLinkCompartido(); // <-- Nueva línea
+};
+  
 </script>
 </body>
 </html>
