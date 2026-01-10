@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-  <title>2.26 Adoranza Pro v4.16 - Full Edition</title>
+  <title>2.28 Adoranza Pro v4.16 - Full Edition</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
@@ -204,7 +204,10 @@
 
   // --- RENDER ---
   function renderAll() {
-    const sl = document.getElementById('setList'); sl.innerHTML = "";
+    const sl = document.getElementById('setList'); 
+    if(!sl) return;
+    sl.innerHTML = "";
+    
     state.setlist.forEach((s, idx) => {
       const container = document.createElement('div');
       container.className = 'item-container';
@@ -213,7 +216,7 @@
         <div class="swipe-action action-played">TOCADA</div>
         <div class="item ${s.played ? 'played' : ''}" 
              ontouchstart="handleTouchStart(event)" ontouchend="handleTouchEnd(event, ${idx})">
-          <span class="drag-handle" style="flex:0">☰</span>
+          <span class="drag-handle" style="flex:0; padding:0 10px;">☰</span>
           <div style="flex:1" onclick="seleccionar(${idx})">${s.titulo}</div>
         </div>`;
       sl.appendChild(container);
@@ -230,72 +233,67 @@
         const cleaned = [];
         for (let l of lines) { if (l.trim() !== "") cleaned.push(l); else if (cleaned.length > 0 && cleaned[cleaned.length-1] !== "") cleaned.push(""); }
         body = cleaned.join('\n');
-      } else { body = body.replace(/\[([^\]]+)\]/g, '<span class="chord">[$1]</span>'); }
-      view.innerHTML = body; view.style.fontSize = state.currentFontSize + 'px';
+      } else { 
+        body = body.replace(/\[([^\]]+)\]/g, '<span class="chord">[$1]</span>'); 
+      }
+      view.innerHTML = body; 
+      view.style.fontSize = state.currentFontSize + 'px';
       state.currentBPM = state.half ? curr.bpm/2 : curr.bpm;
       if(state.userRole === 'drums' && state.metroActive) startMetro();
     }
   }
 
-  // --- FUNCIONALIDAD CORE ---
-  function seleccionar(idx) { state.currentIndex = idx; state.half = false; renderAll(); window.scrollTo({top:0, behavior:'smooth'}); }
-  function removeSong(idx) { state.setlist.splice(idx, 1); if (state.currentIndex === idx) state.currentIndex = -1; saveLocal(); renderAll(); }
-  function saveLocal() { localStorage.setItem('adoranza_v4_setlist', JSON.stringify(state.setlist)); }
-  function clearSetlist() { state.setlist = []; state.currentIndex = -1; state.listName = ""; document.getElementById('list-name-badge').innerText = "» " + n; saveLocal(); renderAll(); }
-  function changeFontSize(d) { state.currentFontSize += d; renderAll(); }
-
-  // --- METRONOMO ---
-  function toggleMetroManual() {
-    state.metroActive = !state.metroActive;
-    document.getElementById('btnMetroState').innerText = state.metroActive ? "⏹" : "▶";
-    state.metroActive ? startMetro() : stopMetro();
+  // --- CLOUD FUNCTIONS ACTUALIZADAS (CON NOMBRE EN EL BADGE) ---
+  async function guardarListaCloud() {
+    const n = prompt("Nombre del Setlist:"); 
+    if(!n) return;
+    const uid = generateID();
+    const ids = state.setlist.map(s => s.id);
+    const { error } = await db.from('setlists_guardados').insert({ id_unico: uid, nombre_lista: n, canciones_ids: ids });
+    if(!error) {
+        state.listName = n; 
+        state.currentListID = uid;
+        document.getElementById('list-name-badge').innerText = "» " + n; // Refleja Nombre
+        alert("Setlist Guardado!\nNombre: " + n + "\nID de carga: " + uid);
+    } else {
+        alert("Error al guardar en Supabase");
+    }
   }
-  function halfTime() { state.half = !state.half; renderAll(); }
 
-  function startMetro() {
-    stopMetro();
-    const curr = state.setlist[state.currentIndex];
-    if(!curr) return;
-    const dots = document.getElementById('metro-dots'); dots.innerHTML = "";
-    const beats = parseInt(curr.time_signature) || 4;
-    for(let i=0; i<beats; i++) dots.innerHTML += `<div class="beat-dot" id="dot-${i}"></div>`;
-    let step = 0;
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    state.metroInt = setInterval(() => {
-      const vol = parseFloat(document.getElementById('volRange').value);
-      document.querySelectorAll('.beat-dot').forEach(d => d.className = 'beat-dot');
-      const dot = document.getElementById(`dot-${step}`);
-      if(dot) dot.classList.add(step === 0 ? 'beat-active-red' : 'beat-active-green');
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = 'sine'; osc.frequency.setValueAtTime(step === 0 ? 880 : 440, audioCtx.currentTime);
-      gain.gain.setValueAtTime(vol * 0.3, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
-      osc.connect(gain); gain.connect(audioCtx.destination);
-      osc.start(); osc.stop(audioCtx.currentTime + 0.1);
-      step = (step + 1) % beats;
-    }, (60 / state.currentBPM) * 1000);
+  async function cargarListaCloud() {
+    const uid = prompt("Ingresa el ID de 8 caracteres:"); 
+    if(!uid) return;
+    const { data, error } = await db.from('setlists_guardados').select('*').eq('id_unico', uid.toUpperCase()).single();
+    if (data) {
+        state.listName = data.nombre_lista; 
+        state.currentListID = uid;
+        document.getElementById('list-name-badge').innerText = "» " + data.nombre_lista; // Refleja Nombre
+        const { data: cans } = await db.from('canciones').select('*').in('id', data.canciones_ids);
+        state.setlist = [];
+        // Ordenar canciones segun el array original de IDs
+        for(let id of data.canciones_ids) { 
+            const s = cans.find(x => x.id === id); 
+            if(s) await addToSetlist(s); 
+        }
+        renderAll();
+    } else { 
+        alert("ID no encontrado o error de conexión."); 
+    }
   }
-  function stopMetro() { clearInterval(state.metroInt); if(document.getElementById('metro-dots')) document.getElementById('metro-dots').innerHTML = ""; }
-  
-  // --- SCROLL & TRANSPOSE ---
-  function toggleScroll() { 
-    if(state.scrollInt) { clearInterval(state.scrollInt); state.scrollInt = null; document.getElementById('scrollBtn').innerText = "AUTO"; }
-    else { state.scrollInt = setInterval(() => window.scrollBy(0,1), 50/state.scrollSpeed); document.getElementById('scrollBtn').innerText = "PAUSA"; }
-  }
-  function adjScroll(d) { state.scrollSpeed = Math.max(0.1, state.scrollSpeed + d); }
 
-  function transpose(delta) {
-    const scale = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-    const curr = state.setlist[state.currentIndex];
-    if (!curr) return;
-    curr.body = curr.body.replace(/\[([^\]]+)\]/g, (m, chord) => {
-      return "[" + chord.replace(/[A-G]#?/g, (note) => {
-        let idx = scale.indexOf(note);
-        return idx === -1 ? note : scale[(idx + delta + 12) % 12];
-      }) + "]";
-    });
-    renderAll();
+  // --- LÓGICA DE ICONOS (Asegura que esto no se haya borrado) ---
+  function setRole(role) { 
+    state.userRole = role; 
+    const selector = document.getElementById('roleSelector');
+    if(selector) selector.style.display = 'none'; 
+    
+    document.getElementById('tone-group').style.display = (role === 'musico') ? 'grid' : 'none';
+    document.getElementById('drums-group').style.display = (role === 'drums') ? 'grid' : 'none';
+    
+    const volCont = document.getElementById('volume-container');
+    if(volCont) volCont.style.display = (role === 'drums') ? 'block' : 'none';
+    
+    renderAll(); 
   }
 
   // --- ID GENERATOR & CLOUD ---
