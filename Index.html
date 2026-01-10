@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>00.45 Adoranza Pro v4.11</title>
+  <title>00.52 Adoranza Pro v4.11</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
@@ -16,6 +16,7 @@
     * { box-sizing: border-box; }
     body { margin: 0; font-family: var(--sans); background: var(--bg); color: var(--text); overflow-x: hidden; padding-top: 240px; }
     
+    /* PANTALLA INICIAL */
     #roleSelector {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
       background: var(--bg); z-index: 10000; display: flex; 
@@ -33,12 +34,12 @@
     .footer-credits { position: absolute; bottom: 20px; font-size: 12px; color: var(--muted); text-align: center; }
     .footer-credits a { color: var(--accent); text-decoration: none; font-weight: bold; }
 
+    /* PANEL DE CONTROL */
     #fixedControlPanel { 
       position: fixed; top: 0; left: 0; right: 0; z-index: 999;
       background: rgba(11, 13, 18, 0.98); backdrop-filter: blur(10px);
       border-bottom: 2px solid var(--line); padding: 12px 10px;
     }
-
     .viewer-tools { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-width: 500px; margin: 0 auto; }
     .tool-group { 
       display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; 
@@ -63,6 +64,7 @@
     .btn-save { background-color: #1a1a1a; border-color: var(--success); color: var(--success); }
     .btn.danger-x { border-color: var(--danger); color: var(--danger); background: rgba(255, 92, 119, 0.1); max-width: 40px; }
 
+    /* METRÓNOMO */
     #metro-dots { margin-top: 10px; display: flex; justify-content: center; gap: 15px; height: 45px; align-items: center; }
     .beat-dot { width: 35px; height: 35px; border-radius: 50%; background: #222; border: 2px solid #333; transition: 0.1s; }
     .beat-active-red { background: var(--danger); box-shadow: 0 0 25px var(--danger); transform: scale(1.15); border-color: #fff; }
@@ -81,7 +83,7 @@
     
     .input { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--line); background: rgba(0,0,0,.4); color: white; outline: none; font-size: 16px; }
     .item { border: 1px solid var(--line); border-radius: 12px; padding: 12px; background: rgba(255,255,255,0.03); display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; cursor: pointer; }
-    #viewContent { background: rgba(0,0,0,.4); padding: 25px; border-radius: 15px; white-space: pre-wrap; font-family: var(--mono); line-height: 1.8; border: 1px solid var(--line); min-height: 200px; }
+    #viewContent { background: rgba(0,0,0,.4); padding: 25px; border-radius: 15px; white-space: pre-wrap; font-family: var(--mono); line-height: 1.6; border: 1px solid var(--line); min-height: 200px; }
     .chord { color: var(--accent); font-weight: bold; }
   </style>
 </head>
@@ -106,7 +108,6 @@
         <div class="bd" style="text-align: center;">
             <p style="color:var(--muted)">ID de Usuario:</p>
             <h2 id="uid-display" style="color:var(--accent); font-family:var(--mono); letter-spacing: 2px;"></h2>
-            <p style="font-size: 10px; color: var(--muted); margin-top: 15px;">ID único para sincronización cloud.</p>
         </div>
     </div>
 </div>
@@ -224,26 +225,29 @@
       document.getElementById('current-song-info').innerText = `${curr.titulo} | BPM: ${state.half ? curr.bpm/2 : curr.bpm}`;
       let body = curr.body;
       
-      // LÓGICA DE LIMPIEZA DE LÍNEAS VACÍAS PARA VOCAL Y DRUMS
       if (state.userRole !== 'musico') {
-        // 1. Eliminar acordes entre corchetes
+        // 1. Eliminar acordes
         body = body.replace(/\[([^\]]+)\]/g, ''); 
-        // 2. Limpiar líneas que quedan vacías o solo con espacios tras quitar acordes
-        // Pero preservamos los saltos dobles entre estrofas.
-        const lines = body.split('\n');
-        const cleanedLines = [];
-        for (let i = 0; i < lines.length; i++) {
-          const currentLine = lines[i].trim();
-          if (currentLine === "") {
-            // Solo añadimos la línea vacía si la anterior no era vacía (evita acumulacion)
-            if (cleanedLines.length > 0 && cleanedLines[cleanedLines.length - 1] !== "") {
-                cleanedLines.push("");
-            }
+        
+        // 2. MOTOR DE LIMPIEZA AGRESIVO
+        // Dividimos el texto en líneas reales
+        const rawLines = body.split(/\r?\n/);
+        const processedLines = [];
+        
+        for (let i = 0; i < rawLines.length; i++) {
+          const line = rawLines[i].trim();
+          
+          if (line !== "") {
+            processedLines.push(line);
           } else {
-            cleanedLines.push(lines[i]);
+            // Si la línea es vacía, solo la añadimos si la anterior no era vacía
+            // Esto preserva el salto de estrofa pero quita los huecos de acordes
+            if (processedLines.length > 0 && processedLines[processedLines.length - 1] !== "") {
+              processedLines.push(""); 
+            }
           }
         }
-        body = cleanedLines.join('\n');
+        body = processedLines.join('\n');
       } else {
         body = body.replace(/\[([^\]]+)\]/g, '<span class="chord">[$1]</span>');
       }
