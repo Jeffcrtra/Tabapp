@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>10.10 Adoranza Pro v4.05</title>
+  <title>10.17 Adoranza Pro v4.05</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
@@ -21,11 +21,18 @@
       background: var(--bg); z-index: 10000; display: flex; 
       flex-direction: column; align-items: center; justify-content: center; gap: 30px;
     }
-    .role-grid { display: flex; gap: 15px; }
+    .role-grid{
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(2, minmax(140px, 1fr));
+      width: min(92vw, 420px);
+      justify-items: center;
+    }
     .role-btn {
-      background: var(--card); border: 2px solid var(--line); padding: 20px;
+      background: var(--card); border: 2px solid var(--line); padding: 18px 14px;
+      max-width: 190px;
       border-radius: 20px; text-align: center; font-size: 32px; cursor: pointer;
-      transition: 0.3s; width: 110px; color: white;
+      transition: 0.3s; width: 100px; color: white;
     }
     .role-btn:hover { border-color: var(--accent); transform: translateY(-5px); }
     .role-btn small { display: block; font-size: 12px; margin-top: 8px; color: var(--muted); font-weight: bold; }
@@ -79,7 +86,7 @@
     <p style="color:var(--muted)">Selecciona tu función:</p>
     <div class="role-grid">
         <div class="role-btn" onclick="setRole('vocal')">🎤<small>VOCAL</small></div>
-        <div class="role-btn" onclick="setRole('musico')">🎸🎹<small>MÚSICO</small></div>
+        <div class="role-btn" onclick="setRole('musico')">🎸🎹<small>PIANO+GUITARRA</small></div>
         <div class="role-btn" onclick="setRole('drums')">🥁<small>BATERÍA</small></div>
         <div class="role-btn" onclick="verEstadisticas('statistics')">📊<small>Estadísticas</small></button>
     </div>
