@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>10.06 Adoranza Pro v4.05</title>
+  <title>10.10 Adoranza Pro v4.05</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
@@ -81,6 +81,8 @@
         <div class="role-btn" onclick="setRole('vocal')">🎤<small>VOCAL</small></div>
         <div class="role-btn" onclick="setRole('musico')">🎸🎹<small>MÚSICO</small></div>
         <div class="role-btn" onclick="setRole('drums')">🥁<small>BATERÍA</small></div>
+        <div class="role-btn" onclick="verEstadisticas('statistics')">📊<small>Estadísticas</small></button>
+    </div>
     </div>
 </div>
 
@@ -109,11 +111,6 @@
         <input class="input" id="searchBox" placeholder="Escribe nombre o artista..." autocomplete="off" />
         <div id="results" style="margin-top:12px; display:none; flex-direction:column; gap:8px;"></div>
       </div>
-      <div style="margin-top:10px; text-align:right;">
-      <button class="btn" onclick="verEstadisticas()" style="font-size:12px;">
-        📊 Ver estadísticas de uso
-      </button>
-    </div>
     </section>
 
     <section class="card">
