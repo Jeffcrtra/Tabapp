@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Adoranza Pro v3.84</title>
+  <title>Adoranza Pro v4</title>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
     :root{
@@ -151,12 +151,28 @@
 
   async function importar(id, name) {
     const resp = await fetch(`https://www.googleapis.com/drive/v3/files/${id}?alt=media&key=${API_KEY}`);
-    const text = await resp.text();
-    state.setlist.push({ id: Date.now(), title: name.replace('.txt',''), body: text });
+    const rawText = await resp.text();
+    
+    // Extraemos metadatos usando Regex
+    const meta = {};
+    const cleanBody = rawText.replace(/\{(\w+):\s*([^}]+)\}/g, (match, key, value) => {
+        meta[key.toLowerCase()] = value.trim();
+        return ""; // Eliminamos la línea del texto visual
+    }).trim();
+
+    state.setlist.push({ 
+        id: Date.now(), 
+        title: meta.title || name.replace('.txt',''), 
+        artist: meta.artist || "Desconocido",
+        bpm: meta.bpm || "120",
+        time: meta.time || "4",
+        body: cleanBody 
+    });
+    
     saveLocal(); renderAll();
     document.getElementById('searchDrive').value = "";
     document.getElementById('driveResults').style.display = "none";
-  }
+}
 
   const scale = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
   function transpose(delta) {
@@ -189,22 +205,31 @@
   }
 
   function renderAll() {
-    const sl = document.getElementById('setList');
-    sl.innerHTML = "";
-    state.setlist.forEach((s, idx) => {
-      const div = document.createElement('div');
-      div.className = 'item';
-      if(idx === state.currentIndex) div.style.borderColor = 'var(--accent)';
-      div.innerHTML = `<div style="flex:1" onclick="seleccionar(${idx})">☰ ${s.title}</div>
-                       <button class="btn danger" onclick="removeSong(${idx}, event)">✕</button>`;
-      sl.appendChild(div);
-    });
-    const curr = state.setlist[state.currentIndex];
-    if(curr) {
-        document.getElementById('current-song-info').innerText = curr.title;
-        document.getElementById('viewContent').innerHTML = curr.body.replace(/\[([^\]]+)\]/g, '<span class="chord">[$1]</span>');
-        document.getElementById('viewContent').style.fontSize = state.currentFontSize + 'px';
-    }
+      const sl = document.getElementById('setList');
+      sl.innerHTML = "";
+      state.setlist.forEach((s, idx) => {
+          const div = document.createElement('div');
+          div.className = 'item';
+          if(idx === state.currentIndex) div.style.borderColor = 'var(--accent)';
+          div.innerHTML = `<div style="flex:1" onclick="seleccionar(${idx})">☰ ${s.title} <small style="color:var(--muted)">(${s.artist})</small></div>
+                           <button class="btn danger" onclick="removeSong(${idx}, event)">✕</button>`;
+          sl.appendChild(div);
+      });
+  
+      const curr = state.setlist[state.currentIndex];
+      if(curr) {
+          // Actualizamos el panel de información con los metadatos ocultos
+          document.getElementById('current-song-info').innerText = `${curr.title} - ${curr.artist} | BPM: ${curr.bpm} | TS: ${curr.time}/4`;
+          
+          // Ajustamos la velocidad inicial basada en el BPM (Lógica sugerida)
+          // A mayor BPM, quizás necesitemos un scroll un poco más rápido
+          state.scrollSpeed = parseFloat(curr.bpm) / 200; 
+          document.getElementById('speedLabel').innerText = "Velocidad Sugerida: " + state.scrollSpeed.toFixed(1) + "x";
+  
+          // Renderizamos el cuerpo SIN las etiquetas de metadatos
+          document.getElementById('viewContent').innerHTML = curr.body.replace(/\[([^\]]+)\]/g, '<span class="chord">[$1]</span>');
+          document.getElementById('viewContent').style.fontSize = state.currentFontSize + 'px';
+      }
   }
 
   function seleccionar(idx) { 
