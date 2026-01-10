@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>9.50 Adoranza Pro v4.05</title>
+  <title>10.03 Adoranza Pro v4.05</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
@@ -86,11 +86,11 @@
 
 <div id="fixedControlPanel">
     <div class="nav-icons">
-        <button class="icon-btn" onclick="verEstadisticas()" title="Estadísticas">📊</button>
-        <button class="icon-btn" onclick="showRoles()" title="Cambiar de Rol">🏠</button>
+        <!-- vacio o solo iconos futuros -->
     </div>
     <div class="viewer-tools">
       <div class="tool-group"><button class="btn btn-nav" onclick="prevSong()">⟵</button><button class="btn btn-nav" onclick="nextSong()">⟶</button></div>
+      <div class="tool-group"><button class="btn btn-nav" onclick="showRoles()" style="font-size:12px;">🏠 Inicio</button></div>
       <div class="tool-group"><button class="btn btn-tone" onclick="transpose(-1)">♭</button><button class="btn btn-tone" onclick="transpose(1)">♯</button></div>
       <div class="tool-group"><button class="btn btn-font" onclick="changeFontSize(-2)">A-</button><button class="btn btn-font" onclick="changeFontSize(2)">A+</button></div>
       <div class="tool-group"><button class="btn btn-scroll" onclick="adjScroll(-0.1)">S-</button><button class="btn btn-scroll" id="scrollBtn" onclick="toggleScroll()">▶</button><button class="btn btn-scroll" onclick="adjScroll(0.1)">S+</button></div>
@@ -109,6 +109,11 @@
         <input class="input" id="searchBox" placeholder="Escribe nombre o artista..." autocomplete="off" />
         <div id="results" style="margin-top:12px; display:none; flex-direction:column; gap:8px;"></div>
       </div>
+      <div style="margin-top:10px; text-align:right;">
+      <button class="btn" onclick="verEstadisticas()" style="font-size:12px;">
+        📊 Ver estadísticas de uso
+      </button>
+    </div>
     </section>
 
     <section class="card">
@@ -143,14 +148,19 @@
   };
 
   window.onload = () => {
-    const savedRole = localStorage.getItem('adoranza_role');
-    if(savedRole) {
-      state.userRole = savedRole;
-      document.getElementById('roleSelector').style.display = 'none';
-    }
-    renderAll();
-    initSortable();
-  };
+  // SIEMPRE mostrar selector al inicio
+  const selector = document.getElementById('roleSelector');
+  if (selector) selector.style.display = 'flex';
+
+  state.currentIndex = -1;
+  clearInterval(state.metroInt);
+  clearInterval(state.scrollInt);
+  state.scrollInt = null;
+
+  renderAll();
+  initSortable();
+};
+
 
   // Función para mostrar el selector (Botón Home)
   function showRoles() {
