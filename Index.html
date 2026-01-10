@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>00.32 Adoranza Pro v4.11</title>
+  <title>00.36 Adoranza Pro v4.11</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
@@ -38,17 +38,55 @@
       background: rgba(11, 13, 18, 0.98); backdrop-filter: blur(10px);
       border-bottom: 2px solid var(--line); padding: 12px 10px;
     }
-    .viewer-tools { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-width: 500px; margin: 0 auto; }
-    .tool-group { display: flex; gap: 4px; justify-content: center; align-items: center; padding: 4px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); background: rgba(255, 255, 255, 0.02); }
 
-    .btn { border: 1px solid rgba(255, 255, 255, 0.2); color: white; padding: 12px 8px; border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; }
+    /* GRILLA DE BOTONES UNIFORMES */
+    .viewer-tools { 
+      display: grid; 
+      grid-template-columns: repeat(3, 1fr); 
+      gap: 8px; 
+      max-width: 500px; 
+      margin: 0 auto; 
+    }
+    .tool-group { 
+      display: grid; 
+      grid-template-columns: repeat(2, 1fr); 
+      gap: 4px; 
+      justify-content: center; 
+      align-items: center; 
+      padding: 4px; 
+      border-radius: 12px; 
+      border: 1px solid rgba(255, 255, 255, 0.1); 
+      background: rgba(255, 255, 255, 0.02); 
+    }
+    /* Excepción para grupos de 3 botones (Scroll) */
+    .tool-group.triple { grid-template-columns: repeat(3, 1fr); grid-column: span 2; }
+    /* Excepción para Inicio */
+    .tool-group.single { grid-template-columns: 1fr; }
+
+    .btn { 
+      border: 1px solid rgba(255, 255, 255, 0.2); 
+      color: white; 
+      padding: 10px 5px; 
+      border-radius: 8px; 
+      cursor: pointer; 
+      font-size: 12px; 
+      font-weight: 600; 
+      display: inline-flex; 
+      align-items: center; 
+      justify-content: center; 
+      transition: 0.2s;
+      width: 100%;
+      max-width: 100px;
+      margin: 0 auto;
+      height: 40px;
+    }
     .btn-nav { background-color: #004173 !important; }
     .btn-tone { background-color: #630b57 !important; }
     .btn-font { background-color: #2E6F40 !important; }
     .btn-scroll { background-color: #d09306 !important; }
     .btn-drums { background-color: #444 !important; border-color: var(--success); color: var(--success); }
     .btn-save { background-color: #1a1a1a; border-color: var(--success); color: var(--success); }
-    .btn.danger-x { border-color: var(--danger); color: var(--danger); background: rgba(255, 92, 119, 0.1); width: 40px; }
+    .btn.danger-x { border-color: var(--danger); color: var(--danger); background: rgba(255, 92, 119, 0.1); max-width: 40px; }
 
     #metro-dots { margin-top: 10px; display: flex; justify-content: center; gap: 15px; height: 45px; align-items: center; }
     .beat-dot { width: 35px; height: 35px; border-radius: 50%; background: #222; border: 2px solid #333; transition: 0.1s; }
@@ -70,7 +108,6 @@
     .item { border: 1px solid var(--line); border-radius: 12px; padding: 12px; background: rgba(255,255,255,0.03); display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; cursor: pointer; }
     #viewContent { background: rgba(0,0,0,.4); padding: 25px; border-radius: 15px; white-space: pre-wrap; font-family: var(--mono); line-height: 1.8; border: 1px solid var(--line); min-height: 200px; }
     .chord { color: var(--accent); font-weight: bold; }
-    #current-song-info { font-weight: bold; color: var(--accent); font-size: 14px; text-align: center; margin-top: 8px; }
   </style>
 </head>
 <body>
@@ -94,7 +131,7 @@
         <div class="bd" style="text-align: center;">
             <p style="color:var(--muted)">ID de Usuario:</p>
             <h2 id="uid-display" style="color:var(--accent); font-family:var(--mono); letter-spacing: 2px;"></h2>
-            <button class="btn" style="background:#333; margin-top: 15px;" onclick="resetUID()">Generar Nuevo ID</button>
+            <p style="font-size: 10px; color: var(--muted); margin-top: 15px;">Este ID es permanente para tu navegador.</p>
         </div>
     </div>
 </div>
@@ -102,25 +139,30 @@
 <div id="fixedControlPanel">
     <div class="viewer-tools">
       <div class="tool-group"><button class="btn btn-nav" onclick="prevSong()">⟵</button><button class="btn btn-nav" onclick="nextSong()">⟶</button></div>
+      
       <div class="tool-group" id="tone-group"><button class="btn btn-tone" onclick="transpose(-1)">♭</button><button class="btn btn-tone" onclick="transpose(1)">♯</button></div>
+      
       <div class="tool-group" id="drums-group" style="display:none;">
-          <button class="btn btn-drums" onclick="toggleMetroManual()" id="btnMetroState" style="min-width: 45px;">▶</button>
-          <button class="btn btn-drums" onclick="halfTime()" style="font-size:10px;">1/2 BPM</button>
+          <button class="btn btn-drums" onclick="toggleMetroManual()" id="btnMetroState">▶</button>
+          <button class="btn btn-drums" onclick="halfTime()">1/2</button>
       </div>
-      <div class="tool-group"><button class="btn btn-nav" onclick="showHome()" style="width:100%;">🏠 Inicio</button></div>
+
+      <div class="tool-group single"><button class="btn btn-nav" onclick="showHome()">🏠</button></div>
       <div class="tool-group"><button class="btn btn-font" onclick="changeFontSize(-2)">A-</button><button class="btn btn-font" onclick="changeFontSize(2)">A+</button></div>
-      <div class="tool-group" style="grid-column: span 2;">
-          <button class="btn btn-scroll" onclick="adjScroll(-0.1)">-</button>
-          <button class="btn btn-scroll" id="scrollBtn" onclick="toggleScroll()" style="flex:1; font-size: 11px;">AUTO ▶</button>
-          <button class="btn btn-scroll" onclick="adjScroll(0.1)">+</button>
+      
+      <div class="tool-group triple">
+          <button class="btn btn-scroll" onclick="adjScroll(-0.1)">S-</button>
+          <button class="btn btn-scroll" id="scrollBtn" onclick="toggleScroll()">AUTO</button>
+          <button class="btn btn-scroll" onclick="adjScroll(0.1)">S+</button>
       </div>
     </div>
+    
     <div id="volume-container" style="display:none; text-align:center; margin-top:10px;">
-        <small style="font-size: 11px; color: var(--muted);">VOL CLICK:</small> 
-        <input type="range" id="volRange" min="0" max="1" step="0.1" value="0.5" style="vertical-align:middle; width: 100px;">
+        <small style="font-size: 11px; color: var(--muted);">VOL:</small> 
+        <input type="range" id="volRange" min="0" max="1" step="0.05" value="0.5" style="vertical-align:middle; width: 120px;">
     </div>
     <div id="info-display">
-      <div id="current-song-info">Conectado a Adoranza Cloud</div>
+      <div id="current-song-info" style="font-weight: bold; color: var(--accent); font-size: 14px; text-align: center; margin-top: 8px;">Adoranza Cloud</div>
       <div id="metro-dots"></div>
     </div>
 </div>
@@ -137,9 +179,9 @@
     <section class="card">
       <div class="hd">Setlist 
         <div style="display:flex; gap:5px;">
-            <button class="btn btn-save" style="padding:4px 8px; font-size:10px" onclick="guardarListaCloud()">Guardar</button>
-            <button class="btn" style="padding:4px 8px; font-size:10px; background:#333;" onclick="cargarListaCloud()">Cargar</button>
-            <button class="btn danger-x" style="padding:4px 8px; font-size:10px" onclick="clearSetlist()">Vaciar</button>
+            <button class="btn btn-save" style="padding:4px 8px; font-size:10px; height: 25px;" onclick="guardarListaCloud()">Guardar</button>
+            <button class="btn" style="padding:4px 8px; font-size:10px; background:#333; height: 25px;" onclick="cargarListaCloud()">Cargar</button>
+            <button class="btn danger-x" style="padding:4px 8px; font-size:10px; height: 25px;" onclick="clearSetlist()">Vaciar</button>
         </div>
       </div>
       <div class="bd" id="setlist-container"><div id="setList"></div></div>
@@ -179,15 +221,14 @@
   function setRole(role) {
     state.userRole = role;
     document.getElementById('roleSelector').style.display = 'none';
-    document.getElementById('tone-group').style.display = (role === 'musico') ? 'flex' : 'none';
-    document.getElementById('drums-group').style.display = (role === 'drums') ? 'flex' : 'none';
+    document.getElementById('tone-group').style.display = (role === 'musico') ? 'grid' : 'none';
+    document.getElementById('drums-group').style.display = (role === 'drums') ? 'grid' : 'none';
     document.getElementById('volume-container').style.display = (role === 'drums') ? 'block' : 'none';
     renderAll();
   }
 
   function openConfig() { document.getElementById('configPanel').style.display = 'flex'; }
   function closeConfig() { document.getElementById('configPanel').style.display = 'none'; }
-  function resetUID() { if(confirm("¿Generar nuevo ID?")) { state.userId = generateUID(); document.getElementById('uid-display').innerText = state.userId; } }
   function showHome() { document.getElementById('roleSelector').style.display = 'flex'; stopMetro(); }
 
   document.getElementById('searchBox').oninput = async (e) => {
@@ -201,7 +242,7 @@
         const div = document.createElement('div');
         div.className = 'item';
         div.innerHTML = `<div><b>${song.titulo}</b><br><small>${song.artista}</small></div>
-                         <button class="btn" style="color:var(--accent)" onclick='addToSetlist(${JSON.stringify(song)})'>Add</button>`;
+                         <button class="btn" style="color:var(--accent); max-width: 50px;" onclick='addToSetlist(${JSON.stringify(song)})'>+</button>`;
         resDiv.appendChild(div);
       });
     }
@@ -211,10 +252,8 @@
     try {
       const resp = await fetch(BUCKET_URL + song.path_url);
       const text = await resp.text();
-      const bodyLimpio = text.replace(/\{(\w+):\s*([^}]+)\}/g, '').trim();
-      state.setlist.push({ ...song, body: bodyLimpio });
-      saveLocal(); 
-      renderAll();
+      state.setlist.push({ ...song, body: text.replace(/\{(\w+):\s*([^}]+)\}/g, '').trim() });
+      saveLocal(); renderAll();
       document.getElementById('searchBox').value = "";
       document.getElementById('results').style.display = "none";
     } catch (e) { console.error("Error Supabase:", e); }
@@ -224,56 +263,38 @@
     const sl = document.getElementById('setList');
     if(!sl) return;
     sl.innerHTML = "";
-    
     state.setlist.forEach((s, idx) => {
       const div = document.createElement('div');
       div.className = 'item';
       if(idx === state.currentIndex) div.style.borderColor = 'var(--accent)';
-      
-      // Contenido de la fila (Título + Botón Borrar)
-      div.innerHTML = `
-        <div style="flex:1" onclick="seleccionar(${idx})">☰ ${s.titulo}</div>
-        <button class="btn danger-x" onclick="removeSong(${idx}, event)">✕</button>
-      `;
+      div.innerHTML = `<div style="flex:1" onclick="seleccionar(${idx})">☰ ${s.titulo}</div>
+                       <button class="btn danger-x" onclick="removeSong(${idx}, event)">✕</button>`;
       sl.appendChild(div);
     });
 
     const curr = state.setlist[state.currentIndex];
     const view = document.getElementById('viewContent');
-    const info = document.getElementById('current-song-info');
-    
     if(curr && view) {
-      info.innerText = `${curr.titulo} | BPM: ${state.half ? curr.bpm/2 : curr.bpm}`;
+      document.getElementById('current-song-info').innerText = `${curr.titulo} | BPM: ${state.half ? curr.bpm/2 : curr.bpm}`;
       let body = curr.body;
       if (state.userRole !== 'musico') body = body.replace(/\[([^\]]+)\]/g, ''); 
       else body = body.replace(/\[([^\]]+)\]/g, '<span class="chord">[$1]</span>');
-      
       view.innerHTML = body;
       view.style.fontSize = state.currentFontSize + 'px';
       state.currentBPM = state.half ? curr.bpm/2 : curr.bpm;
       if (state.userRole === 'drums' && state.metroActive) startMetro();
     } else if (view) {
-      view.innerHTML = "Selecciona una canción del setlist.";
-      info.innerText = "Conectado a Adoranza Cloud";
+      view.innerHTML = "Selecciona una canción.";
+      document.getElementById('current-song-info').innerText = "Adoranza Cloud";
       stopMetro();
     }
   }
 
-  function seleccionar(idx) {
-    state.currentIndex = idx;
-    state.half = false;
-    renderAll();
-    window.scrollTo({top:0, behavior:'smooth'});
-  }
-
-  function removeSong(idx, e) {
-    e.stopPropagation(); // IMPORTANTE: Evita que el clic active la selección
-    state.setlist.splice(idx, 1);
-    if (state.currentIndex === idx) state.currentIndex = -1;
-    else if (state.currentIndex > idx) state.currentIndex--;
-    saveLocal();
-    renderAll();
-  }
+  function seleccionar(idx) { state.currentIndex = idx; state.half = false; renderAll(); window.scrollTo({top:0, behavior:'smooth'}); }
+  function removeSong(idx, e) { e.stopPropagation(); state.setlist.splice(idx, 1); if (state.currentIndex === idx) state.currentIndex = -1; saveLocal(); renderAll(); }
+  function saveLocal() { localStorage.setItem('adoranza_v4_setlist', JSON.stringify(state.setlist)); }
+  function clearSetlist() { if(confirm("¿Vaciar?")) { state.setlist = []; state.currentIndex = -1; saveLocal(); renderAll(); } }
+  function changeFontSize(d) { state.currentFontSize += d; renderAll(); }
 
   function toggleMetroManual() {
     state.metroActive = !state.metroActive;
@@ -292,9 +313,11 @@
     
     let step = 0;
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const vol = parseFloat(document.getElementById('volRange').value);
     
     state.metroInt = setInterval(() => {
+      // Leer volumen cada ciclo para cambios en tiempo real
+      const vol = parseFloat(document.getElementById('volRange').value);
+      
       document.querySelectorAll('.beat-dot').forEach(d => d.className = 'beat-dot');
       const dot = document.getElementById(`dot-${step}`);
       if(dot) dot.classList.add(step === 0 ? 'beat-active-red' : 'beat-active-green');
@@ -303,7 +326,7 @@
       const gain = audioCtx.createGain();
       osc.type = 'sine';
       osc.frequency.setValueAtTime(step === 0 ? 880 : 440, audioCtx.currentTime);
-      gain.gain.setValueAtTime(vol * 0.2, audioCtx.currentTime);
+      gain.gain.setValueAtTime(vol * 0.3, audioCtx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
       osc.connect(gain); gain.connect(audioCtx.destination);
       osc.start(); osc.stop(audioCtx.currentTime + 0.1);
@@ -312,15 +335,9 @@
   }
 
   function stopMetro() { clearInterval(state.metroInt); if(document.getElementById('metro-dots')) document.getElementById('metro-dots').innerHTML = ""; }
-  function saveLocal() { localStorage.setItem('adoranza_v4_setlist', JSON.stringify(state.setlist)); }
-  function clearSetlist() { if(confirm("¿Vaciar?")) { state.setlist = []; state.currentIndex = -1; saveLocal(); renderAll(); } }
-  function changeFontSize(d) { state.currentFontSize += d; renderAll(); }
-  function nextSong() { if(state.currentIndex < state.setlist.length-1) seleccionar(state.currentIndex+1); }
-  function prevSong() { if(state.currentIndex > 0) seleccionar(state.currentIndex-1); }
-
   function toggleScroll() { 
-    if(state.scrollInt) { clearInterval(state.scrollInt); state.scrollInt = null; document.getElementById('scrollBtn').innerText = "AUTO ▶"; }
-    else { state.scrollInt = setInterval(() => window.scrollBy(0,1), 50/state.scrollSpeed); document.getElementById('scrollBtn').innerText = "PAUSA ⏸"; }
+    if(state.scrollInt) { clearInterval(state.scrollInt); state.scrollInt = null; document.getElementById('scrollBtn').innerText = "AUTO"; }
+    else { state.scrollInt = setInterval(() => window.scrollBy(0,1), 50/state.scrollSpeed); document.getElementById('scrollBtn').innerText = "PAUSA"; }
   }
   function adjScroll(d) { state.scrollSpeed = Math.max(0.1, state.scrollSpeed + d); }
 
