@@ -1,9 +1,16 @@
+
+  // CONFIGURACION SUPABASE (Mantenida 100%)
+  // const SB_URL = "https://ystlbjvjoqpqoklvjdrj.supabase.co";
+  // const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlzdGxianZqb3FwcW9rbHZqZHJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5NzY4NDUsImV4cCI6MjA4MzU1Mjg0NX0.AQg9BuuGlbUtuyccvrBJwRGzx4Bgzx58aqGbfMPzKfg";
+  // const db = supabase.createClient(SB_URL, SB_KEY);
+  // const BUCKET_URL = `${SB_URL}/storage/v1/object/public/Cancionero_Adoranza/`;
+
 <!doctype html>
 <html lang="es">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-  <title>2.28 Adoranza Pro v4.16 - Full Edition</title>
+  <title>2.31 Adoranza Pro v4.16.1</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
@@ -36,7 +43,6 @@
     .btn-drums { background-color: #444 !important; border-color: var(--success); color: var(--success); }
     .btn-save { background-color: #1a1a1a; border-color: var(--success); color: var(--success); }
     .btn-wa { background-color: #075e54; border-color: #25d366; color: white; }
-    .btn.danger-x { border-color: var(--danger); color: var(--danger); background: rgba(255, 92, 119, 0.1); max-width: 40px; }
 
     /* Swipe Logic Styles */
     .item-container { position: relative; overflow: hidden; border-radius: 12px; margin-bottom: 8px; }
@@ -146,7 +152,6 @@
     userId: localStorage.getItem('adoranza_uid') || "AD-" + Math.random().toString(36).substr(2, 4).toUpperCase()
   };
 
-  // --- INICIO ---
   window.onload = async () => { 
     document.getElementById('uid-display').innerText = "ID: " + state.userId;
     localStorage.setItem('adoranza_uid', state.userId);
@@ -166,7 +171,6 @@
   function closeConfig() { document.getElementById('configPanel').style.display = 'none'; }
   function showHome() { document.getElementById('roleSelector').style.display = 'flex'; stopMetro(); }
 
-  // --- BUSCADOR ---
   document.getElementById('searchBox').oninput = async (e) => {
     const val = e.target.value;
     const resDiv = document.getElementById('results');
@@ -185,43 +189,32 @@
       const resp = await fetch(BUCKET_URL + song.path_url);
       const text = await resp.text();
       state.setlist.push({ ...song, body: text.replace(/\{(\w+):\s*([^}]+)\}/g, '').trim(), played: false });
-      saveLocal(); renderAll();
+      renderAll();
     } catch(e) { console.error(e); }
   }
 
-  // --- SWIPE LOGIC ---
   let touchStartX = 0;
   function handleTouchStart(e) { touchStartX = e.touches[0].clientX; }
   function handleTouchEnd(e, idx) {
     let diff = e.changedTouches[0].clientX - touchStartX;
-    if (diff > 80) { // Derecha: Played
-        state.setlist[idx].played = !state.setlist[idx].played;
-        saveLocal(); renderAll();
-    } else if (diff < -80) { // Izquierda: Remove
-        removeSong(idx);
-    }
+    if (diff > 80) { state.setlist[idx].played = !state.setlist[idx].played; renderAll(); }
+    else if (diff < -80) { removeSong(idx); }
   }
 
-  // --- RENDER ---
   function renderAll() {
-    const sl = document.getElementById('setList'); 
-    if(!sl) return;
-    sl.innerHTML = "";
-    
+    const sl = document.getElementById('setList'); sl.innerHTML = "";
     state.setlist.forEach((s, idx) => {
       const container = document.createElement('div');
       container.className = 'item-container';
       container.innerHTML = `
         <div class="swipe-action action-delete">ELIMINAR</div>
         <div class="swipe-action action-played">TOCADA</div>
-        <div class="item ${s.played ? 'played' : ''}" 
-             ontouchstart="handleTouchStart(event)" ontouchend="handleTouchEnd(event, ${idx})">
+        <div class="item ${s.played ? 'played' : ''}" ontouchstart="handleTouchStart(event)" ontouchend="handleTouchEnd(event, ${idx})">
           <span class="drag-handle" style="flex:0; padding:0 10px;">☰</span>
           <div style="flex:1" onclick="seleccionar(${idx})">${s.titulo}</div>
         </div>`;
       sl.appendChild(container);
     });
-
     const curr = state.setlist[state.currentIndex];
     const view = document.getElementById('viewContent');
     if(curr && view) {
@@ -233,72 +226,72 @@
         const cleaned = [];
         for (let l of lines) { if (l.trim() !== "") cleaned.push(l); else if (cleaned.length > 0 && cleaned[cleaned.length-1] !== "") cleaned.push(""); }
         body = cleaned.join('\n');
-      } else { 
-        body = body.replace(/\[([^\]]+)\]/g, '<span class="chord">[$1]</span>'); 
-      }
-      view.innerHTML = body; 
-      view.style.fontSize = state.currentFontSize + 'px';
+      } else { body = body.replace(/\[([^\]]+)\]/g, '<span class="chord">[$1]</span>'); }
+      view.innerHTML = body; view.style.fontSize = state.currentFontSize + 'px';
       state.currentBPM = state.half ? curr.bpm/2 : curr.bpm;
       if(state.userRole === 'drums' && state.metroActive) startMetro();
     }
   }
 
-  // --- CLOUD FUNCTIONS ACTUALIZADAS (CON NOMBRE EN EL BADGE) ---
-  async function guardarListaCloud() {
-    const n = prompt("Nombre del Setlist:"); 
-    if(!n) return;
-    const uid = generateID();
-    const ids = state.setlist.map(s => s.id);
-    const { error } = await db.from('setlists_guardados').insert({ id_unico: uid, nombre_lista: n, canciones_ids: ids });
-    if(!error) {
-        state.listName = n; 
-        state.currentListID = uid;
-        document.getElementById('list-name-badge').innerText = "» " + n; // Refleja Nombre
-        alert("Setlist Guardado!\nNombre: " + n + "\nID de carga: " + uid);
-    } else {
-        alert("Error al guardar en Supabase");
-    }
+  function seleccionar(idx) { state.currentIndex = idx; state.half = false; renderAll(); window.scrollTo({top:0, behavior:'smooth'}); }
+  function removeSong(idx) { state.setlist.splice(idx, 1); if (state.currentIndex === idx) state.currentIndex = -1; renderAll(); }
+  function clearSetlist() { state.setlist = []; state.currentIndex = -1; state.listName = ""; document.getElementById('list-name-badge').innerText = ""; renderAll(); }
+  function changeFontSize(d) { state.currentFontSize += d; renderAll(); }
+
+  function toggleMetroManual() {
+    state.metroActive = !state.metroActive;
+    document.getElementById('btnMetroState').innerText = state.metroActive ? "⏹" : "▶";
+    state.metroActive ? startMetro() : stopMetro();
+  }
+  function halfTime() { state.half = !state.half; renderAll(); }
+
+  function startMetro() {
+    stopMetro();
+    const curr = state.setlist[state.currentIndex];
+    if(!curr) return;
+    const dots = document.getElementById('metro-dots'); dots.innerHTML = "";
+    const beats = parseInt(curr.time_signature) || 4;
+    for(let i=0; i<beats; i++) dots.innerHTML += `<div class="beat-dot" id="dot-${i}"></div>`;
+    let step = 0;
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    state.metroInt = setInterval(() => {
+      const vol = parseFloat(document.getElementById('volRange').value);
+      document.querySelectorAll('.beat-dot').forEach(d => d.className = 'beat-dot');
+      const dot = document.getElementById(`dot-${step}`);
+      if(dot) dot.classList.add(step === 0 ? 'beat-active-red' : 'beat-active-green');
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine'; osc.frequency.setValueAtTime(step === 0 ? 880 : 440, audioCtx.currentTime);
+      gain.gain.setValueAtTime(vol * 0.3, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+      step = (step + 1) % beats;
+    }, (60 / state.currentBPM) * 1000);
+  }
+  function stopMetro() { clearInterval(state.metroInt); if(document.getElementById('metro-dots')) document.getElementById('metro-dots').innerHTML = ""; }
+  
+  function toggleScroll() { 
+    if(state.scrollInt) { clearInterval(state.scrollInt); state.scrollInt = null; document.getElementById('scrollBtn').innerText = "AUTO"; }
+    else { state.scrollInt = setInterval(() => window.scrollBy(0,1), 50/state.scrollSpeed); document.getElementById('scrollBtn').innerText = "PAUSA"; }
+  }
+  function adjScroll(d) { state.scrollSpeed = Math.max(0.1, state.scrollSpeed + d); }
+
+  function transpose(delta) {
+    const scale = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+    const curr = state.setlist[state.currentIndex];
+    if (!curr) return;
+    curr.body = curr.body.replace(/\[([^\]]+)\]/g, (m, chord) => {
+      return "[" + chord.replace(/[A-G]#?/g, (note) => {
+        let idx = scale.indexOf(note);
+        return idx === -1 ? note : scale[(idx + delta + 12) % 12];
+      }) + "]";
+    });
+    renderAll();
   }
 
-  async function cargarListaCloud() {
-    const uid = prompt("Ingresa el ID de 8 caracteres:"); 
-    if(!uid) return;
-    const { data, error } = await db.from('setlists_guardados').select('*').eq('id_unico', uid.toUpperCase()).single();
-    if (data) {
-        state.listName = data.nombre_lista; 
-        state.currentListID = uid;
-        document.getElementById('list-name-badge').innerText = "» " + data.nombre_lista; // Refleja Nombre
-        const { data: cans } = await db.from('canciones').select('*').in('id', data.canciones_ids);
-        state.setlist = [];
-        // Ordenar canciones segun el array original de IDs
-        for(let id of data.canciones_ids) { 
-            const s = cans.find(x => x.id === id); 
-            if(s) await addToSetlist(s); 
-        }
-        renderAll();
-    } else { 
-        alert("ID no encontrado o error de conexión."); 
-    }
-  }
-
-  // --- LÓGICA DE ICONOS (Asegura que esto no se haya borrado) ---
-  function setRole(role) { 
-    state.userRole = role; 
-    const selector = document.getElementById('roleSelector');
-    if(selector) selector.style.display = 'none'; 
-    
-    document.getElementById('tone-group').style.display = (role === 'musico') ? 'grid' : 'none';
-    document.getElementById('drums-group').style.display = (role === 'drums') ? 'grid' : 'none';
-    
-    const volCont = document.getElementById('volume-container');
-    if(volCont) volCont.style.display = (role === 'drums') ? 'block' : 'none';
-    
-    renderAll(); 
-  }
-
-  // --- ID GENERATOR & CLOUD ---
   function generateID() {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Evitamos I, O, 0, 1 por confusión
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     let res = '';
     for (let i = 0; i < 8; i++) res += chars.charAt(Math.floor(Math.random() * chars.length));
     return res;
@@ -311,7 +304,7 @@
     const { error } = await db.from('setlists_guardados').insert({ id_unico: uid, nombre_lista: n, canciones_ids: ids });
     if(!error) {
         state.listName = n; state.currentListID = uid;
-        document.getElementById('list-name-badge').innerText = = "» " + data.nombre_lista;
+        document.getElementById('list-name-badge').innerText = "» " + n;
         alert("Setlist Guardado! ID: " + uid);
     }
   }
@@ -321,7 +314,7 @@
     const { data, error } = await db.from('setlists_guardados').select('*').eq('id_unico', uid.toUpperCase()).single();
     if (data) {
         state.listName = data.nombre_lista; state.currentListID = uid;
-        document.getElementById('list-name-badge').innerText = = "» " + data.nombre_lista;
+        document.getElementById('list-name-badge').innerText = "» " + data.nombre_lista;
         const { data: cans } = await db.from('canciones').select('*').in('id', data.canciones_ids);
         state.setlist = [];
         for(let id of data.canciones_ids) { const s = cans.find(x => x.id === id); if(s) await addToSetlist(s); }
@@ -332,7 +325,7 @@
   function compartirWhatsApp() {
     if(!state.currentListID) { alert("Guarda la lista primero"); return; }
     const songs = state.setlist.map((s,i) => `${i+1}. ${s.titulo}`).join('\n');
-    const msg = `🎸 *SETLIST: ${state.listName}*\n🆔 ID de Carga: *${state.currentListID}*\n\n*Canciones:*\n${songs}\n\n_Generado por Adoranza Pro_`;
+    const msg = `🎸 *SETLIST: ${state.listName}*\n🆔 ID: *${state.currentListID}*\n\n*Canciones:*\n${songs}\n\n_Adoranza Pro_`;
     window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
   }
 
@@ -341,9 +334,17 @@
     if(el) Sortable.create(el, { animation: 150, handle: '.drag-handle', onEnd: (evt) => {
         const item = state.setlist.splice(evt.oldIndex, 1)[0];
         state.setlist.splice(evt.newIndex, 0, item);
-        saveLocal(); renderAll();
+        renderAll();
     }}); 
   }
+
+  async function verEstadisticas() { 
+    const { data } = await db.from('canciones').select('titulo, veces_tocada').gt('veces_tocada', 0).order('veces_tocada', { ascending: false }).limit(5);
+    alert("TOP 5:\n" + data.map(s => `- ${s.titulo} (${s.veces_tocada})`).join('\n'));
+  }
+
+  function prevSong() { if(state.currentIndex > 0) seleccionar(state.currentIndex - 1); }
+  function nextSong() { if(state.currentIndex < state.setlist.length - 1) seleccionar(state.currentIndex + 1); }
 </script>
 </body>
 </html>
