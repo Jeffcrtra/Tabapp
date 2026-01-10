@@ -3,124 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>9.44 Adoranza Pro v4.05</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-  <style>
-    :root {
-      --bg:#0b0d12; --card:#121622; --muted:#98a2b3; --text:#e6e9ef;
-      --line:#23283a; --accent:#ffd54a; --danger:#ff5c77; --success:#4aff80; --radius: 14px;
-      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      --sans: ui-sans-serif, system-ui, sans-serif;
-    }
-    * { box-sizing: border-box; }
-    body { margin: 0; font-family: var(--sans); background: var(--bg); color: var(--text); padding-top: 180px; }
-    
-    /* SELECTOR DE ROL */
-    #roleSelector {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-      background: var(--bg); z-index: 10000; display: flex; 
-      flex-direction: column; align-items: center; justify-content: center; gap: 30px;
-    }
-    .role-grid { display: flex; gap: 15px; }
-    .role-btn {
-      background: var(--card); border: 2px solid var(--line); padding: 20px;
-      border-radius: 20px; text-align: center; font-size: 32px; cursor: pointer;
-      transition: 0.3s; width: 110px; color: white;
-    }
-    .role-btn:hover { border-color: var(--accent); transform: translateY(-5px); }
-    .role-btn small { display: block; font-size: 12px; margin-top: 8px; color: var(--muted); font-weight: bold; }
-
-    /* PANEL FIJO */
-    #fixedControlPanel { 
-      position: fixed; top: 0; left: 0; right: 0; z-index: 999;
-      background: rgba(11, 13, 18, 0.98); backdrop-filter: blur(10px);
-      border-bottom: 2px solid var(--line); padding: 8px 10px;
-    }
-    .nav-icons { position: absolute; top: 12px; right: 15px; display: flex; gap: 10px; }
-    .icon-btn { background: none; border: 1px solid var(--line); color: var(--muted); padding: 8px; border-radius: 50%; cursor: pointer; font-size: 16px; transition: 0.2s; }
-    .icon-btn:hover { border-color: var(--accent); color: var(--accent); }
-
-    .viewer-tools { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; max-width: 500px; margin: 0 auto; }
-    .tool-group { display: flex; gap: 6px; justify-content: center; align-items: center; padding: 6px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); background: rgba(255, 255, 255, 0.02); }
-
-    .btn { appearance:none; border: 1px solid rgba(255, 255, 255, 0.2); color: white; padding: 10px; border-radius: 10px; cursor: pointer; transition: 0.2s; font-size: 14px; font-weight: 600; }
-    .btn-nav { background-color: #004173 !important; }
-    .btn-tone { background-color: #630b57 !important; }
-    .btn-font { background-color: #2E6F40 !important; }
-    .btn-scroll { background-color: #d09306 !important; }
-    .btn-save { background-color: #1a1a1a; border-color: var(--success); color: var(--success); }
-
-    #viewContent { background: rgba(0,0,0,.4); padding: 25px; border-radius: 15px; white-space: pre-wrap; font-family: var(--mono); line-height: 1.8; border: 1px solid var(--line); }
-    .chord { color: var(--accent); font-weight: bold; }
-    .item { border: 1px solid var(--line); border-radius: 12px; padding: 12px; background: rgba(255,255,255,0.03); display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; cursor: pointer; }
-    .card { background: rgba(255,255,255,.02); border: 1px solid var(--line); border-radius: var(--radius); margin-bottom: 10px; }
-    .card .hd { padding: 10px; border-bottom: 1px solid var(--line); font-weight: bold; display: flex; justify-content: space-between; font-size: 13px; align-items: center; }
-  </style>
-</head>
-<body>
-
-<div id="roleSelector">
-    <h1 style="color:var(--accent); margin:0;">ADORANZA PRO v4.05</h1>
-    <p style="color:var(--muted)">Selecciona tu función:</p>
-    <div class="role-grid">
-        <div class="role-btn" onclick="setRole('vocal')">🎤<small>VOCAL</small></div>
-        <div class="role-btn" onclick="setRole('musico')">🎸🎹<small>MÚSICO</small></div>
-        <div class="role-btn" onclick="setRole('drums')">🥁<small>BATERÍA</small></div>
-    </div>
-</div>
-
-<div id="fixedControlPanel">
-    <div class="nav-icons">
-        <button class="icon-btn" onclick="verEstadisticas()" title="Estadísticas">📊</button>
-        <button class="icon-btn" onclick="showRoles()" title="Inicio/Roles">🏠</button>
-    </div>
-    <div class="viewer-tools">
-      <div class="tool-group"><button class="btn btn-nav" onclick="prevSong()">⟵</button><button class="btn btn-nav" onclick="nextSong()">⟶</button></div>
-      <div class="tool-group"><button class="btn btn-tone" onclick="transpose(-1)">♭</button><button class="btn btn-tone" onclick="transpose(1)">♯</button></div>
-      <div class="tool-group"><button class="btn btn-font" onclick="changeFontSize(-2)">A-</button><button class="btn btn-font" onclick="changeFontSize(2)">A+</button></div>
-      <div class="tool-group"><button class="btn btn-scroll" onclick="adjScroll(-0.1)">S-</button><button class="btn btn-scroll" id="scrollBtn" onclick="toggleScroll()">▶</button><button class="btn btn-scroll" onclick="adjScroll(0.1)">S+</button></div>
-    </div>
-    <div id="info-display" style="text-align:center; margin-top:8px;">
-      <div id="current-song-info" style="font-weight:bold; color:var(--accent); font-size:14px;">Selecciona una canción</div>
-      <div id="metro-dots" style="display:flex; justify-content:center; gap:8px; margin-top:5px;"></div>
-    </div>
-</div>
-
-<main class="wrap" style="padding:10px; max-width:1200px; margin:0 auto;">
-  <div class="grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap:10px;">
-    
-    <section class="card">
-      <div class="hd">Buscador Cloud</div>
-      <div class="bd" style="padding:10px;">
-        <input class="input" style="width:100%; padding:12px; background:rgba(0,0,0,0.3); border:1px solid var(--line); color:white; border-radius:10px;" id="searchBox" placeholder="Buscar..." autocomplete="off" />
-        <div id="results" style="margin-top:10px;"></div>
-      </div>
-    </section>
-
-    <section class="card">
-      <div class="hd">
-        Setlist Actual 
-        <div style="display:flex; gap:5px;">
-            <button class="btn btn-save" style="padding:4px 8px; font-size:10px" onclick="guardarLista()">Guardar</button>
-            <button class="btn" style="padding:4px 8px; font-size:10px; background:#333;" onclick="cargarListaMenu()">Cargar</button>
-        </div>
-      </div>
-      <div class="bd" id="setList" style="padding:10px;"></div>
-    </section>
-
-    <section class="card" style="grid-column: 1 / -1; border:none; background:none;">
-      <pre id="viewContent">Contenido...</pre>
-    </section>
-  </div>
-</main>
-
-<!doctype html>
-<html lang="es">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Adoranza Pro v4.05</title>
+  <title>9.50 Adoranza Pro v4.05</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
@@ -494,5 +377,30 @@
     }});
   }
 </script>
+
+<script>
+    // Safety: bind role buttons even if inline onclick is not working
+    document.addEventListener("DOMContentLoaded", () => {
+      console.log("[Adoranza] DOM ready. Binding role buttons...");
+  
+      document.querySelectorAll(".role-btn[data-role]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const role = btn.getAttribute("data-role");
+          console.log("[Adoranza] role click:", role);
+  
+          // If setRole exists, use it; otherwise do the minimum to pass through
+          if (typeof window.setRole === "function") {
+            window.setRole(role);
+          } else {
+            // Minimal fallback so you can at least get past the selector
+            localStorage.setItem("adoranza_role", role);
+            const selector = document.getElementById("roleSelector");
+            if (selector) selector.style.display = "none";
+          }
+        });
+      });
+    });
+  </script>
+  
 </body>
 </html>
