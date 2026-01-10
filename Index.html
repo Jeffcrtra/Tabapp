@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>00.20 Adoranza Pro v4.11</title>
+  <title>00.25 Adoranza Pro v4.11</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
@@ -52,13 +52,13 @@
     .btn-save { background-color: #1a1a1a; border-color: var(--success); color: var(--success); }
     .btn.danger-x { border-color: var(--danger); color: var(--danger); background: rgba(255, 92, 119, 0.1); }
 
-    /* METRÓNOMO DRAMÁTICO */
+    /* METRÓNOMO */
     #metro-dots { margin-top: 10px; display: flex; justify-content: center; gap: 15px; height: 45px; align-items: center; }
     .beat-dot { width: 35px; height: 35px; border-radius: 50%; background: #222; border: 2px solid #333; transition: 0.1s; }
     .beat-active-red { background: var(--danger); box-shadow: 0 0 25px var(--danger); transform: scale(1.15); border-color: #fff; }
     .beat-active-green { background: var(--success); box-shadow: 0 0 25px var(--success); transform: scale(1.15); border-color: #fff; }
 
-    /* CONFIG PAGE COMPLETA */
+    /* CONFIG */
     #configPanel { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 10001; display: none; flex-direction: column; align-items: center; padding: 40px 20px; }
 
     .wrap { padding: 10px; max-width: 1200px; margin: 0 auto; }
@@ -88,9 +88,7 @@
         <div class="role-btn" onclick="verEstadisticas()" style="grid-column: span 1.5">📊<small>STATS</small></div>
         <div class="role-btn" onclick="openConfig()" style="grid-column: span 1.5">⚙️<small>CONFIG</small></div>
     </div>
-    <div class="footer-credits">
-        App creada por <a href="https://www.linkedin.com/in/jeffrey-trigueros-371191123/" target="_blank">Jeffrey Trigueros</a>
-    </div>
+    <div class="footer-credits">App creada por <a href="https://www.linkedin.com/in/jeffrey-trigueros-371191123/" target="_blank">Jeffrey Trigueros</a></div>
 </div>
 
 <div id="configPanel">
@@ -98,7 +96,7 @@
     <div class="card" style="width: 100%; max-width: 400px;">
         <div class="hd">Perfil de Usuario</div>
         <div class="bd" style="text-align: center;">
-            <p style="color:var(--muted)">Tu ID de usuario:</p>
+            <p style="color:var(--muted)">ID de Usuario:</p>
             <h2 id="uid-display" style="color:var(--accent); font-family:var(--mono); letter-spacing: 2px;"></h2>
             <button class="btn" style="background:#333; margin-top: 15px;" onclick="resetUID()">Generar Nuevo ID</button>
         </div>
@@ -108,31 +106,25 @@
 <div id="fixedControlPanel">
     <div class="viewer-tools">
       <div class="tool-group"><button class="btn btn-nav" onclick="prevSong()">⟵</button><button class="btn btn-nav" onclick="nextSong()">⟶</button></div>
-      
       <div class="tool-group" id="tone-group"><button class="btn btn-tone" onclick="transpose(-1)">♭</button><button class="btn btn-tone" onclick="transpose(1)">♯</button></div>
-      
       <div class="tool-group" id="drums-group" style="display:none;">
           <button class="btn btn-drums" onclick="toggleMetroManual()" id="btnMetroState" style="min-width: 45px;">▶</button>
           <button class="btn btn-drums" onclick="halfTime()" style="font-size:10px;">1/2 BPM</button>
       </div>
-
       <div class="tool-group"><button class="btn btn-nav" onclick="showHome()" style="width:100%;">🏠 Inicio</button></div>
       <div class="tool-group"><button class="btn btn-font" onclick="changeFontSize(-2)">A-</button><button class="btn btn-font" onclick="changeFontSize(2)">A+</button></div>
-      
       <div class="tool-group" style="grid-column: span 2;">
           <button class="btn btn-scroll" onclick="adjScroll(-0.1)">-</button>
           <button class="btn btn-scroll" id="scrollBtn" onclick="toggleScroll()" style="flex:1; font-size: 11px;">AUTO ▶</button>
           <button class="btn btn-scroll" onclick="adjScroll(0.1)">+</button>
       </div>
     </div>
-    
     <div id="volume-container" style="display:none; text-align:center; margin-top:10px;">
         <small style="font-size: 11px; color: var(--muted);">VOL CLICK:</small> 
         <input type="range" id="volRange" min="0" max="1" step="0.1" value="0.5" style="vertical-align:middle; width: 100px;">
     </div>
-
     <div id="info-display">
-      <div id="current-song-info">Adoranza Cloud</div>
+      <div id="current-song-info">Conectado a Adoranza Cloud</div>
       <div id="metro-dots"></div>
     </div>
 </div>
@@ -146,10 +138,8 @@
         <div id="results" style="margin-top:12px; display:none; flex-direction:column; gap:8px;"></div>
       </div>
     </section>
-
     <section class="card">
-      <div class="hd">
-        Mi Setlist 
+      <div class="hd">Setlist 
         <div style="display:flex; gap:5px;">
             <button class="btn btn-save" style="padding:4px 8px; font-size:10px" onclick="guardarListaCloud()">Guardar</button>
             <button class="btn" style="padding:4px 8px; font-size:10px; background:#333;" onclick="cargarListaCloud()">Cargar</button>
@@ -158,9 +148,8 @@
       </div>
       <div class="bd" id="setlist-container"><div id="setList"></div></div>
     </section>
-
     <section class="card" style="grid-column: 1 / -1; border:none; background:none;">
-      <pre id="viewContent">Selecciona una canción del setlist.</pre>
+      <pre id="viewContent">Selecciona una canción.</pre>
     </section>
   </div>
 </main>
@@ -202,41 +191,46 @@
 
   function openConfig() { document.getElementById('configPanel').style.display = 'flex'; }
   function closeConfig() { document.getElementById('configPanel').style.display = 'none'; }
-  function resetUID() { if(confirm("¿Generar nuevo ID de usuario?")) { state.userId = generateUID(); document.getElementById('uid-display').innerText = state.userId; } }
+  function resetUID() { if(confirm("¿Generar nuevo ID?")) { state.userId = generateUID(); document.getElementById('uid-display').innerText = state.userId; } }
   function showHome() { document.getElementById('roleSelector').style.display = 'flex'; stopMetro(); }
 
   document.getElementById('searchBox').oninput = async (e) => {
     const val = e.target.value;
     const resDiv = document.getElementById('results');
     if (val.length < 2) { resDiv.style.display = "none"; return; }
-    const { data } = await db.from('canciones').select('*').or(`titulo.ilike.%${val}%,artista.ilike.%${val}%`).limit(6);
+    const { data } = await db.from('canciones').select('*').or(`titulo.ilike.%${val}%,artista.ilike.%${val}%`).limit(8);
     if (data) {
       resDiv.style.display = "flex"; resDiv.innerHTML = "";
       data.forEach(song => {
         const div = document.createElement('div');
         div.className = 'item';
-        div.innerHTML = `<div><b>${song.titulo}</b></div><button class="btn" style="color:var(--accent)" onclick='addToSetlist(${JSON.stringify(song)})'>+</button>`;
+        div.innerHTML = `<div><b>${song.titulo}</b><br><small>${song.artista}</small></div>
+                         <button class="btn" style="color:var(--accent)" onclick='addToSetlist(${JSON.stringify(song)})'>Add</button>`;
         resDiv.appendChild(div);
       });
     }
   };
 
   async function addToSetlist(song) {
-    const resp = await fetch(BUCKET_URL + song.path_url);
-    const text = await resp.text();
-    state.setlist.push({ ...song, body: text.replace(/\{(\w+):\s*([^}]+)\}/g, '').trim() });
-    saveLocal(); renderAll();
+    try {
+      const resp = await fetch(BUCKET_URL + song.path_url);
+      const text = await resp.text();
+      const bodyLimpio = text.replace(/\{(\w+):\s*([^}]+)\}/g, '').trim();
+      state.setlist.push({ ...song, body: bodyLimpio });
+      saveLocal(); renderAll();
+      document.getElementById('searchBox').value = "";
+      document.getElementById('results').style.display = "none";
+    } catch (e) { console.error("Error al cargar canción:", e); }
   }
 
   function renderAll() {
-    const sl = document.getElementById('setList'); 
+    const sl = document.getElementById('setList');
     if(!sl) return;
     sl.innerHTML = "";
     state.setlist.forEach((s, idx) => {
       const div = document.createElement('div');
       div.className = 'item';
       if(idx === state.currentIndex) div.style.borderColor = 'var(--accent)';
-      // Click en el nombre selecciona la canción
       div.onclick = () => seleccionar(idx);
       div.innerHTML = `<div style="flex:1">☰ ${s.titulo}</div>
                        <button class="btn danger-x" onclick="removeSong(${idx}, event)">✕</button>`;
@@ -245,49 +239,36 @@
 
     const curr = state.setlist[state.currentIndex];
     const view = document.getElementById('viewContent');
-    const info = document.getElementById('current-song-info');
-
     if(curr && view) {
-      info.innerText = `${curr.titulo} | BPM: ${state.half ? curr.bpm/2 : curr.bpm}`;
+      document.getElementById('current-song-info').innerText = `${curr.titulo} | BPM: ${state.half ? curr.bpm/2 : curr.bpm}`;
       let body = curr.body;
       if (state.userRole !== 'musico') body = body.replace(/\[([^\]]+)\]/g, ''); 
       else body = body.replace(/\[([^\]]+)\]/g, '<span class="chord">[$1]</span>');
       view.innerHTML = body;
       view.style.fontSize = state.currentFontSize + 'px';
       state.currentBPM = state.half ? curr.bpm/2 : curr.bpm;
-      
       if (state.userRole === 'drums' && state.metroActive) startMetro();
-    } else if (view) {
-      view.innerHTML = "Selecciona una canción del setlist.";
-      info.innerText = "Adoranza Cloud";
+    } else if(view) {
+      view.innerHTML = "Selecciona una canción.";
+      document.getElementById('current-song-info').innerText = "Adoranza Cloud";
       stopMetro();
     }
   }
 
-  function seleccionar(idx) { 
-    state.currentIndex = idx; 
-    state.half = false; 
-    renderAll(); 
-    window.scrollTo({top:0, behavior:'smooth'}); 
-  }
-
-  function removeSong(idx, e) { 
-    e.stopPropagation(); 
-    state.setlist.splice(idx, 1); 
-    if (state.currentIndex === idx) state.currentIndex = -1;
-    saveLocal(); renderAll(); 
-  }
+  function seleccionar(idx) { state.currentIndex = idx; state.half = false; renderAll(); window.scrollTo({top:0, behavior:'smooth'}); }
+  function removeSong(idx, e) { e.stopPropagation(); state.setlist.splice(idx,1); if(state.currentIndex===idx) state.currentIndex=-1; saveLocal(); renderAll(); }
+  function saveLocal() { localStorage.setItem('adoranza_v4_setlist', JSON.stringify(state.setlist)); }
+  function clearSetlist() { if(confirm("¿Vaciar?")) { state.setlist = []; state.currentIndex = -1; saveLocal(); renderAll(); } }
+  function changeFontSize(d) { state.currentFontSize += d; renderAll(); }
+  function nextSong() { if(state.currentIndex < state.setlist.length-1) seleccionar(state.currentIndex+1); }
+  function prevSong() { if(state.currentIndex > 0) seleccionar(state.currentIndex-1); }
 
   function toggleMetroManual() {
     state.metroActive = !state.metroActive;
     document.getElementById('btnMetroState').innerText = state.metroActive ? "⏹" : "▶";
     state.metroActive ? startMetro() : stopMetro();
   }
-
-  function halfTime() {
-    state.half = !state.half;
-    renderAll();
-  }
+  function halfTime() { state.half = !state.half; renderAll(); }
 
   function startMetro() {
     stopMetro();
@@ -296,16 +277,13 @@
     const dots = document.getElementById('metro-dots'); dots.innerHTML = "";
     const beats = parseInt(curr.time_signature) || 4;
     for(let i=0; i<beats; i++) dots.innerHTML += `<div class="beat-dot" id="dot-${i}"></div>`;
-    
     let step = 0;
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     const vol = parseFloat(document.getElementById('volRange').value);
-
     state.metroInt = setInterval(() => {
-      document.querySelectorAll('.beat-dot').forEach(d => d.classList.remove('beat-active-red', 'beat-active-green'));
+      document.querySelectorAll('.beat-dot').forEach(d => d.className = 'beat-dot');
       const dot = document.getElementById(`dot-${step}`);
       if(dot) dot.classList.add(step === 0 ? 'beat-active-red' : 'beat-active-green');
-      
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
       osc.type = 'sine';
@@ -317,14 +295,8 @@
       step = (step + 1) % beats;
     }, (60 / state.currentBPM) * 1000);
   }
-
   function stopMetro() { clearInterval(state.metroInt); document.getElementById('metro-dots').innerHTML = ""; }
-  function saveLocal() { localStorage.setItem('adoranza_v4_setlist', JSON.stringify(state.setlist)); }
-  function clearSetlist() { if(confirm("¿Vaciar Setlist?")) { state.setlist = []; state.currentIndex = -1; saveLocal(); renderAll(); } }
-  function changeFontSize(d) { state.currentFontSize += d; renderAll(); }
-  function nextSong() { if(state.currentIndex < state.setlist.length-1) seleccionar(state.currentIndex+1); }
-  function prevSong() { if(state.currentIndex > 0) seleccionar(state.currentIndex-1); }
-  
+
   function toggleScroll() { 
     if(state.scrollInt) { clearInterval(state.scrollInt); state.scrollInt = null; document.getElementById('scrollBtn').innerText = "AUTO ▶"; }
     else { state.scrollInt = setInterval(() => window.scrollBy(0,1), 50/state.scrollSpeed); document.getElementById('scrollBtn').innerText = "PAUSA ⏸"; }
@@ -349,14 +321,40 @@
     if(el) Sortable.create(el, { animation: 150, handle: 'div', onEnd: (evt) => {
         const item = state.setlist.splice(evt.oldIndex, 1)[0];
         state.setlist.splice(evt.newIndex, 0, item);
-        state.currentIndex = evt.newIndex;
         saveLocal();
     }});
   }
 
-  async function guardarListaCloud() { alert("Función de nube habilitada."); }
-  async function cargarListaCloud() { alert("Conectando con base de datos..."); }
-  async function verEstadisticas() { alert("Estadísticas de uso cargando..."); }
+  async function guardarListaCloud() {
+    const nombre = prompt("Nombre del setlist:");
+    if (!nombre || state.setlist.length === 0) return;
+    const ids = state.setlist.map(s => s.id);
+    const { error } = await db.from('setlists_guardados').insert({ nombre_lista: nombre, canciones_ids: ids });
+    if (!error) alert("¡Lista guardada en la nube!");
+  }
+
+  async function cargarListaCloud() {
+    const { data } = await db.from('setlists_guardados').select('*').order('created_at', { ascending: false });
+    if (!data?.length) return alert("No hay listas guardadas.");
+    const opciones = data.map((l, i) => `${i + 1}. ${l.nombre_lista}`).join('\n');
+    const seleccion = prompt("Elige lista:\n" + opciones);
+    if (seleccion && data[seleccion - 1]) {
+        const { data: canciones } = await db.from('canciones').select('*').in('id', data[seleccion - 1].canciones_ids);
+        if (canciones) {
+            state.setlist = [];
+            for (let id of data[seleccion - 1].canciones_ids) {
+                const c = canciones.find(x => x.id === id);
+                if (c) await addToSetlist(c);
+            }
+            renderAll();
+        }
+    }
+  }
+
+  async function verEstadisticas() {
+    const { data } = await db.from('canciones').select('titulo, veces_tocada').gt('veces_tocada', 0).order('veces_tocada', { ascending: false }).limit(5);
+    alert("TOP 5 TOCADAS:\n" + data.map(s => `- ${s.titulo} (${s.veces_tocada})`).join('\n'));
+  }
 </script>
 </body>
 </html>
