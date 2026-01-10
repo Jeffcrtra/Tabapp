@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>00.25 Adoranza Pro v4.11</title>
+  <title>00.32 Adoranza Pro v4.11</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
@@ -16,7 +16,6 @@
     * { box-sizing: border-box; }
     body { margin: 0; font-family: var(--sans); background: var(--bg); color: var(--text); overflow-x: hidden; padding-top: 240px; }
     
-    /* PANTALLA INICIAL */
     #roleSelector {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
       background: var(--bg); z-index: 10000; display: flex; 
@@ -34,7 +33,6 @@
     .footer-credits { position: absolute; bottom: 20px; font-size: 12px; color: var(--muted); text-align: center; }
     .footer-credits a { color: var(--accent); text-decoration: none; font-weight: bold; }
 
-    /* CONTROLES SUPERIORES */
     #fixedControlPanel { 
       position: fixed; top: 0; left: 0; right: 0; z-index: 999;
       background: rgba(11, 13, 18, 0.98); backdrop-filter: blur(10px);
@@ -43,22 +41,20 @@
     .viewer-tools { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-width: 500px; margin: 0 auto; }
     .tool-group { display: flex; gap: 4px; justify-content: center; align-items: center; padding: 4px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); background: rgba(255, 255, 255, 0.02); }
 
-    .btn { border: 1px solid rgba(255, 255, 255, 0.2); color: white; padding: 12px 8px; border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; transition: 0.2s; }
+    .btn { border: 1px solid rgba(255, 255, 255, 0.2); color: white; padding: 12px 8px; border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; }
     .btn-nav { background-color: #004173 !important; }
     .btn-tone { background-color: #630b57 !important; }
     .btn-font { background-color: #2E6F40 !important; }
     .btn-scroll { background-color: #d09306 !important; }
     .btn-drums { background-color: #444 !important; border-color: var(--success); color: var(--success); }
     .btn-save { background-color: #1a1a1a; border-color: var(--success); color: var(--success); }
-    .btn.danger-x { border-color: var(--danger); color: var(--danger); background: rgba(255, 92, 119, 0.1); }
+    .btn.danger-x { border-color: var(--danger); color: var(--danger); background: rgba(255, 92, 119, 0.1); width: 40px; }
 
-    /* METRÓNOMO */
     #metro-dots { margin-top: 10px; display: flex; justify-content: center; gap: 15px; height: 45px; align-items: center; }
     .beat-dot { width: 35px; height: 35px; border-radius: 50%; background: #222; border: 2px solid #333; transition: 0.1s; }
     .beat-active-red { background: var(--danger); box-shadow: 0 0 25px var(--danger); transform: scale(1.15); border-color: #fff; }
     .beat-active-green { background: var(--success); box-shadow: 0 0 25px var(--success); transform: scale(1.15); border-color: #fff; }
 
-    /* CONFIG */
     #configPanel { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 10001; display: none; flex-direction: column; align-items: center; padding: 40px 20px; }
 
     .wrap { padding: 10px; max-width: 1200px; margin: 0 auto; }
@@ -71,8 +67,8 @@
     .card .bd { padding: 10px; }
     
     .input { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--line); background: rgba(0,0,0,.4); color: white; outline: none; font-size: 16px; }
-    .item { border: 1px solid var(--line); border-radius: 12px; padding: 12px; background: rgba(255,255,255,0.03); display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; cursor: pointer; touch-action: none; }
-    #viewContent { background: rgba(0,0,0,.4); padding: 25px; border-radius: 15px; white-space: pre-wrap; font-family: var(--mono); line-height: 1.8; border: 1px solid var(--line); }
+    .item { border: 1px solid var(--line); border-radius: 12px; padding: 12px; background: rgba(255,255,255,0.03); display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; cursor: pointer; }
+    #viewContent { background: rgba(0,0,0,.4); padding: 25px; border-radius: 15px; white-space: pre-wrap; font-family: var(--mono); line-height: 1.8; border: 1px solid var(--line); min-height: 200px; }
     .chord { color: var(--accent); font-weight: bold; }
     #current-song-info { font-weight: bold; color: var(--accent); font-size: 14px; text-align: center; margin-top: 8px; }
   </style>
@@ -217,51 +213,67 @@
       const text = await resp.text();
       const bodyLimpio = text.replace(/\{(\w+):\s*([^}]+)\}/g, '').trim();
       state.setlist.push({ ...song, body: bodyLimpio });
-      saveLocal(); renderAll();
+      saveLocal(); 
+      renderAll();
       document.getElementById('searchBox').value = "";
       document.getElementById('results').style.display = "none";
-    } catch (e) { console.error("Error al cargar canción:", e); }
+    } catch (e) { console.error("Error Supabase:", e); }
   }
 
   function renderAll() {
     const sl = document.getElementById('setList');
     if(!sl) return;
     sl.innerHTML = "";
+    
     state.setlist.forEach((s, idx) => {
       const div = document.createElement('div');
       div.className = 'item';
       if(idx === state.currentIndex) div.style.borderColor = 'var(--accent)';
-      div.onclick = () => seleccionar(idx);
-      div.innerHTML = `<div style="flex:1">☰ ${s.titulo}</div>
-                       <button class="btn danger-x" onclick="removeSong(${idx}, event)">✕</button>`;
+      
+      // Contenido de la fila (Título + Botón Borrar)
+      div.innerHTML = `
+        <div style="flex:1" onclick="seleccionar(${idx})">☰ ${s.titulo}</div>
+        <button class="btn danger-x" onclick="removeSong(${idx}, event)">✕</button>
+      `;
       sl.appendChild(div);
     });
 
     const curr = state.setlist[state.currentIndex];
     const view = document.getElementById('viewContent');
+    const info = document.getElementById('current-song-info');
+    
     if(curr && view) {
-      document.getElementById('current-song-info').innerText = `${curr.titulo} | BPM: ${state.half ? curr.bpm/2 : curr.bpm}`;
+      info.innerText = `${curr.titulo} | BPM: ${state.half ? curr.bpm/2 : curr.bpm}`;
       let body = curr.body;
       if (state.userRole !== 'musico') body = body.replace(/\[([^\]]+)\]/g, ''); 
       else body = body.replace(/\[([^\]]+)\]/g, '<span class="chord">[$1]</span>');
+      
       view.innerHTML = body;
       view.style.fontSize = state.currentFontSize + 'px';
       state.currentBPM = state.half ? curr.bpm/2 : curr.bpm;
       if (state.userRole === 'drums' && state.metroActive) startMetro();
-    } else if(view) {
-      view.innerHTML = "Selecciona una canción.";
-      document.getElementById('current-song-info').innerText = "Adoranza Cloud";
+    } else if (view) {
+      view.innerHTML = "Selecciona una canción del setlist.";
+      info.innerText = "Conectado a Adoranza Cloud";
       stopMetro();
     }
   }
 
-  function seleccionar(idx) { state.currentIndex = idx; state.half = false; renderAll(); window.scrollTo({top:0, behavior:'smooth'}); }
-  function removeSong(idx, e) { e.stopPropagation(); state.setlist.splice(idx,1); if(state.currentIndex===idx) state.currentIndex=-1; saveLocal(); renderAll(); }
-  function saveLocal() { localStorage.setItem('adoranza_v4_setlist', JSON.stringify(state.setlist)); }
-  function clearSetlist() { if(confirm("¿Vaciar?")) { state.setlist = []; state.currentIndex = -1; saveLocal(); renderAll(); } }
-  function changeFontSize(d) { state.currentFontSize += d; renderAll(); }
-  function nextSong() { if(state.currentIndex < state.setlist.length-1) seleccionar(state.currentIndex+1); }
-  function prevSong() { if(state.currentIndex > 0) seleccionar(state.currentIndex-1); }
+  function seleccionar(idx) {
+    state.currentIndex = idx;
+    state.half = false;
+    renderAll();
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+
+  function removeSong(idx, e) {
+    e.stopPropagation(); // IMPORTANTE: Evita que el clic active la selección
+    state.setlist.splice(idx, 1);
+    if (state.currentIndex === idx) state.currentIndex = -1;
+    else if (state.currentIndex > idx) state.currentIndex--;
+    saveLocal();
+    renderAll();
+  }
 
   function toggleMetroManual() {
     state.metroActive = !state.metroActive;
@@ -277,13 +289,16 @@
     const dots = document.getElementById('metro-dots'); dots.innerHTML = "";
     const beats = parseInt(curr.time_signature) || 4;
     for(let i=0; i<beats; i++) dots.innerHTML += `<div class="beat-dot" id="dot-${i}"></div>`;
+    
     let step = 0;
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     const vol = parseFloat(document.getElementById('volRange').value);
+    
     state.metroInt = setInterval(() => {
       document.querySelectorAll('.beat-dot').forEach(d => d.className = 'beat-dot');
       const dot = document.getElementById(`dot-${step}`);
       if(dot) dot.classList.add(step === 0 ? 'beat-active-red' : 'beat-active-green');
+      
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
       osc.type = 'sine';
@@ -295,7 +310,13 @@
       step = (step + 1) % beats;
     }, (60 / state.currentBPM) * 1000);
   }
-  function stopMetro() { clearInterval(state.metroInt); document.getElementById('metro-dots').innerHTML = ""; }
+
+  function stopMetro() { clearInterval(state.metroInt); if(document.getElementById('metro-dots')) document.getElementById('metro-dots').innerHTML = ""; }
+  function saveLocal() { localStorage.setItem('adoranza_v4_setlist', JSON.stringify(state.setlist)); }
+  function clearSetlist() { if(confirm("¿Vaciar?")) { state.setlist = []; state.currentIndex = -1; saveLocal(); renderAll(); } }
+  function changeFontSize(d) { state.currentFontSize += d; renderAll(); }
+  function nextSong() { if(state.currentIndex < state.setlist.length-1) seleccionar(state.currentIndex+1); }
+  function prevSong() { if(state.currentIndex > 0) seleccionar(state.currentIndex-1); }
 
   function toggleScroll() { 
     if(state.scrollInt) { clearInterval(state.scrollInt); state.scrollInt = null; document.getElementById('scrollBtn').innerText = "AUTO ▶"; }
@@ -318,10 +339,11 @@
 
   function initSortable() {
     const el = document.getElementById('setList');
-    if(el) Sortable.create(el, { animation: 150, handle: 'div', onEnd: (evt) => {
+    if(el) Sortable.create(el, { animation: 150, onEnd: (evt) => {
         const item = state.setlist.splice(evt.oldIndex, 1)[0];
         state.setlist.splice(evt.newIndex, 0, item);
-        saveLocal();
+        state.currentIndex = evt.newIndex;
+        saveLocal(); renderAll();
     }});
   }
 
@@ -330,12 +352,12 @@
     if (!nombre || state.setlist.length === 0) return;
     const ids = state.setlist.map(s => s.id);
     const { error } = await db.from('setlists_guardados').insert({ nombre_lista: nombre, canciones_ids: ids });
-    if (!error) alert("¡Lista guardada en la nube!");
+    if (!error) alert("¡Lista guardada!");
   }
 
   async function cargarListaCloud() {
     const { data } = await db.from('setlists_guardados').select('*').order('created_at', { ascending: false });
-    if (!data?.length) return alert("No hay listas guardadas.");
+    if (!data?.length) return alert("No hay listas.");
     const opciones = data.map((l, i) => `${i + 1}. ${l.nombre_lista}`).join('\n');
     const seleccion = prompt("Elige lista:\n" + opciones);
     if (seleccion && data[seleccion - 1]) {
@@ -353,7 +375,7 @@
 
   async function verEstadisticas() {
     const { data } = await db.from('canciones').select('titulo, veces_tocada').gt('veces_tocada', 0).order('veces_tocada', { ascending: false }).limit(5);
-    alert("TOP 5 TOCADAS:\n" + data.map(s => `- ${s.titulo} (${s.veces_tocada})`).join('\n'));
+    alert("TOP 5:\n" + data.map(s => `- ${s.titulo} (${s.veces_tocada})`).join('\n'));
   }
 </script>
 </body>
