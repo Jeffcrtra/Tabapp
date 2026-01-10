@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>00.36 Adoranza Pro v4.11</title>
+  <title>00.45 Adoranza Pro v4.11</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
@@ -39,46 +39,21 @@
       border-bottom: 2px solid var(--line); padding: 12px 10px;
     }
 
-    /* GRILLA DE BOTONES UNIFORMES */
-    .viewer-tools { 
-      display: grid; 
-      grid-template-columns: repeat(3, 1fr); 
-      gap: 8px; 
-      max-width: 500px; 
-      margin: 0 auto; 
-    }
+    .viewer-tools { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-width: 500px; margin: 0 auto; }
     .tool-group { 
-      display: grid; 
-      grid-template-columns: repeat(2, 1fr); 
-      gap: 4px; 
-      justify-content: center; 
-      align-items: center; 
-      padding: 4px; 
-      border-radius: 12px; 
-      border: 1px solid rgba(255, 255, 255, 0.1); 
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; 
+      justify-content: center; align-items: center; padding: 4px; 
+      border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); 
       background: rgba(255, 255, 255, 0.02); 
     }
-    /* Excepción para grupos de 3 botones (Scroll) */
     .tool-group.triple { grid-template-columns: repeat(3, 1fr); grid-column: span 2; }
-    /* Excepción para Inicio */
     .tool-group.single { grid-template-columns: 1fr; }
 
     .btn { 
-      border: 1px solid rgba(255, 255, 255, 0.2); 
-      color: white; 
-      padding: 10px 5px; 
-      border-radius: 8px; 
-      cursor: pointer; 
-      font-size: 12px; 
-      font-weight: 600; 
-      display: inline-flex; 
-      align-items: center; 
-      justify-content: center; 
-      transition: 0.2s;
-      width: 100%;
-      max-width: 100px;
-      margin: 0 auto;
-      height: 40px;
+      border: 1px solid rgba(255, 255, 255, 0.2); color: white; padding: 10px 5px; 
+      border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600; 
+      display: inline-flex; align-items: center; justify-content: center; 
+      transition: 0.2s; width: 100%; max-width: 100px; margin: 0 auto; height: 40px;
     }
     .btn-nav { background-color: #004173 !important; }
     .btn-tone { background-color: #630b57 !important; }
@@ -131,7 +106,7 @@
         <div class="bd" style="text-align: center;">
             <p style="color:var(--muted)">ID de Usuario:</p>
             <h2 id="uid-display" style="color:var(--accent); font-family:var(--mono); letter-spacing: 2px;"></h2>
-            <p style="font-size: 10px; color: var(--muted); margin-top: 15px;">Este ID es permanente para tu navegador.</p>
+            <p style="font-size: 10px; color: var(--muted); margin-top: 15px;">ID único para sincronización cloud.</p>
         </div>
     </div>
 </div>
@@ -139,24 +114,12 @@
 <div id="fixedControlPanel">
     <div class="viewer-tools">
       <div class="tool-group"><button class="btn btn-nav" onclick="prevSong()">⟵</button><button class="btn btn-nav" onclick="nextSong()">⟶</button></div>
-      
       <div class="tool-group" id="tone-group"><button class="btn btn-tone" onclick="transpose(-1)">♭</button><button class="btn btn-tone" onclick="transpose(1)">♯</button></div>
-      
-      <div class="tool-group" id="drums-group" style="display:none;">
-          <button class="btn btn-drums" onclick="toggleMetroManual()" id="btnMetroState">▶</button>
-          <button class="btn btn-drums" onclick="halfTime()">1/2</button>
-      </div>
-
+      <div class="tool-group" id="drums-group" style="display:none;"><button class="btn btn-drums" onclick="toggleMetroManual()" id="btnMetroState">▶</button><button class="btn btn-drums" onclick="halfTime()">1/2</button></div>
       <div class="tool-group single"><button class="btn btn-nav" onclick="showHome()">🏠</button></div>
       <div class="tool-group"><button class="btn btn-font" onclick="changeFontSize(-2)">A-</button><button class="btn btn-font" onclick="changeFontSize(2)">A+</button></div>
-      
-      <div class="tool-group triple">
-          <button class="btn btn-scroll" onclick="adjScroll(-0.1)">S-</button>
-          <button class="btn btn-scroll" id="scrollBtn" onclick="toggleScroll()">AUTO</button>
-          <button class="btn btn-scroll" onclick="adjScroll(0.1)">S+</button>
-      </div>
+      <div class="tool-group triple"><button class="btn btn-scroll" onclick="adjScroll(-0.1)">S-</button><button class="btn btn-scroll" id="scrollBtn" onclick="toggleScroll()">AUTO</button><button class="btn btn-scroll" onclick="adjScroll(0.1)">S+</button></div>
     </div>
-    
     <div id="volume-container" style="display:none; text-align:center; margin-top:10px;">
         <small style="font-size: 11px; color: var(--muted);">VOL:</small> 
         <input type="range" id="volRange" min="0" max="1" step="0.05" value="0.5" style="vertical-align:middle; width: 120px;">
@@ -169,26 +132,9 @@
 
 <main class="wrap">
   <div class="grid">
-    <section class="card">
-      <div class="hd">Buscador</div>
-      <div class="bd">
-        <input class="input" id="searchBox" placeholder="Escribe para buscar..." autocomplete="off" />
-        <div id="results" style="margin-top:12px; display:none; flex-direction:column; gap:8px;"></div>
-      </div>
-    </section>
-    <section class="card">
-      <div class="hd">Setlist 
-        <div style="display:flex; gap:5px;">
-            <button class="btn btn-save" style="padding:4px 8px; font-size:10px; height: 25px;" onclick="guardarListaCloud()">Guardar</button>
-            <button class="btn" style="padding:4px 8px; font-size:10px; background:#333; height: 25px;" onclick="cargarListaCloud()">Cargar</button>
-            <button class="btn danger-x" style="padding:4px 8px; font-size:10px; height: 25px;" onclick="clearSetlist()">Vaciar</button>
-        </div>
-      </div>
-      <div class="bd" id="setlist-container"><div id="setList"></div></div>
-    </section>
-    <section class="card" style="grid-column: 1 / -1; border:none; background:none;">
-      <pre id="viewContent">Selecciona una canción.</pre>
-    </section>
+    <section class="card"><div class="hd">Buscador</div><div class="bd"><input class="input" id="searchBox" placeholder="Buscar..." autocomplete="off" /><div id="results" style="margin-top:12px; display:none; flex-direction:column; gap:8px;"></div></div></section>
+    <section class="card"><div class="hd">Setlist<div style="display:flex; gap:5px;"><button class="btn btn-save" style="padding:4px 8px; font-size:10px; height: 25px;" onclick="guardarListaCloud()">Guardar</button><button class="btn" style="padding:4px 8px; font-size:10px; background:#333; height: 25px;" onclick="cargarListaCloud()">Cargar</button><button class="btn danger-x" style="padding:4px 8px; font-size:10px; height: 25px;" onclick="clearSetlist()">Vaciar</button></div></div><div class="bd" id="setlist-container"><div id="setList"></div></div></section>
+    <section class="card" style="grid-column: 1 / -1; border:none; background:none;"><pre id="viewContent">Selecciona una canción.</pre></section>
   </div>
 </main>
 
@@ -256,7 +202,7 @@
       saveLocal(); renderAll();
       document.getElementById('searchBox').value = "";
       document.getElementById('results').style.display = "none";
-    } catch (e) { console.error("Error Supabase:", e); }
+    } catch (e) { console.error(e); }
   }
 
   function renderAll() {
@@ -277,8 +223,31 @@
     if(curr && view) {
       document.getElementById('current-song-info').innerText = `${curr.titulo} | BPM: ${state.half ? curr.bpm/2 : curr.bpm}`;
       let body = curr.body;
-      if (state.userRole !== 'musico') body = body.replace(/\[([^\]]+)\]/g, ''); 
-      else body = body.replace(/\[([^\]]+)\]/g, '<span class="chord">[$1]</span>');
+      
+      // LÓGICA DE LIMPIEZA DE LÍNEAS VACÍAS PARA VOCAL Y DRUMS
+      if (state.userRole !== 'musico') {
+        // 1. Eliminar acordes entre corchetes
+        body = body.replace(/\[([^\]]+)\]/g, ''); 
+        // 2. Limpiar líneas que quedan vacías o solo con espacios tras quitar acordes
+        // Pero preservamos los saltos dobles entre estrofas.
+        const lines = body.split('\n');
+        const cleanedLines = [];
+        for (let i = 0; i < lines.length; i++) {
+          const currentLine = lines[i].trim();
+          if (currentLine === "") {
+            // Solo añadimos la línea vacía si la anterior no era vacía (evita acumulacion)
+            if (cleanedLines.length > 0 && cleanedLines[cleanedLines.length - 1] !== "") {
+                cleanedLines.push("");
+            }
+          } else {
+            cleanedLines.push(lines[i]);
+          }
+        }
+        body = cleanedLines.join('\n');
+      } else {
+        body = body.replace(/\[([^\]]+)\]/g, '<span class="chord">[$1]</span>');
+      }
+      
       view.innerHTML = body;
       view.style.fontSize = state.currentFontSize + 'px';
       state.currentBPM = state.half ? curr.bpm/2 : curr.bpm;
@@ -310,18 +279,13 @@
     const dots = document.getElementById('metro-dots'); dots.innerHTML = "";
     const beats = parseInt(curr.time_signature) || 4;
     for(let i=0; i<beats; i++) dots.innerHTML += `<div class="beat-dot" id="dot-${i}"></div>`;
-    
     let step = 0;
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    
     state.metroInt = setInterval(() => {
-      // Leer volumen cada ciclo para cambios en tiempo real
       const vol = parseFloat(document.getElementById('volRange').value);
-      
       document.querySelectorAll('.beat-dot').forEach(d => d.className = 'beat-dot');
       const dot = document.getElementById(`dot-${step}`);
       if(dot) dot.classList.add(step === 0 ? 'beat-active-red' : 'beat-active-green');
-      
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
       osc.type = 'sine';
