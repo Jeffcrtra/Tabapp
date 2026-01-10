@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Adoranza Pro v4.01 - Supabase</title>
+  <title>Adoranza Pro v4.02</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
@@ -90,7 +90,7 @@
 <body>
 
 <div id="roleSelector">
-    <h1 style="color:var(--accent); margin:0;">ADORANZA PRO v4.01</h1>
+    <h1 style="color:var(--accent); margin:0;">ADORANZA PRO v4.02</h1>
     <p style="color:var(--muted)">Selecciona tu función:</p>
     <div class="role-grid">
         <div class="role-btn" onclick="setRole('vocal')">🎤<small>VOCAL</small></div>
@@ -108,7 +108,7 @@
       <div class="tool-group"><button class="btn btn-scroll" onclick="adjScroll(-0.1)">S-</button><button class="btn btn-scroll" id="scrollBtn" onclick="toggleScroll()">▶</button><button class="btn btn-scroll" onclick="adjScroll(0.1)">S+</button></div>
     </div>
     <div id="info-display">
-      <div id="current-song-info">Selecciona una canción...</div>
+      <div id="current-song-info">Adoranza: Lista para tocar</div>
       <div id="metro-dots"></div>
     </div>
 </div>
@@ -116,31 +116,33 @@
 <main class="wrap">
   <div class="grid">
     <section class="card">
-      <div class="hd">Buscador Supabase</div>
+      <div class="hd">Buscador</div>
       <div class="bd">
-        <input class="input" id="searchBox" placeholder="Escribe nombre o artista..." autocomplete="off" />
+        <input class="input" id="searchBox" placeholder="Escribe canción o artista..." autocomplete="off" />
         <div id="results" style="margin-top:12px; display:none; flex-direction:column; gap:8px;"></div>
       </div>
     </section>
 
     <section class="card">
-      <div class="hd">Setlist Actual <button class="btn danger" style="padding:4px 8px; font-size:10px" onclick="clearSetlist()">Vaciar</button></div>
+      <div class="hd">Mi Setlist <button class="btn danger" style="padding:4px 8px; font-size:10px" onclick="clearSetlist()">Vaciar</button></div>
       <div class="bd" id="setList"></div>
     </section>
 
     <section class="card" style="grid-column: 1 / -1; border:none; background:none;">
       <div id="viewerContainer">
-        <pre id="viewContent">Selecciona música del setlist para empezar.</pre>
+        <pre id="viewContent">Selecciona música para empezar.</pre>
       </div>
     </section>
   </div>
 </main>
 
 <script>
-  // CONFIGURACIÓN SUPABASE
-  const SB_URL = "TU_SUPABASE_URL";
-  const SB_KEY = "TU_SUPABASE_ANON_KEY";
-  const supabase = supabase.createClient(SB_URL, SB_KEY);
+  // CONFIGURACIÓN SUPABASE - CONEXIÓN SEGURA
+  const SB_URL = "https://ystlbjvjoqpqoklvjdrj.supabase.co";
+  const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlzdGxianZqb3FwcW9rbHZqZHJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5NzY4NDUsImV4cCI6MjA4MzU1Mjg0NX0.AQg9BuuGlbUtuyccvrBJwRGzx4Bgzx58aqGbfMPzKfg";
+  
+  // Usamos dbClient para evitar conflictos con la librería global 'supabase'
+  const dbClient = supabase.createClient(SB_URL, SB_KEY);
   const BUCKET_URL = `${SB_URL}/storage/v1/object/public/Cancionero_Adoranza/`;
 
   const state = {
@@ -149,15 +151,11 @@
     scrollInt: null, scrollSpeed: 0.5, userRole: 'musico', metroInt: null
   };
 
-  // INICIO
-  window.onload = () => {
-    const savedRole = localStorage.getItem('adoranza_role');
-    if(savedRole) setRole(savedRole);
-    renderAll();
-    initSortable();
-  };
-
-  function showRoles() { document.getElementById('roleSelector').style.display = 'flex'; clearInterval(state.metroInt); }
+  // FUNCIONES DE CARGA Y ROLES
+  function showRoles() { 
+    document.getElementById('roleSelector').style.display = 'flex'; 
+    if(state.metroInt) clearInterval(state.metroInt); 
+  }
   
   function setRole(role) {
     state.userRole = role;
@@ -166,13 +164,13 @@
     renderAll();
   }
 
-  // BUSCADOR INSTANTÁNEO
+  // BUSCADOR EN BASE DE DATOS
   document.getElementById('searchBox').oninput = async (e) => {
     const val = e.target.value;
     const resDiv = document.getElementById('results');
     if (val.length < 2) { resDiv.style.display = "none"; return; }
 
-    const { data, error } = await supabase
+    const { data, error } = await dbClient
       .from('canciones')
       .select('*')
       .or(`titulo.ilike.%${val}%,artista.ilike.%${val}%`)
@@ -184,34 +182,35 @@
         const div = document.createElement('div');
         div.className = 'item';
         div.innerHTML = `<div><b>${song.titulo}</b><br><small style="color:var(--muted)">${song.artista}</small></div>
-                         <button class="btn" style="color:var(--accent)" onclick="addToSetlist(${JSON.stringify(song).replace(/"/g, '&quot;')})">Add</button>`;
+                         <button class="btn" style="color:var(--accent)" onclick='addToSetlist(${JSON.stringify(song)})'>Add</button>`;
         resDiv.appendChild(div);
       });
     }
   };
 
   async function addToSetlist(song) {
-    // Descargar contenido del Bucket
-    const resp = await fetch(BUCKET_URL + song.path_url);
-    const text = await resp.text();
-    
-    // Limpiar tags de metadatos del cuerpo visual
-    const bodyLimpio = text.replace(/\{(\w+):\s*([^}]+)\}/g, '').trim();
+    try {
+      const resp = await fetch(BUCKET_URL + song.path_url);
+      if(!resp.ok) throw new Error("No encontrado en Storage");
+      const text = await resp.text();
+      
+      // Limpiar metadatos del cuerpo visual
+      const bodyLimpio = text.replace(/\{(\w+):\s*([^}]+)\}/g, '').trim();
 
-    state.setlist.push({ 
-      ...song, 
-      body: bodyLimpio,
-      id_temp: Date.now() 
-    });
-    
-    saveLocal(); renderAll();
-    document.getElementById('searchBox').value = "";
-    document.getElementById('results').style.display = "none";
+      state.setlist.push({ ...song, body: bodyLimpio, id_temp: Date.now() });
+      saveLocal(); renderAll();
+      document.getElementById('searchBox').value = "";
+      document.getElementById('results').style.display = "none";
+    } catch (err) {
+      alert("Error: " + err.message);
+    }
   }
 
   function renderAll() {
     const sl = document.getElementById('setList');
+    if(!sl) return;
     sl.innerHTML = "";
+    
     state.setlist.forEach((s, idx) => {
       const div = document.createElement('div');
       div.className = 'item';
@@ -223,25 +222,26 @@
 
     const curr = state.setlist[state.currentIndex];
     if(curr) {
-      document.getElementById('current-song-info').innerText = `${curr.titulo} - ${curr.artista} | BPM: ${curr.bpm}`;
-      
+      document.getElementById('current-song-info').innerText = `${curr.titulo} | BPM: ${curr.bpm}`;
       let finalBody = curr.body;
       if (state.userRole === 'vocal' || state.userRole === 'drums') {
         finalBody = finalBody.replace(/\[([^\]]+)\]/g, ''); 
       } else {
         finalBody = finalBody.replace(/\[([^\]]+)\]/g, '<span class="chord">[$1]</span>');
       }
-
       document.getElementById('viewContent').innerHTML = finalBody;
       document.getElementById('viewContent').style.fontSize = state.currentFontSize + 'px';
       
       if (state.userRole === 'drums') iniciarMetronomo(curr.bpm, curr.time_signature);
-      else { clearInterval(state.metroInt); document.getElementById('metro-dots').innerHTML = ""; }
+      else { 
+        if(state.metroInt) clearInterval(state.metroInt); 
+        document.getElementById('metro-dots').innerHTML = ""; 
+      }
     }
   }
 
   function iniciarMetronomo(bpm, ts) {
-    clearInterval(state.metroInt);
+    if(state.metroInt) clearInterval(state.metroInt);
     const dots = document.getElementById('metro-dots');
     dots.innerHTML = "";
     const beats = parseInt(ts) || 4;
@@ -256,15 +256,14 @@
     }, (60 / bpm) * 1000);
   }
 
-  // UTILIDADES
+  // UTILIDADES GENERALES
   function seleccionar(idx) { state.currentIndex = idx; renderAll(); window.scrollTo({top:0, behavior:'smooth'}); }
   function removeSong(idx, e) { e.stopPropagation(); state.setlist.splice(idx, 1); state.currentIndex = -1; saveLocal(); renderAll(); }
-  function clearSetlist() { if(confirm("¿Vaciar lista?")) { state.setlist = []; state.currentIndex = -1; saveLocal(); renderAll(); } }
+  function clearSetlist() { if(confirm("¿Vaciar?")) { state.setlist = []; state.currentIndex = -1; saveLocal(); renderAll(); } }
   function saveLocal() { localStorage.setItem('adoranza_v4_setlist', JSON.stringify(state.setlist)); }
   function changeFontSize(d) { state.currentFontSize += d; renderAll(); }
   function nextSong() { if(state.currentIndex < state.setlist.length-1) seleccionar(state.currentIndex+1); }
   function prevSong() { if(state.currentIndex > 0) seleccionar(state.currentIndex-1); }
-  
   function toggleScroll() { 
     if(state.scrollInt) { clearInterval(state.scrollInt); state.scrollInt = null; document.getElementById('scrollBtn').innerText = "▶"; }
     else { state.scrollInt = setInterval(() => window.scrollBy(0,1), 50/state.scrollSpeed); document.getElementById('scrollBtn').innerText = "⏸"; }
@@ -285,15 +284,15 @@
   }
 
   function initSortable() {
-    Sortable.create(document.getElementById('setList'), {
-      animation: 150, handle: '.item',
-      onEnd: (evt) => {
-        const item = state.setlist.splice(evt.oldIndex, 1)[0];
-        state.setlist.splice(evt.newIndex, 0, item);
-        state.currentIndex = evt.newIndex;
-        saveLocal(); renderAll();
-      }
-    });
+    const el = document.getElementById('setList');
+    if(el) Sortable.create(el, { animation: 150, onEnd: () => { /* re-ordenar lógica si se desea persistir */ } });
+  }
+
+  // AL CARGAR RECUPERAMOS EL ROL SI EXISTE
+  const savedRole = localStorage.getItem('adoranza_role');
+  if(savedRole) {
+    state.userRole = savedRole;
+    document.getElementById('roleSelector').style.display = 'none';
   }
 </script>
 </body>
