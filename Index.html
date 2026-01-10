@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Adoranza Pro v4.04</title>
+  <title>Adoranza Pro v4.05</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
@@ -61,7 +61,7 @@
 <body>
 
 <div id="roleSelector">
-    <h1 style="color:var(--accent); margin:0;">ADORANZA PRO v4.04</h1>
+    <h1 style="color:var(--accent); margin:0;">ADORANZA PRO v4.05</h1>
     <p style="color:var(--muted)">Selecciona tu función:</p>
     <div class="role-grid">
         <div class="role-btn" onclick="setRole('vocal')">🎤<small>VOCAL</small></div>
@@ -120,7 +120,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Adoranza Pro v4.04</title>
+  <title>Adoranza Pro v4.05</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
@@ -192,7 +192,7 @@
 <body>
 
 <div id="roleSelector">
-    <h1 style="color:var(--accent); margin:0;">ADORANZA PRO v4.04</h1>
+    <h1 style="color:var(--accent); margin:0;">ADORANZA PRO v4.05</h1>
     <p style="color:var(--muted)">Selecciona tu función:</p>
     <div class="role-grid">
         <div class="role-btn" onclick="setRole('vocal')">🎤<small>VOCAL</small></div>
@@ -248,10 +248,10 @@
 
 <script>
   // CONFIGURACIÓN (Tus datos intactos)
-  const SB_URL = "https://ystlbjvjoqpqoklvjdrj.supabase.co/";
+  const SB_URL = "https://ystlbjvjoqpqoklvjdrj.supabase.co";
   const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlzdGxianZqb3FwcW9rbHZqZHJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5NzY4NDUsImV4cCI6MjA4MzU1Mjg0NX0.AQg9BuuGlbUtuyccvrBJwRGzx4Bgzx58aqGbfMPzKfg";
   const db = supabase.createClient(SB_URL, SB_KEY);
-  const BUCKET_URL = `${SB_URL}storage/v1/object/public/Cancionero_Adoranza/`;
+  const BUCKET_URL = `${SB_URL}/storage/v1/object/public/Cancionero_Adoranza/`;
 
   const state = {
     setlist: JSON.parse(localStorage.getItem('adoranza_v4_setlist') || '[]'),
@@ -310,7 +310,7 @@
     } catch (e) { console.error("Error al cargar:", e); }
   }
 
-  // GESTIÓN CLOUD (v4.04)
+  // GESTIÓN CLOUD (v4.05)
   async function guardarListaCloud() {
     const nombre = prompt("Nombre del setlist:");
     if (!nombre || state.setlist.length === 0) return;
