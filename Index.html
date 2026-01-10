@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Adoranza Pro v4.05</title>
+  <title>8.49 Adoranza Pro v4.05</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
@@ -302,7 +302,7 @@
       state.setlist.push({ ...song, body: bodyLimpio, id_temp: Date.now() });
       
       // Notificamos uso a la estadística (silencioso)
-      db.rpc('incrementar_veces_tocada', { row_id: song.id }).catch(()=>{});
+      //db.rpc('incrementar_veces_tocada', { row_id: song.id }).catch(()=>{});
       
       saveLocal(); renderAll();
       document.getElementById('searchBox').value = "";
@@ -348,9 +348,12 @@
     alert(msg);
   }
 
-  // RENDERIZADO Y CONTROL (Tus funciones de v4.03 recuperadas)
+    // RENDERIZADO Y CONTROL (Tus funciones de v4.03 recuperadas)
   function renderAll() {
     const sl = document.getElementById('setList');
+    // 1. Seguridad: Si el contenedor del setlist no existe, salimos para evitar errores
+    if (!sl) return; 
+  
     sl.innerHTML = "";
     state.setlist.forEach((s, idx) => {
       const div = document.createElement('div');
@@ -360,16 +363,49 @@
                        <button class="btn danger" style="padding:4px 8px" onclick="removeSong(${idx}, event)">✕</button>`;
       sl.appendChild(div);
     });
+  
     const curr = state.setlist[state.currentIndex];
     if(curr) {
-      document.getElementById('current-song-info').innerText = `${curr.titulo} | BPM: ${curr.bpm}`;
-      let body = curr.body;
-      if (state.userRole !== 'musico') body = body.replace(/\[([^\]]+)\]/g, ''); 
-      else body = body.replace(/\[([^\]]+)\]/g, '<span class="chord">[$1]</span>');
-      document.getElementById('viewContent').innerHTML = body;
-      document.getElementById('viewContent').style.fontSize = state.currentFontSize + 'px';
-      if (state.userRole === 'drums') iniciarMetronomo(curr.bpm, curr.time_signature);
-      else { clearInterval(state.metroInt); document.getElementById('metro-dots').innerHTML = ""; }
+      // 2. Seguridad: Verificamos que los elementos de visualización existan antes de escribir
+      const infoDisplay = document.getElementById('current-song-info');
+      const viewContent = document.getElementById('viewContent');
+      const metroDots = document.getElementById('metro-dots');
+  
+      if (infoDisplay) {
+        infoDisplay.innerText = `${curr.titulo} | BPM: ${curr.bpm}`;
+      }
+  
+      if (viewContent) {
+        let body = curr.body;
+        // Filtrado de acordes según el rol seleccionado
+        if (state.userRole !== 'musico') {
+          body = body.replace(/\[([^\]]+)\]/g, ''); 
+        } else {
+          body = body.replace(/\[([^\]]+)\]/g, '<span class="chord">[$1]</span>');
+        }
+        viewContent.innerHTML = body;
+        viewContent.style.fontSize = state.currentFontSize + 'px';
+      }
+  
+      // 3. Control del Metrónomo por Rol
+      if (state.userRole === 'drums') {
+        // Solo inicia si el contenedor de puntos existe
+        if (metroDots) iniciarMetronomo(curr.bpm, curr.time_signature);
+      } else {
+        clearInterval(state.metroInt);
+        if (metroDots) metroDots.innerHTML = "";
+      }
+    } else {
+      // Si no hay canción seleccionada, limpiamos el visor
+      const viewContent = document.getElementById('viewContent');
+      if (viewContent) viewContent.innerHTML = "Selecciona una canción para empezar.";
+      
+      const infoDisplay = document.getElementById('current-song-info');
+      if (infoDisplay) infoDisplay.innerText = "Conectado a Adoranza Cloud";
+      
+      clearInterval(state.metroInt);
+      const metroDots = document.getElementById('metro-dots');
+      if (metroDots) metroDots.innerHTML = "";
     }
   }
 
