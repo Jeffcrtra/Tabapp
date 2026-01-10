@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>01.24 Adoranza Pro v4.11</title>
+  <title>01.42 Adoranza Pro v4.11</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
@@ -21,7 +21,9 @@
     .role-btn { background: var(--card); border: 2px solid var(--line); padding: 15px 10px; border-radius: 20px; text-align: center; font-size: 28px; cursor: pointer; color: white; display: flex; flex-direction: column; align-items: center; transition: 0.3s; }
     .role-btn:hover { border-color: var(--accent); transform: translateY(-5px); }
     .role-btn small { font-size: 10px; margin-top: 8px; color: var(--muted); font-weight: bold; line-height: 1.2; text-transform: uppercase; }
-    
+    .footer-credits { position: absolute; bottom: 20px; font-size: 12px; color: var(--muted); text-align: center; }
+    .footer-credits a { color: var(--accent); text-decoration: none; font-weight: bold; }
+
     #fixedControlPanel { position: fixed; top: 0; left: 0; right: 0; z-index: 999; background: rgba(11, 13, 18, 0.98); backdrop-filter: blur(10px); border-bottom: 2px solid var(--line); padding: 12px 10px; }
     .viewer-tools { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-width: 500px; margin: 0 auto; }
     .tool-group { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; justify-content: center; align-items: center; padding: 4px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); background: rgba(255, 255, 255, 0.02); }
@@ -32,6 +34,7 @@
     .btn-font { background-color: #2E6F40 !important; }
     .btn-scroll { background-color: #d09306 !important; }
     .btn-drums { background-color: #444 !important; border-color: var(--success); color: var(--success); }
+    .btn-save { background-color: #1a1a1a; border-color: var(--success); color: var(--success); }
     .btn-wa { background-color: #075e54; border-color: #25d366; color: white; }
     .btn.danger-x { border-color: var(--danger); color: var(--danger); background: rgba(255, 92, 119, 0.1); max-width: 40px; }
 
@@ -39,17 +42,22 @@
     .beat-dot { width: 35px; height: 35px; border-radius: 50%; background: #222; border: 2px solid #333; transition: 0.1s; }
     .beat-active-red { background: var(--danger); box-shadow: 0 0 25px var(--danger); transform: scale(1.15); border-color: #fff; }
     .beat-active-green { background: var(--success); box-shadow: 0 0 25px var(--success); transform: scale(1.15); border-color: #fff; }
+    #volume-container { display:none; text-align:center; margin-top:10px; }
 
     #configPanel { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 10001; display: none; flex-direction: column; align-items: center; padding: 40px 20px; }
+
     .wrap { padding: 10px; max-width: 1200px; margin: 0 auto; }
     .grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
     @media (min-width: 768px) { .grid { grid-template-columns: 280px 1fr; } }
     
+    #setlist-container { width: 92%; margin: 0 auto; }
     .card { background: rgba(255,255,255,.02); border: 1px solid var(--line); border-radius: var(--radius); margin-bottom: 10px; }
     .card .hd { padding: 10px; border-bottom: 1px solid var(--line); font-weight: bold; font-size: 13px; }
     .card .bd { padding: 10px; }
     
-    .item { border: 1px solid var(--line); border-radius: 12px; padding: 12px; background: rgba(255,255,255,0.03); display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; cursor: pointer; touch-action: none; }
+    .item { border: 1px solid var(--line); border-radius: 12px; padding: 12px; background: rgba(255,255,255,0.03); display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; cursor: pointer; }
+    .drag-handle { cursor: grab; padding: 0 10px; color: var(--muted); font-size: 18px; }
+    
     #viewContent { background: rgba(0,0,0,.4); padding: 25px; border-radius: 15px; white-space: pre-wrap; font-family: var(--mono); line-height: 1.6; border: 1px solid var(--line); min-height: 200px; }
     .chord { color: var(--accent); font-weight: bold; }
     #list-name-badge { font-size: 10px; color: var(--accent); margin-top: 4px; display: block; font-weight: normal; }
@@ -66,7 +74,7 @@
         <div class="role-btn" onclick="verEstadisticas()" style="grid-column: span 1.5">📊<small>STATS</small></div>
         <div class="role-btn" onclick="openConfig()" style="grid-column: span 1.5">⚙️<small>CONFIG</small></div>
     </div>
-    <div style="position: absolute; bottom: 20px; font-size: 12px; color: var(--muted); text-align: center;">App creada por <a href="https://www.linkedin.com/in/jeffrey-trigueros-371191123/" target="_blank" style="color:var(--accent); text-decoration: none; font-weight: bold;">Jeffrey Trigueros</a></div>
+    <div class="footer-credits">App creada por <a href="https://www.linkedin.com/in/jeffrey-trigueros-371191123/" target="_blank">Jeffrey Trigueros</a></div>
 </div>
 
 <div id="configPanel">
@@ -74,7 +82,8 @@
     <div class="card" style="width: 100%; max-width: 400px;">
         <div class="hd">Perfil de Usuario</div>
         <div class="bd" style="text-align: center;">
-            <p id="uid-display" style="color:var(--accent); font-family:var(--mono); letter-spacing: 2px;"></p>
+            <p style="color:var(--muted)">ID de Usuario:</p>
+            <h2 id="uid-display" style="color:var(--accent); font-family:var(--mono); letter-spacing: 2px;"></h2>
         </div>
     </div>
 </div>
@@ -88,7 +97,7 @@
       <div class="tool-group"><button class="btn btn-font" onclick="changeFontSize(-2)">A-</button><button class="btn btn-font" onclick="changeFontSize(2)">A+</button></div>
       <div class="tool-group triple"><button class="btn btn-scroll" onclick="adjScroll(-0.1)">S-</button><button class="btn btn-scroll" id="scrollBtn" onclick="toggleScroll()">AUTO</button><button class="btn btn-scroll" onclick="adjScroll(0.1)">S+</button></div>
     </div>
-    <div id="volume-container" style="display:none; text-align:center; margin-top:10px;"><input type="range" id="volRange" min="0" max="1" step="0.05" value="0.5" style="width: 120px; vertical-align:middle;"></div>
+    <div id="volume-container"><small style="color:var(--muted); font-size:10px;">VOL CLICK:</small> <input type="range" id="volRange" min="0" max="1" step="0.05" value="0.5" style="width: 120px; vertical-align:middle;"></div>
     <div id="info-display">
       <div id="current-song-info" style="font-weight: bold; color: var(--accent); font-size: 14px; text-align: center; margin-top: 8px;">Adoranza Cloud</div>
       <div id="metro-dots"></div>
@@ -168,8 +177,8 @@
       const resp = await fetch(BUCKET_URL + song.path_url);
       const text = await resp.text();
       state.setlist.push({ ...song, body: text.replace(/\{(\w+):\s*([^}]+)\}/g, '').trim() });
-      renderAll();
-    } catch(e) { console.error("Error al cargar:", e); }
+      saveLocal(); renderAll();
+    } catch(e) { console.error(e); }
   }
 
   function renderAll() {
@@ -178,9 +187,14 @@
       const div = document.createElement('div');
       div.className = 'item';
       if(idx === state.currentIndex) div.style.borderColor = 'var(--accent)';
-      div.innerHTML = `<div style="flex:1" onclick="seleccionar(${idx})">☰ ${s.titulo}</div><button class="btn danger-x" onclick="removeSong(${idx}, event)">✕</button>`;
+      // SEPARACIÓN DE EVENTOS: Handle para mover, div para seleccionar
+      div.innerHTML = `
+        <span class="drag-handle">☰</span>
+        <div style="flex:1" onclick="seleccionar(${idx})">${s.titulo}</div>
+        <button class="btn danger-x" onclick="removeSong(${idx}, event)">✕</button>`;
       sl.appendChild(div);
     });
+
     const curr = state.setlist[state.currentIndex];
     const view = document.getElementById('viewContent');
     if(curr && view) {
@@ -200,8 +214,9 @@
   }
 
   function seleccionar(idx) { state.currentIndex = idx; state.half = false; renderAll(); window.scrollTo({top:0, behavior:'smooth'}); }
-  function removeSong(idx, e) { e.stopPropagation(); state.setlist.splice(idx, 1); if (state.currentIndex === idx) state.currentIndex = -1; renderAll(); }
-  function clearSetlist() { state.setlist = []; state.currentIndex = -1; state.listName = ""; document.getElementById('list-name-badge').innerText = ""; renderAll(); }
+  function removeSong(idx, e) { e.stopPropagation(); state.setlist.splice(idx, 1); if (state.currentIndex === idx) state.currentIndex = -1; saveLocal(); renderAll(); }
+  function saveLocal() { localStorage.setItem('adoranza_v4_setlist', JSON.stringify(state.setlist)); }
+  function clearSetlist() { state.setlist = []; state.currentIndex = -1; state.listName = ""; document.getElementById('list-name-badge').innerText = ""; saveLocal(); renderAll(); }
   function changeFontSize(d) { state.currentFontSize += d; renderAll(); }
 
   function toggleMetroManual() {
@@ -278,17 +293,18 @@
     }
   }
 
-  function initSortable() {
+  function initSortable() { 
     const el = document.getElementById('setList');
     if(el) Sortable.create(el, { 
       animation: 150, 
-      handle: '.item',
+      handle: '.drag-handle', // Solo arrastra desde el icono
       onEnd: (evt) => {
         const item = state.setlist.splice(evt.oldIndex, 1)[0];
         state.setlist.splice(evt.newIndex, 0, item);
+        saveLocal();
         renderAll();
       }
-    });
+    }); 
   }
 
   async function verEstadisticas() { 
@@ -297,26 +313,24 @@
   }
 
   async function guardarListaCloud() {
-    const n = prompt("Nombre de la lista:");
-    if(!n) return;
+    const n = prompt("Nombre:"); if(!n) return;
     const ids = state.setlist.map(s => s.id);
     await db.from('setlists_guardados').insert({ nombre_lista: n, canciones_ids: ids });
-    state.listName = n;
-    document.getElementById('list-name-badge').innerText = "» " + n;
+    state.listName = n; document.getElementById('list-name-badge').innerText = "» " + n;
     alert("Guardada");
   }
 
   async function cargarListaCloud() {
     const { data } = await db.from('setlists_guardados').select('*').order('created_at', { ascending: false });
     if (!data?.length) return;
-    const sel = prompt("Elige (1, 2...):\n" + data.map((l,i) => (i+1)+". "+l.nombre_lista).join('\n'));
+    const sel = prompt("Elige:\n" + data.map((l,i) => (i+1)+". "+l.nombre_lista).join('\n'));
     if (sel && data[sel-1]) {
-        const l = data[sel-1];
-        state.listName = l.nombre_lista;
+        const l = data[sel-1]; state.listName = l.nombre_lista;
         document.getElementById('list-name-badge').innerText = "» " + l.nombre_lista;
         const { data: cans } = await db.from('canciones').select('*').in('id', l.canciones_ids);
         state.setlist = [];
         for(let id of l.canciones_ids) { const s = cans.find(x => x.id === id); if(s) await addToSetlist(s); }
+        renderAll();
     }
   }
 </script>
