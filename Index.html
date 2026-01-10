@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>3.00 Adoranza Pro v4.11</title>
+  <title>3.12 Adoranza Pro v4.11</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
@@ -368,6 +368,22 @@
     alert("TOP 5:\n" + data.map(s => `- ${s.titulo} (${s.veces_tocada})`).join('\n'));
   }
 
+  function normalizeSongIds(v) {
+    if (Array.isArray(v)) return v.map(Number).filter(Number.isFinite);
+  
+    if (typeof v === "string") {
+      // ejemplos: "1,2,3"  o  "{1,2,3}"  o  "[1,2,3]"
+      const cleaned = v.replace(/[\{\}\[\]\s]/g, "");
+      if (!cleaned) return [];
+      return cleaned
+        .split(",")
+        .map(x => Number(x))
+        .filter(Number.isFinite);
+    }
+  
+    return [];
+  }
+
   // ✅ FIX: “owner_id” (sin romper si la columna todavía no existe)
   async function guardarListaCloud() {
     const n = prompt("Nombre:"); if(!n) return;
@@ -390,31 +406,83 @@
 
   // ✅ FIX: filtrar por owner_id si existe; si no, cargar como antes
   async function cargarListaCloud() {
-    let data = null;
+  try {
+    const raw = prompt("ID del setlist (ej: ENSAYO01):");
+    if (!raw) return;
 
-    try {
-      const r = await db.from('setlists_guardados').select('*').eq('owner_id', state.userId).order('created_at', { ascending: false });
-      if (r.error) throw r.error;
-      data = r.data;
-    } catch (e) {
-      console.warn("Cargar con filtro owner_id falló. Cargando sin filtro:", e?.message || e);
-      const r2 = await db.from('setlists_guardados').select('*').order('created_at', { ascending: false });
-      if (r2.error) { alert("Error al cargar: " + (r2.error.message || r2.error)); return; }
-      data = r2.data;
+    const idBuscado = raw.trim().toUpperCase();
+
+    // Si querés estrictamente 8, dejá esto en 8. Yo lo dejo flexible para no trabarte.
+    if (idBuscado.length <> 8) {
+      alert("ID inválido. Revisa el código, debe tener 8  caracteres");
+      return;
     }
 
-    if (!data?.length) return;
+    // 1) Buscar el setlist por id_unico
+    const r = await db
+      .from("setlists_guardados")
+      .select("*")
+      .eq("id_unico", idBuscado)
+      .limit(1);
 
-    const sel = prompt("Elige:\n" + data.map((l,i) => (i+1)+". "+l.nombre_lista).join('\n'));
-    if (sel && data[sel-1]) {
-        const l = data[sel-1]; state.listName = l.nombre_lista;
-        document.getElementById('list-name-badge').innerText = "» " + l.nombre_lista;
-        const { data: cans } = await db.from('canciones').select('*').in('id', l.canciones_ids);
-        state.setlist = [];
-        for(let id of l.canciones_ids) { const s = cans.find(x => x.id === id); if(s) await addToSetlist(s); }
-        renderAll();
+    if (r.error) {
+      alert("Error leyendo setlist: " + (r.error.message || r.error));
+      console.error("Supabase error (setlists_guardados):", r.error);
+      return;
     }
+
+    const rows = r.data || [];
+    if (!rows.length) {
+      alert("No se encontró ese setlist: " + idBuscado);
+      return;
+    }
+
+    const l = rows[0];
+
+    // 2) Normalizar ids de canciones
+    const songIds = normalizeSongIds(l.canciones_ids);
+
+    if (!songIds.length) {
+      alert("Ese setlist no tiene canciones_ids válidos.");
+      console.warn("canciones_ids inválidos:", l.canciones_ids);
+      return;
+    }
+
+    // 3) Cargar canciones
+    const r2 = await db
+      .from("canciones")
+      .select("*")
+      .in("id", songIds);
+
+    if (r2.error) {
+      alert("Error cargando canciones: " + (r2.error.message || r2.error));
+      console.error("Supabase error (canciones):", r2.error);
+      return;
+    }
+
+    const cans = r2.data || [];
+
+    // 4) Reconstruir setlist en el orden original
+    state.listName = l.nombre_lista || "";
+    state.listIdUnico = l.id_unico || idBuscado;
+    renderBadge();
+
+    state.setlist = [];
+    for (let id of songIds) {
+      const s = cans.find(x => Number(x.id) === Number(id));
+      if (s) await addToSetlist(s);
+    }
+
+    // Selección opcional (si querés que quede en la primera canción)
+    if (state.setlist.length > 0) state.currentIndex = 0;
+
+    renderAll();
+    alert("Cargado: " + state.listIdUnico);
+  } catch (e) {
+    console.error(e);
+    alert("Error inesperado al cargar. Revisa consola.");
   }
+}
 
   /* ======= Navegación (no tocado): si ya lo tenías en otra parte, déjalo. =======
      Si NO existe en tu versión real, esto evita errores de botón sin interferir con lo demás.
