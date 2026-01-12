@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>5.15 Adoranza Pro v4.11</title>
+  <title>5.22 Adoranza Pro v4.11</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
@@ -588,19 +588,13 @@
   }
 
   async function guardarListaCloud() {
-    if (!db) { alert("Supabase no está listo."); return; }
-
-    const ids = state.setlist.map(s => String(s.id)).filter(Boolean);
-    if (!ids.length) { alert("Setlist vacío."); return; }
-
-    // UPDATE si ya hay setlist cargado
     if (state.listIdUnico) {
       const nombreActual = state.listName || "Setlist";
       const nuevoNombre = prompt("Nombre del setlist:", nombreActual);
       if (!nuevoNombre) return;
-
+    
       const target = state.listIdUnico.trim().toUpperCase();
-
+    
       const { error } = await db
         .from("setlists_guardados")
         .update({ nombre_lista: nuevoNombre, canciones_ids: ids })
