@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>2.08 Adoranza Pro v4.11</title>
+  <title>2.13 Adoranza Pro v4.11</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
@@ -37,6 +37,16 @@
     .btn-save { background-color: #1a1a1a; border-color: var(--success); color: var(--success); }
     .btn-wa { background-color: #075e54; border-color: #25d366; color: white; }
     .btn.danger-x { border-color: var(--danger); color: var(--danger); background: rgba(255, 92, 119, 0.1); max-width: 40px; }
+
+    .btn-add {
+      background: var(--accent);
+      color: #000;
+      border-color: var(--accent);
+      font-weight: bold;
+    }
+    .btn-add:hover {
+      filter: brightness(1.1);
+    }
 
     #metro-dots { margin-top: 10px; display: flex; justify-content: center; gap: 15px; height: 45px; align-items: center; }
     .beat-dot { width: 35px; height: 35px; border-radius: 50%; background: #222; border: 2px solid #333; transition: 0.1s; }
@@ -306,7 +316,7 @@
         (data || []).forEach(s => {
           const d = document.createElement("div");
           d.className = "item";
-          d.innerHTML = `<div>${s.titulo}</div><button class="btn" style="max-width:40px;" onclick='addToSetlist(${JSON.stringify(s)})'>Add</button>`;
+          d.innerHTML = `<div>${s.titulo}</div><button class="btn btn-add" style="max-width:50px;" onclick='addToSetlist(${JSON.stringify(s)})'>ADD</button>`;
           resDiv.appendChild(d);
         });
       };
