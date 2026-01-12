@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>5.05 Adoranza Pro v4.11</title>
+  <title>5.15 Adoranza Pro v4.11</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
@@ -595,24 +595,39 @@
 
     // UPDATE si ya hay setlist cargado
     if (state.listIdUnico) {
-      const nombreActual = state.listName || "Setlist";
-      const nuevoNombre = prompt("Nombre del setlist:", nombreActual);
-      if (!nuevoNombre) return;
-
       const target = state.listIdUnico.trim().toUpperCase();
-
+    
       const { error } = await db
         .from("setlists_guardados")
-        .update({ nombre_lista: nuevoNombre, canciones_ids: ids })
+        .update({ canciones_ids: ids }) // solo actualiza canciones
         .eq("id_unico", target);
-
-      console.log("GUARDAR->", target, ids);
-
+    
+      console.log("UPDATE->", target, ids);
+    
       if (error) {
         alert("NO se pudo actualizar:\n" + (error.message || error));
         console.error("UPDATE error:", error);
         return;
       }
+    
+      // (Opcional) verificación rápida
+      const { data: check, error: e2 } = await db
+        .from("setlists_guardados")
+        .select("canciones_ids")
+        .eq("id_unico", target)
+        .single();
+    
+      if (!e2 && check) {
+        const saved = normalizeSongIds(check.canciones_ids);
+        if (saved.length !== ids.length) {
+          console.warn("Mismatch guardado/local:", saved.length, ids.length, saved, ids);
+        }
+      }
+    
+      alert("Setlist actualizado ✅");
+      renderAll();
+      return;
+    }
 
       const { data: check, error: e2 } = await db
         .from("setlists_guardados")
