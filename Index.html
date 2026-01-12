@@ -595,15 +595,19 @@
 
     // UPDATE si ya hay setlist cargado
     if (state.listIdUnico) {
+      const nombreActual = state.listName || "Setlist";
+      const nuevoNombre = prompt("Nombre del setlist:", nombreActual);
+      if (!nuevoNombre) return;
+
       const target = state.listIdUnico.trim().toUpperCase();
-    
+
       const { error } = await db
         .from("setlists_guardados")
-        .update({ canciones_ids: ids }) // solo actualiza canciones
+        .update({ nombre_lista: nuevoNombre, canciones_ids: ids })
         .eq("id_unico", target);
-    
-      console.log("UPDATE->", target, ids);
-    
+
+      console.log("GUARDAR->", target, ids);
+
       if (error) {
         alert("NO se pudo actualizar:\n" + (error.message || error));
         console.error("UPDATE error:", error);
