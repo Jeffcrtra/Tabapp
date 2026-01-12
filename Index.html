@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>4.14 Adoranza Pro v4.11</title>
+  <title>4.20 Adoranza Pro v4.11</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
@@ -578,7 +578,7 @@
       const { data: check, error: e2 } = await db
         .from("setlists_guardados")
         .select("canciones_ids")
-        .eq("id_unico", state.listIdUnico)
+        state.listIdUnico = data.id_unico.trim().toUpperCase();
         .single();
   
       if (e2) {
