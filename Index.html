@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>4.44 Adoranza Pro v4.11</title>
+  <title>4.47 Adoranza Pro v4.11</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
@@ -532,4 +532,233 @@
 
   function compartirWhatsApp() {
     const ids = state.setlist.map(s => String(s.id)).join(",");
-    const n = s
+    const n = state.listName || "Setlist";
+    const url = `${window.location.origin}${window.location.pathname}?list=${encodeURIComponent(ids)}&n=${encodeURIComponent(n)}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent("*Setlist:* " + n + "\n" + url)}`, "_blank");
+  }
+
+  async function revisarLinkCompartido() {
+    const p = new URLSearchParams(window.location.search);
+    const ids = p.get("list");
+    if (!ids || !db) return;
+
+    const arr = ids.split(",").map(s => s.trim()).filter(Boolean);
+
+    const { data, error } = await db.from("canciones").select("*").in("id", arr);
+    if (error) { console.error(error); return; }
+
+    state.listName = p.get("n") || "Compartida";
+    state.listIdUnico = "";
+    state.setlist = [];
+
+    for (let id of arr) {
+      const s = (data || []).find(x => String(x.id) === String(id));
+      if (s) await addToSetlist(s);
+    }
+    window.history.replaceState({}, "", window.location.pathname);
+  }
+
+  function initSortable() {
+    const el = document.getElementById("setList");
+    if (el && window.Sortable) {
+      Sortable.create(el, {
+        animation:150,
+        handle:".drag-handle",
+        onEnd:(evt)=>{
+          const item = state.setlist.splice(evt.oldIndex, 1)[0];
+          state.setlist.splice(evt.newIndex, 0, item);
+          saveLocal();
+          renderAll();
+        }
+      });
+    }
+  }
+
+  async function Estadisticas() {
+    if (!db) { alert("Supabase no está listo."); return; }
+    const { data, error } = await db
+      .from("canciones")
+      .select("titulo, veces_tocada")
+      .gt("veces_tocada", 0)
+      .order("veces_tocada", { ascending:false })
+      .limit(5);
+
+    if (error) { alert("Error: " + (error.message || error)); return; }
+    alert("TOP 5:\n" + (data || []).map(s => `- ${s.titulo} (${s.veces_tocada})`).join("\n"));
+  }
+
+  async function guardarListaCloud() {
+    if (!db) { alert("Supabase no está listo."); return; }
+
+    const ids = state.setlist.map(s => String(s.id)).filter(Boolean);
+    if (!ids.length) { alert("Setlist vacío."); return; }
+
+    // UPDATE si ya hay setlist cargado
+    if (state.listIdUnico) {
+      const nombreActual = state.listName || "Setlist";
+      const nuevoNombre = prompt("Nombre del setlist:", nombreActual);
+      if (!nuevoNombre) return;
+
+      const target = state.listIdUnico.trim().toUpperCase();
+
+      const { error } = await db
+        .from("setlists_guardados")
+        .update({ nombre_lista: nuevoNombre, canciones_ids: ids })
+        .eq("id_unico", target);
+
+      console.log("GUARDAR->", target, ids);
+
+      if (error) {
+        alert("NO se pudo actualizar:\n" + (error.message || error));
+        console.error("UPDATE error:", error);
+        return;
+      }
+
+      const { data: check, error: e2 } = await db
+        .from("setlists_guardados")
+        .select("canciones_ids")
+        .eq("id_unico", target)
+        .single();
+
+      if (e2) {
+        alert("Actualizó, pero falló la verificación:\n" + (e2.message || e2));
+        console.error(e2);
+        return;
+      }
+
+      const saved = normalizeSongIds(check?.canciones_ids);
+      if (saved.length !== ids.length) {
+        alert("Ojo: Supabase no guardó la misma cantidad.\nGuardadas: " + saved.length + "\nLocal: " + ids.length);
+        console.warn("Guardado:", saved, "Local:", ids);
+      } else {
+        alert("Actualizado.\nID: " + target);
+      }
+
+      state.listName = nuevoNombre;
+      state.listIdUnico = target;
+      renderAll();
+      return;
+    }
+
+    // INSERT nuevo
+    const n = prompt("Nombre:");
+    if (!n) return;
+
+    let idUnico = "";
+    let lastErr = null;
+
+    for (let i = 0; i < 6; i++) {
+      idUnico = genSetlistId8();
+      const { error } = await db.from("setlists_guardados").insert({
+        nombre_lista: n,
+        canciones_ids: ids,
+        id_unico: idUnico
+      });
+      if (!error) { lastErr = null; break; }
+      lastErr = error;
+    }
+
+    if (lastErr) { alert("Error al guardar: " + (lastErr.message || lastErr)); return; }
+
+    state.listName = n;
+    state.listIdUnico = idUnico;
+    renderAll();
+    alert("Guardada.\nID: " + idUnico);
+  }
+
+  async function cargarListaCloud() {
+    if (!db) { alert("Supabase no está listo."); return; }
+
+    const uid = prompt("Ingresa el ID del Setlist (ej: ENSAYO01):");
+    if (!uid) return;
+
+    const want = uid.trim().toUpperCase();
+
+    const { data, error } = await db
+      .from("setlists_guardados")
+      .select("*")
+      .eq("id_unico", want)
+      .single();
+
+    if (error || !data) {
+      alert("No se encontró ningún setlist con el ID: " + want);
+      console.error(error);
+      return;
+    }
+
+    state.listName = data.nombre_lista || "";
+    state.listIdUnico = String(data.id_unico || "").trim().toUpperCase();
+
+    const ids = normalizeSongIds(data.canciones_ids);
+
+    if (!ids.length) {
+      alert("Ese setlist no tiene canciones_ids válidos.");
+      console.warn("canciones_ids crudo:", data.canciones_ids);
+      return;
+    }
+
+    const { data: cans, error: err2 } = await db
+      .from("canciones")
+      .select("*")
+      .in("id", ids);
+
+    if (err2) {
+      alert("Error cargando canciones: " + (err2.message || err2));
+      console.error(err2);
+      return;
+    }
+
+    state.setlist = [];
+    for (let id of ids) {
+      const s = (cans || []).find(x => String(x.id) === String(id));
+      if (s) await addToSetlist(s);
+    }
+
+    renderAll();
+  }
+
+  function prevSong() {
+    if (state.setlist.length === 0) return;
+    if (state.currentIndex <= 0) state.currentIndex = 0;
+    else state.currentIndex--;
+    state.half = false;
+    renderAll();
+    window.scrollTo({ top:0, behavior:"smooth" });
+  }
+
+  function nextSong() {
+    if (state.setlist.length === 0) return;
+    if (state.currentIndex < 0) state.currentIndex = 0;
+    else if (state.currentIndex < state.setlist.length - 1) state.currentIndex++;
+    state.half = false;
+    renderAll();
+    window.scrollTo({ top:0, behavior:"smooth" });
+  }
+
+  /* Exponer funciones globales para onclick="" (evita setRole undefined) */
+  window.setRole = setRole;
+  window.openConfig = openConfig;
+  window.closeConfig = closeConfig;
+  window.showHome = showHome;
+  window.Estadisticas = Estadisticas;
+
+  window.guardarListaCloud = guardarListaCloud;
+  window.cargarListaCloud = cargarListaCloud;
+  window.clearSetlist = clearSetlist;
+  window.compartirWhatsApp = compartirWhatsApp;
+
+  window.prevSong = prevSong;
+  window.nextSong = nextSong;
+  window.transpose = transpose;
+  window.changeFontSize = changeFontSize;
+  window.toggleScroll = toggleScroll;
+  window.adjScroll = adjScroll;
+  window.toggleMetroManual = toggleMetroManual;
+  window.halfTime = halfTime;
+
+  window.addToSetlist = addToSetlist;
+  window.seleccionar = seleccionar;
+  window.removeSong = removeSong;
+</script>
+</body>
+</html>
