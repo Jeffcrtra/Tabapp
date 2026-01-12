@@ -3,83 +3,85 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>4.34 Adoranza Pro v4.11</title>
+  <title>4.44 Adoranza Pro v4.11</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
-    :root {
+    :root{
       --bg:#0b0d12; --card:#121622; --muted:#98a2b3; --text:#e6e9ef;
-      --line:#23283a; --accent:#ffd54a; --danger:#ff5c77; --success:#4aff80; --radius: 14px;
+      --line:#23283a; --accent:#ffd54a; --danger:#ff5c77; --success:#4aff80; --radius:14px;
       --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
       --sans: ui-sans-serif, system-ui, sans-serif;
     }
-    * { box-sizing: border-box; }
-    body { margin: 0; font-family: var(--sans); background: var(--bg); color: var(--text); overflow-x: hidden; padding-top: 240px; }
+    *{ box-sizing:border-box; }
+    body{ margin:0; font-family:var(--sans); background:var(--bg); color:var(--text); overflow-x:hidden; padding-top:240px; }
 
-    #roleSelector { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; }
-    .role-grid { display: grid; gap: 14px; grid-template-columns: repeat(3, 1fr); width: min(95vw, 500px); }
-    .role-btn { background: var(--card); border: 2px solid var(--line); padding: 15px 10px; border-radius: 20px; text-align: center; font-size: 28px; cursor: pointer; color: white; display: flex; flex-direction: column; align-items: center; transition: 0.3s; user-select:none; }
-    .role-btn:hover { border-color: var(--accent); transform: translateY(-5px); }
-    .role-btn small { font-size: 10px; margin-top: 8px; color: var(--muted); font-weight: bold; line-height: 1.2; text-transform: uppercase; }
-    .footer-credits { position: absolute; bottom: 20px; font-size: 12px; color: var(--muted); text-align: center; }
-    .footer-credits a { color: var(--accent); text-decoration: none; font-weight: bold; }
+    #roleSelector{ position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:10000; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px; }
+    .role-grid{ display:grid; gap:14px; grid-template-columns:repeat(3,1fr); width:min(95vw,500px); }
+    .role-btn{ background:var(--card); border:2px solid var(--line); padding:15px 10px; border-radius:20px; text-align:center; font-size:28px; cursor:pointer; color:white; display:flex; flex-direction:column; align-items:center; transition:.3s; user-select:none; }
+    .role-btn:hover{ border-color:var(--accent); transform:translateY(-5px); }
+    .role-btn small{ font-size:10px; margin-top:8px; color:var(--muted); font-weight:bold; line-height:1.2; text-transform:uppercase; }
+    .footer-credits{ position:absolute; bottom:20px; font-size:12px; color:var(--muted); text-align:center; }
+    .footer-credits a{ color:var(--accent); text-decoration:none; font-weight:bold; }
 
-    #fixedControlPanel { position: fixed; top: 0; left: 0; right: 0; z-index: 999; background: rgba(11, 13, 18, 0.98); backdrop-filter: blur(10px); border-bottom: 2px solid var(--line); padding: 12px 10px; }
-    .viewer-tools { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-width: 500px; margin: 0 auto; }
-    .tool-group { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; justify-content: center; align-items: center; padding: 4px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); background: rgba(255, 255, 255, 0.02); }
-    .tool-group.triple { grid-template-columns: repeat(3, 1fr); grid-column: span 2; }
-    .btn { border: 1px solid rgba(255, 255, 255, 0.2); color: White; padding: 10px 5px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; transition: 0.2s; width: 100%; max-width: 100px; margin: 0 auto; height: 40px; }
-    .btn-nav { background-color: #004173 !important; }
-    .btn-tone { background-color: #630b57 !important; }
-    .btn-font { background-color: #2E6F40 !important; }
-    .btn-scroll { background-color: #d09306 !important; }
-    .btn-drums { background-color: #444 !important; border-color: var(--success); color: var(--success); }
-    .btn-save { background-color: #1a1a1a; border-color: var(--success); color: var(--success); }
-    .btn-wa { background-color: #075e54; border-color: #25d366; color: white; }
-    .btn.danger-x { border-color: var(--danger); color: var(--danger); background: rgba(255, 92, 119, 0.1); max-width: 40px; }
+    #fixedControlPanel{ position:fixed; top:0; left:0; right:0; z-index:999; background:rgba(11,13,18,.98); backdrop-filter:blur(10px); border-bottom:2px solid var(--line); padding:12px 10px; }
+    .viewer-tools{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; max-width:500px; margin:0 auto; }
+    .tool-group{ display:grid; grid-template-columns:repeat(2,1fr); gap:4px; justify-content:center; align-items:center; padding:4px; border-radius:12px; border:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,.02); }
+    .tool-group.triple{ grid-template-columns:repeat(3,1fr); grid-column:span 2; }
 
-    .btn-add {
-      background: var(--accent);
-      color: #000;
-      border-color: var(--accent);
-      font-weight: 800;
-      font-size: 10px;
-      height: 28px;
-      padding: 0 8px;
-      border-radius: 10px;
-      max-width: 40px;
+    .btn{ border:1px solid rgba(255,255,255,.2); color:white; padding:10px 5px; border-radius:8px; cursor:pointer; font-size:12px; font-weight:600; display:inline-flex; align-items:center; justify-content:center; transition:.2s; width:100%; max-width:100px; margin:0 auto; height:40px; }
+    .btn-nav{ background-color:#004173 !important; }
+    .btn-tone{ background-color:#630b57 !important; }
+    .btn-font{ background-color:#2E6F40 !important; }
+    .btn-scroll{ background-color:#d09306 !important; }
+    .btn-drums{ background-color:#444 !important; border-color:var(--success); color:var(--success); }
+    .btn-save{ background-color:#1a1a1a; border-color:var(--success); color:var(--success); }
+    .btn-wa{ background-color:#075e54; border-color:#25d366; color:white; }
+    .btn.danger-x{ border-color:var(--danger); color:var(--danger); background:rgba(255,92,119,.1); max-width:40px; }
+
+    /* ADD más pequeño */
+    .btn-add{
+      background:var(--accent);
+      color:#000;
+      border-color:var(--accent);
+      font-weight:800;
+      font-size:10px;
+      height:28px;
+      padding:0 8px;
+      border-radius:10px;
+      max-width:40px;
     }
-    .btn-add:hover { filter: brightness(1.1); }
+    .btn-add:hover{ filter:brightness(1.1); }
 
-    #metro-dots { margin-top: 10px; display: flex; justify-content: center; gap: 15px; height: 45px; align-items: center; }
-    .beat-dot { width: 35px; height: 35px; border-radius: 50%; background: #222; border: 2px solid #333; transition: 0.1s; }
-    .beat-active-red { background: var(--danger); box-shadow: 0 0 25px var(--danger); transform: scale(1.15); border-color: #fff; }
-    .beat-active-green { background: var(--success); box-shadow: 0 0 25px var(--success); transform: scale(1.15); border-color: #fff; }
-    #volume-container { display:none; text-align:center; margin-top:10px; }
+    #metro-dots{ margin-top:10px; display:flex; justify-content:center; gap:15px; height:45px; align-items:center; }
+    .beat-dot{ width:35px; height:35px; border-radius:50%; background:#222; border:2px solid #333; transition:.1s; }
+    .beat-active-red{ background:var(--danger); box-shadow:0 0 25px var(--danger); transform:scale(1.15); border-color:#fff; }
+    .beat-active-green{ background:var(--success); box-shadow:0 0 25px var(--success); transform:scale(1.15); border-color:#fff; }
+    #volume-container{ display:none; text-align:center; margin-top:10px; }
 
-    #configPanel { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 10001; display: none; flex-direction: column; align-items: center; padding: 40px 20px; }
+    #configPanel{ position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:10001; display:none; flex-direction:column; align-items:center; padding:40px 20px; }
 
-    .wrap { padding: 10px; max-width: 1200px; margin: 0 auto; }
-    .grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
-    @media (min-width: 768px) { .grid { grid-template-columns: 280px 1fr; } }
+    .wrap{ padding:10px; max-width:1200px; margin:0 auto; }
+    .grid{ display:grid; grid-template-columns:1fr; gap:15px; }
+    @media (min-width:768px){ .grid{ grid-template-columns:280px 1fr; } }
 
-    #setlist-container { width: 92%; margin: 0 auto; }
-    .card { background: rgba(255,255,255,.02); border: 1px solid var(--line); border-radius: var(--radius); margin-bottom: 10px; }
-    .card .hd { padding: 10px; border-bottom: 1px solid var(--line); font-weight: bold; font-size: 13px; }
-    .card .bd { padding: 10px; }
+    #setlist-container{ width:92%; margin:0 auto; }
+    .card{ background:rgba(255,255,255,.02); border:1px solid var(--line); border-radius:var(--radius); margin-bottom:10px; }
+    .card .hd{ padding:10px; border-bottom:1px solid var(--line); font-weight:bold; font-size:13px; }
+    .card .bd{ padding:10px; }
 
-    .item { border: 1px solid var(--line); border-radius: 12px; padding: 12px; background: rgba(255,255,255,0.03); display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; cursor: pointer; }
-    .drag-handle { cursor: grab; padding: 0 10px; color: var(--muted); font-size: 18px; }
+    .item{ border:1px solid var(--line); border-radius:12px; padding:12px; background:rgba(255,255,255,.03); display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; cursor:pointer; }
+    .drag-handle{ cursor:grab; padding:0 10px; color:var(--muted); font-size:18px; }
 
-    #viewContent { background: rgba(0,0,0,.4); padding: 25px; border-radius: 15px; white-space: pre-wrap; font-family: var(--mono); line-height: 1.6; border: 1px solid var(--line); min-height: 200px; }
-    .chord { color: var(--accent); font-weight: bold; }
-    #list-name-badge { font-size: 10px; color: var(--accent); margin-top: 4px; display: block; font-weight: normal; }
+    #viewContent{ background:rgba(0,0,0,.4); padding:25px; border-radius:15px; white-space:pre-wrap; font-family:var(--mono); line-height:1.6; border:1px solid var(--line); min-height:200px; }
+    .chord{ color:var(--accent); font-weight:bold; }
+    #list-name-badge{ font-size:10px; color:var(--accent); margin-top:4px; display:block; font-weight:normal; }
   </style>
 </head>
 <body>
 
 <div id="roleSelector">
-  <h1 style="color:var(--accent); margin:0; font-size: 24px;">ADORANZA PRO v4.11</h1>
+  <h1 style="color:var(--accent); margin:0; font-size:24px;">ADORANZA PRO v4.11</h1>
   <div class="role-grid">
     <div class="role-btn" onclick="setRole('musico')">🎸<small>PIANO<br>GUITARRA</small></div>
     <div class="role-btn" onclick="setRole('drums')">🥁<small>VOZ +<br>BATERÍA</small></div>
@@ -90,12 +92,12 @@
 </div>
 
 <div id="configPanel">
-  <button class="btn btn-nav" style="margin-bottom: 30px; width: 120px;" onclick="closeConfig()">🏠 Home</button>
-  <div class="card" style="width: 100%; max-width: 400px;">
+  <button class="btn btn-nav" style="margin-bottom:30px; width:120px;" onclick="closeConfig()">🏠 Home</button>
+  <div class="card" style="width:100%; max-width:400px;">
     <div class="hd">Perfil de Usuario</div>
-    <div class="bd" style="text-align: center;">
+    <div class="bd" style="text-align:center;">
       <p style="color:var(--muted)">ID de Usuario:</p>
-      <h2 id="uid-display" style="color:var(--accent); font-family:var(--mono); letter-spacing: 2px;"></h2>
+      <h2 id="uid-display" style="color:var(--accent); font-family:var(--mono); letter-spacing:2px;"></h2>
     </div>
   </div>
 </div>
@@ -135,11 +137,11 @@
 
   <div id="volume-container">
     <small style="color:var(--muted); font-size:10px;">VOL CLICK:</small>
-    <input type="range" id="volRange" min="0" max="1" step="0.05" value="0.5" style="width: 120px; tical-align:middle;">
+    <input type="range" id="volRange" min="0" max="1" step="0.05" value="0.5" style="width:120px; vertical-align:middle;">
   </div>
 
   <div id="info-display">
-    <div id="current-song-info" style="font-weight: bold; color: var(--accent); font-size: 14px; text-align: center; margin-top: 8px;">Adoranza Cloud</div>
+    <div id="current-song-info" style="font-weight:bold; color:var(--accent); font-size:14px; text-align:center; margin-top:8px;">Adoranza Cloud</div>
     <div id="metro-dots"></div>
   </div>
 </div>
@@ -157,7 +159,7 @@
 
     <section class="card">
       <div class="hd">
-        <div style="display:flex; justify-content: space-between; align-items: flex-start; width: 100%;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; width:100%;">
           <div>Setlist <span id="list-name-badge"></span></div>
           <div style="display:flex; gap:4px;">
             <button class="btn btn-save" style="width:auto; padding:0 6px; height:24px; font-size:10px;" onclick="guardarListaCloud()">Guardar</button>
@@ -170,7 +172,7 @@
       <div class="bd" id="setlist-container"><div id="setList"></div></div>
     </section>
 
-    <section class="card" style="grid-column: 1 / -1; border:none; background:none;">
+    <section class="card" style="grid-column:1 / -1; border:none; background:none;">
       <pre id="viewContent">Selecciona una canción.</pre>
     </section>
   </div>
@@ -178,15 +180,15 @@
 
 <script>
   const SB_URL = "https://ystlbjvjoqpqoklvjdrj.supabase.co";
-  const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlzdGxianZqb3FwcW9rbHZqZHJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5NzY4NDUsImV4cCI6MjA4MzU1Mjg0NX0.AQg9BuuGlbUtuyccvrBJwRGzx4Bgzx58aqGbfMPzKfg";
+  const SB_KEY = "REEMPLAZA_AQUI_TU_KEY"; /* ← pon tu key real */
   const BUCKET_URL = `${SB_URL}/storage/v1/object/public/Cancionero_Adoranza/`;
 
+  // Catch errores para debug (puedes quitarlo luego)
   window.onerror = function (msg, src, line, col, err) {
     alert("JS ERROR: " + msg + "\nLínea: " + line);
     console.error(err);
   };
 
-  // ✅ db se inicializa DESPUÉS con guardas (para que no mate todo el script)
   let db = null;
 
   function genUid() {
@@ -215,44 +217,33 @@
     return out;
   }
 
+  // UUID-friendly
   function normalizeSongIds(v) {
     if (v == null) return [];
-  
-    // Caso: ya viene como array (uuid[] o int[])
+
     if (Array.isArray(v)) {
       return v.map(x => String(x).trim()).filter(Boolean);
     }
-  
-    // Caso: viene como string
+
     if (typeof v === "string") {
       const s = v.trim();
       if (!s) return [];
-  
-      // Si viene como JSON string '["uuid","uuid"]'
+
       try {
         const j = JSON.parse(s);
         if (Array.isArray(j)) return j.map(x => String(x).trim()).filter(Boolean);
       } catch (e) {}
-  
-      // Detectar UUIDs dentro del string
+
       const uuids = s.match(/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/g);
       if (uuids && uuids.length) return uuids.map(x => x.trim());
-  
-      // Si no hay UUIDs, intentar números (por compatibilidad)
-      const nums = s.match(/\d+/g);
-      if (nums && nums.length) return nums.map(x => x.trim());
-  
-      // Fallback: split por coma
+
       const cleaned = s.replace(/[\{\}\[\]\s"]/g, "");
       if (!cleaned) return [];
       return cleaned.split(",").map(x => x.trim()).filter(Boolean);
     }
-  
-    // Otros tipos
+
     return [String(v).trim()].filter(Boolean);
   }
-
-
 
   const state = {
     setlist: [],
@@ -270,9 +261,6 @@
     userId: localStorage.getItem("adoranza_uid") || genUid()
   };
 
-  // =========================
-  // ✅ IMPORTANTE: funciones UI primero (para que onclick siempre exista)
-  // =========================
   function setRole(role) {
     state.userRole = role;
     document.getElementById("roleSelector").style.display = "none";
@@ -281,6 +269,7 @@
     document.getElementById("volume-container").style.display = (role === "drums") ? "block" : "none";
     renderAll();
   }
+
   function openConfig() { document.getElementById("configPanel").style.display = "flex"; }
   function closeConfig() { document.getElementById("configPanel").style.display = "none"; }
   function showHome() {
@@ -305,9 +294,6 @@
     else badge.innerText = `» ${state.listIdUnico}`;
   }
 
-  // =========================
-  // ✅ Supabase init con guardas (para que no mate el script)
-  // =========================
   function initSupabaseOrWarn() {
     if (!window.supabase || !supabase.createClient) {
       alert("No cargó Supabase (CDN). Revisa internet o bloqueo de CDN.");
@@ -327,10 +313,8 @@
     document.getElementById("uid-display").innerText = "ID: " + state.userId;
     localStorage.setItem("adoranza_uid", state.userId);
 
-    // Inicializar Supabase SIN romper la UI
     db = initSupabaseOrWarn();
 
-    // Handler del buscador SOLO si db existe
     const sb = document.getElementById("searchBox");
     if (sb) {
       sb.oninput = async (e) => {
@@ -354,14 +338,12 @@
           const d = document.createElement("div");
           d.className = "item";
           d.innerHTML = `
-              <div style="flex:1">
-                <div style="font-weight:600">${s.titulo}</div>
-                <div style="font-size:11px; color:var(--muted); margin-top:2px;">
-                  ${s.artista || ""}
-                </div>
-              </div>
-              <button class="btn btn-add" style="max-width:50px;" onclick='addToSetlist(${JSON.stringify(s)})'>ADD</button>
-            `;
+            <div style="flex:1">
+              <div style="font-weight:600; font-size:13px;">${s.titulo || ""}</div>
+              <div style="font-size:11px; color:var(--muted); margin-top:2px;">${s.artista || ""}</div>
+            </div>
+            <button class="btn btn-add" onclick='addToSetlist(${JSON.stringify(s)})'>ADD</button>
+          `;
           resDiv.appendChild(d);
         });
       };
@@ -369,7 +351,6 @@
 
     initSortable();
 
-    // Link compartido solo si db existe
     if (db) await revisarLinkCompartido();
 
     renderAll();
@@ -378,12 +359,14 @@
   async function addToSetlist(song) {
     try {
       const resp = await fetch(BUCKET_URL + song.path_url);
+      if (!resp.ok) throw new Error("Fetch " + resp.status + " " + song.path_url);
       const text = await resp.text();
       state.setlist.push({ ...song, body: text.replace(/\{(\w+):\s*([^}]+)\}/g, "").trim() });
       saveLocal();
       renderAll();
     } catch (e) {
       console.error(e);
+      alert("No se pudo cargar el archivo del bucket:\n" + (song?.path_url || ""));
     }
   }
 
@@ -399,7 +382,8 @@
       div.innerHTML = `
         <span class="drag-handle">☰</span>
         <div style="flex:1" onclick="seleccionar(${idx})">${s.titulo}</div>
-        <button class="btn danger-x" onclick="removeSong(${idx}, event)">✕</button>`;
+        <button class="btn danger-x" onclick="removeSong(${idx}, event)">✕</button>
+      `;
       sl.appendChild(div);
     });
 
@@ -409,7 +393,7 @@
     const view = document.getElementById("viewContent");
     if (curr && view) {
       document.getElementById("current-song-info").innerText =
-        curr.titulo + " | BPM: " + (state.half ? curr.bpm/2 : curr.bpm);
+        curr.titulo + " | BPM: " + (state.half ? curr.bpm / 2 : curr.bpm);
 
       let body = curr.body || "";
       if (state.userRole !== "musico") {
@@ -427,40 +411,72 @@
 
       view.innerHTML = body;
       view.style.fontSize = state.currentFontSize + "px";
-      state.currentBPM = state.half ? curr.bpm/2 : curr.bpm;
+      state.currentBPM = state.half ? curr.bpm / 2 : curr.bpm;
 
       if (state.userRole === "drums" && state.metroActive) startMetro();
     }
   }
 
-  function seleccionar(idx) { state.currentIndex = idx; state.half = false; renderAll(); window.scrollTo({ top: 0, behavior: "smooth" }); }
-  function removeSong(idx, e) { e.stopPropagation(); state.setlist.splice(idx, 1); if (state.currentIndex === idx) state.currentIndex = -1; saveLocal(); renderAll(); }
+  function seleccionar(idx) {
+    state.currentIndex = idx;
+    state.half = false;
+    renderAll();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function removeSong(idx, e) {
+    e.stopPropagation();
+    state.setlist.splice(idx, 1);
+    if (state.currentIndex === idx) state.currentIndex = -1;
+    saveLocal();
+    renderAll();
+  }
+
   function saveLocal() { localStorage.setItem("adoranza_v4_setlist", JSON.stringify(state.setlist)); }
-  function clearSetlist() { state.setlist = []; state.currentIndex = -1; state.listName = ""; state.listIdUnico = ""; saveLocal(); renderAll(); }
+
+  function clearSetlist() {
+    state.setlist = [];
+    state.currentIndex = -1;
+    state.listName = "";
+    state.listIdUnico = "";
+    saveLocal();
+    renderAll();
+  }
+
   function changeFontSize(d) { state.currentFontSize += d; renderAll(); }
 
   function toggleMetroManual() {
     state.metroActive = !state.metroActive;
-    document.getElementById("btnMetroState").innerText = state.metroActive ? "⏹" : "▶";
+    const b = document.getElementById("btnMetroState");
+    if (b) b.innerText = state.metroActive ? "⏹" : "▶";
     state.metroActive ? startMetro() : stopMetro();
   }
+
   function halfTime() { state.half = !state.half; renderAll(); }
 
   function startMetro() {
     stopMetro();
     const curr = state.setlist[state.currentIndex];
     if (!curr) return;
+
     const dots = document.getElementById("metro-dots");
+    if (!dots) return;
     dots.innerHTML = "";
+
     const beats = parseInt(curr.time_signature) || 4;
     for (let i = 0; i < beats; i++) dots.innerHTML += `<div class="beat-dot" id="dot-${i}"></div>`;
+
     let step = 0;
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
     state.metroInt = setInterval(() => {
-      const vol = parseFloat(document.getElementById("volRange").value);
+      const vr = document.getElementById("volRange");
+      const vol = vr ? parseFloat(vr.value) : 0.5;
+
       document.querySelectorAll(".beat-dot").forEach(d => d.className = "beat-dot");
       const dot = document.getElementById(`dot-${step}`);
       if (dot) dot.classList.add(step === 0 ? "beat-active-red" : "beat-active-green");
+
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
       osc.type = "sine";
@@ -469,9 +485,11 @@
       gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
       osc.connect(gain); gain.connect(audioCtx.destination);
       osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+
       step = (step + 1) % beats;
     }, (60 / state.currentBPM) * 1000);
   }
+
   function stopMetro() {
     if (state.metroInt) clearInterval(state.metroInt);
     state.metroInt = null;
@@ -489,6 +507,7 @@
       document.getElementById("scrollBtn").innerText = "PAUSA";
     }
   }
+
   function adjScroll(d) {
     state.scrollSpeed = Math.max(0.1, state.scrollSpeed + d);
     if (state.scrollInt) {
@@ -501,6 +520,7 @@
     const scale = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
     const curr = state.setlist[state.currentIndex];
     if (!curr) return;
+
     curr.body = (curr.body || "").replace(/\[([^\]]+)\]/g, (m, chord) => {
       return "[" + chord.replace(/[A-G]#?/g, (note) => {
         let idx = scale.indexOf(note);
@@ -511,210 +531,5 @@
   }
 
   function compartirWhatsApp() {
-    const ids = state.setlist.map(s => s.id).join(",");
-    const n = state.listName || "Setlist";
-    const url = `${window.location.origin}${window.location.pathname}?list=${ids}&n=${encodeURIComponent(n)}`;
-    window.open(`https://wa.me/?text=${encodeURIComponent("*Setlist:* " + n + "\n" + url)}`, "_blank");
-  }
-
-  async function revisarLinkCompartido() {
-    const p = new URLSearchParams(window.location.search);
-    const ids = p.get("list");
-    if (!ids || !db) return;
-
-    const arr = ids.split(",").map(Number);
-    const { data, error } = await db.from("canciones").select("*").in("id", arr);
-    if (error) { console.error(error); return; }
-
-    state.listName = p.get("n") || "Compartida";
-    state.listIdUnico = "";
-    state.setlist = [];
-    for (let id of arr) {
-      const s = (data || []).find(x => x.id === id);
-      if (s) await addToSetlist(s);
-    }
-    window.history.replaceState({}, "", window.location.pathname);
-  }
-
-  function initSortable() {
-    const el = document.getElementById("setList");
-    if (el && window.Sortable) {
-      Sortable.create(el, {
-        animation: 150,
-        handle: ".drag-handle",
-        onEnd: (evt) => {
-          const item = state.setlist.splice(evt.oldIndex, 1)[0];
-          state.setlist.splice(evt.newIndex, 0, item);
-          saveLocal();
-          renderAll();
-        }
-      });
-    }
-  }
-
-  async function Estadisticas() {
-    if (!db) { alert("Supabase no está listo."); return; }
-    const { data, error } = await db.from("canciones").select("titulo, veces_tocada").gt("veces_tocada", 0).order("veces_tocada", { ascending: false }).limit(5);
-    if (error) { alert("Error: " + (error.message || error)); return; }
-    alert("TOP 5:\n" + (data || []).map(s => `- ${s.titulo} (${s.veces_tocada})`).join("\n"));
-  }
-
-  async function guardarListaCloud() {
-    if (!db) { alert("Supabase no está listo."); return; }
-  
-    const ids = state.setlist.map(s => String(s.id)).filter(Boolean);
-    if (!ids.length) { alert("Setlist vacío."); return; }
-  
-    // Si ya hay setlist cargado -> UPDATE
-    if (state.listIdUnico) {
-      const nombreActual = state.listName || "Setlist";
-      const nuevoNombre = prompt("Nombre del setlist:", nombreActual);
-      if (!nuevoNombre) return;
-  
-      const { error } = await db
-        .from("setlists_guardados")
-        .update({
-          nombre_lista: nuevoNombre,
-          canciones_ids: ids
-        })
-        .eq("id_unico", state.listIdUnico);
-
-      console.log("GUARDAR->", state.listIdUnico, ids);
-  
-      if (error) {
-        alert("NO se pudo actualizar (probable RLS/Policies):\n" + (error.message || error));
-        console.error("UPDATE error:", error);
-        return;
-      }
-  
-      // ✅ Confirmación: volver a leer lo guardado
-      const { data: check, error: e2 } = await db
-        .from("setlists_guardados")
-        .select("canciones_ids")
-        state.listIdUnico = data.id_unico.trim().toUpperCase();
-        .single();
-  
-      if (e2) {
-        alert("Actualizó, pero falló la verificación:\n" + (e2.message || e2));
-        console.error(e2);
-        return;
-      }
-  
-      const saved = normalizeSongIds(check?.canciones_ids);
-      if (saved.length !== ids.length) {
-        alert("Ojo: Supabase no guardó la misma cantidad de canciones.\nGuardadas: " + saved.length + "\nLocal: " + ids.length);
-        console.warn("Guardado:", saved, "Local:", ids);
-      } else {
-        alert("Actualizado.\nID: " + state.listIdUnico);
-      }
-  
-      state.listName = nuevoNombre;
-      renderAll();
-      return;
-    }
-  
-    // Si no hay setlist cargado -> INSERT (nuevo)
-    const n = prompt("Nombre:");
-    if (!n) return;
-  
-    let idUnico = "";
-    let lastErr = null;
-  
-    for (let i = 0; i < 6; i++) {
-      idUnico = genSetlistId8();
-      const { error } = await db.from("setlists_guardados").insert({
-        nombre_lista: n,
-        canciones_ids: ids,
-        id_unico: idUnico
-      });
-      if (!error) { lastErr = null; break; }
-      lastErr = error;
-    }
-  
-    if (lastErr) { alert("Error al guardar: " + (lastErr.message || lastErr)); return; }
-  
-    state.listName = n;
-    state.listIdUnico = idUnico;
-    renderAll();
-    alert("Guardada.\nID: " + idUnico);
-  }
-
-  async function cargarListaCloud() {
-    if (!db) { alert("Supabase no está listo."); return; }
-  
-    const uid = prompt("Ingresa el ID del Setlist (ej: ENSAYO01):");
-    if (!uid) return;
-  
-    const { data, error } = await db
-      .from("setlists_guardados")
-      .select("*")
-      .eq("id_unico", uid.trim().toUpperCase())
-      .single();
-  
-    if (error || !data) {
-      alert("No se encontró ningún setlist con el ID: " + uid);
-      console.error(error);
-      return;
-    }
-  
-    state.listName = data.nombre_lista || "";
-    state.listIdUnico = (data.id_unico || "").toString().trim().toUpperCase();
-  
-    // ✅ Normalizar IDs SIEMPRE (sirve si viene int[], json, o "{1,2,3}" string)
-    const ids = normalizeSongIds(data.canciones_ids);
-
-    if (!ids.length) {
-      alert("Ese setlist no tiene canciones_ids válidos.");
-      console.warn("canciones_ids crudo:", data.canciones_ids);
-      return;
-    }
-    
-    const { data: cans, error: err2 } = await db
-      .from("canciones")
-      .select("*")
-      .in("id", ids); // <- IMPORTANTÍSIMO: ids son strings (UUIDs)
-    
-    if (err2) {
-      alert("Error cargando canciones: " + (err2.message || err2));
-      console.error(err2);
-      return;
-    }
-    
-    state.setlist = [];
-    for (let id of ids) {
-      const s = (cans || []).find(x => String(x.id) === String(id));
-      if (s) await addToSetlist(s);
-    }
-    renderAll();
-
-    }
-  
-    state.setlist = [];
-    for (let id of ids) {
-      const s = (cans || []).find(x => Number(x.id) === Number(id));
-      if (s) await addToSetlist(s);
-    }
-  
-    renderAll();
-  }
-
-
-  function prevSong(){
-    if(state.setlist.length === 0) return;
-    if(state.currentIndex <= 0) state.currentIndex = 0;
-    else state.currentIndex--;
-    state.half = false;
-    renderAll();
-    window.scrollTo({top:0, behavior:'smooth'});
-  }
-  function nextSong(){
-    if(state.setlist.length === 0) return;
-    if(state.currentIndex < 0) state.currentIndex = 0;
-    else if(state.currentIndex < state.setlist.length - 1) state.currentIndex++;
-    state.half = false;
-    renderAll();
-    window.scrollTo({top:0, behavior:'smooth'});
-  }
-</script>
-</body>
-</html>
+    const ids = state.setlist.map(s => String(s.id)).join(",");
+    const n = s
