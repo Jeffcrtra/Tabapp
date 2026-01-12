@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>3.56 Adoranza Pro v4.11</title>
+  <title>4.08 Adoranza Pro v4.11</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
@@ -517,10 +517,10 @@
   async function guardarListaCloud() {
     if (!db) { alert("Supabase no está listo."); return; }
   
-    const ids = state.setlist.map(s => s.id);
+    const ids = state.setlist.map(s => Number(s.id)).filter(Number.isFinite);
     if (!ids.length) { alert("Setlist vacío."); return; }
   
-    // ✅ Caso A: ya hay un setlist cargado -> UPDATE
+    // Si ya hay setlist cargado -> UPDATE
     if (state.listIdUnico) {
       const nombreActual = state.listName || "Setlist";
       const nuevoNombre = prompt("Nombre del setlist:", nombreActual);
@@ -533,16 +533,42 @@
           canciones_ids: ids
         })
         .eq("id_unico", state.listIdUnico);
+
+      console.log("GUARDAR->", state.listIdUnico, ids);
   
-      if (error) { alert("Error al actualizar: " + (error.message || error)); return; }
+      if (error) {
+        alert("NO se pudo actualizar (probable RLS/Policies):\n" + (error.message || error));
+        console.error("UPDATE error:", error);
+        return;
+      }
+  
+      // ✅ Confirmación: volver a leer lo guardado
+      const { data: check, error: e2 } = await db
+        .from("setlists_guardados")
+        .select("canciones_ids")
+        .eq("id_unico", state.listIdUnico)
+        .single();
+  
+      if (e2) {
+        alert("Actualizó, pero falló la verificación:\n" + (e2.message || e2));
+        console.error(e2);
+        return;
+      }
+  
+      const saved = normalizeSongIds(check?.canciones_ids);
+      if (saved.length !== ids.length) {
+        alert("Ojo: Supabase no guardó la misma cantidad de canciones.\nGuardadas: " + saved.length + "\nLocal: " + ids.length);
+        console.warn("Guardado:", saved, "Local:", ids);
+      } else {
+        alert("Actualizado.\nID: " + state.listIdUnico);
+      }
   
       state.listName = nuevoNombre;
       renderAll();
-      alert("Actualizado.\nID: " + state.listIdUnico);
       return;
     }
   
-    // ✅ Caso B: no hay setlist cargado -> INSERT (crear nuevo)
+    // Si no hay setlist cargado -> INSERT (nuevo)
     const n = prompt("Nombre:");
     if (!n) return;
   
@@ -569,37 +595,55 @@
   }
 
   async function cargarListaCloud() {
-    // Pedimos el ID de 8 caracteres al usuario (ej: ENSAYO01)
-    const uid = prompt("Ingresa el ID del Setlist (ej: ENSAYO01):"); 
-    if(!uid) return;
-
-    // Realizamos el match con la columna 'id_unico' de tu tabla
-    const { data, error } = await db.from('setlists_guardados')
-        .select('*')
-        .eq('id_unico', uid.trim().toUpperCase()) // Match directo con id_unico
-        .single();
-
-    if (data) {
-        state.listName = data.nombre_lista; 
-        state.listIdUnico = data.id_unico;
-        
-        // Mostramos el NOMBRE de la lista en el badge, pero el match fue por ID
-        // document.getElementById('list-name-badge').innerText = "» " + data.nombre_lista;
-        
-        // Cargamos las canciones asociadas
-        const { data: cans } = await db.from('canciones').select('*').in('id', data.canciones_ids);
-        
-        state.setlist = [];
-        // Mantenemos el orden original de las canciones
-        for(let id of data.canciones_ids) { 
-            const s = cans.find(x => x.id === id); 
-            if(s) await addToSetlist(s); 
-        }
-        renderAll();
-    } else { 
-        alert("No se encontró ningún setlist con el ID: " + uid); 
+    if (!db) { alert("Supabase no está listo."); return; }
+  
+    const uid = prompt("Ingresa el ID del Setlist (ej: ENSAYO01):");
+    if (!uid) return;
+  
+    const { data, error } = await db
+      .from("setlists_guardados")
+      .select("*")
+      .eq("id_unico", uid.trim().toUpperCase())
+      .single();
+  
+    if (error || !data) {
+      alert("No se encontró ningún setlist con el ID: " + uid);
+      console.error(error);
+      return;
     }
+  
+    state.listName = data.nombre_lista || "";
+    state.listIdUnico = (data.id_unico || "").toString().trim().toUpperCase();
+  
+    // ✅ Normalizar IDs SIEMPRE (sirve si viene int[], json, o "{1,2,3}" string)
+    const ids = normalizeSongIds(data.canciones_ids);
+  
+    if (!ids.length) {
+      alert("Ese setlist no tiene canciones_ids válidos.");
+      console.warn("canciones_ids crudo:", data.canciones_ids);
+      return;
+    }
+  
+    const { data: cans, error: err2 } = await db
+      .from("canciones")
+      .select("*")
+      .in("id", ids);
+  
+    if (err2) {
+      alert("Error cargando canciones: " + (err2.message || err2));
+      console.error(err2);
+      return;
+    }
+  
+    state.setlist = [];
+    for (let id of ids) {
+      const s = (cans || []).find(x => Number(x.id) === Number(id));
+      if (s) await addToSetlist(s);
+    }
+  
+    renderAll();
   }
+
 
   function prevSong(){
     if(state.setlist.length === 0) return;
