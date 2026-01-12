@@ -306,7 +306,7 @@
         (data || []).forEach(s => {
           const d = document.createElement("div");
           d.className = "item";
-          d.innerHTML = `<div>${s.titulo}</div><button class="btn" style="max-width:40px;" onclick='addToSetlist(${JSON.stringify(s)})'>+</button>`;
+          d.innerHTML = `<div>${s.titulo}</div><button class="btn" style="max-width:40px;" onclick='addToSetlist(${JSON.stringify(s)})'>Add</button>`;
           resDiv.appendChild(d);
         });
       };
