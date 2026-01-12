@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>4.20 Adoranza Pro v4.11</title>
+  <title>4.34 Adoranza Pro v4.11</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
@@ -43,10 +43,13 @@
       color: #000;
       border-color: var(--accent);
       font-weight: 800;
+      font-size: 10px;
+      height: 28px;
+      padding: 0 8px;
+      border-radius: 10px;
+      max-width: 40px;
     }
-    .btn-add:hover {
-      filter: brightness(1.1);
-    }
+    .btn-add:hover { filter: brightness(1.1); }
 
     #metro-dots { margin-top: 10px; display: flex; justify-content: center; gap: 15px; height: 45px; align-items: center; }
     .beat-dot { width: 35px; height: 35px; border-radius: 50%; background: #222; border: 2px solid #333; transition: 0.1s; }
@@ -178,6 +181,11 @@
   const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlzdGxianZqb3FwcW9rbHZqZHJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5NzY4NDUsImV4cCI6MjA4MzU1Mjg0NX0.AQg9BuuGlbUtuyccvrBJwRGzx4Bgzx58aqGbfMPzKfg";
   const BUCKET_URL = `${SB_URL}/storage/v1/object/public/Cancionero_Adoranza/`;
 
+  window.onerror = function (msg, src, line, col, err) {
+    alert("JS ERROR: " + msg + "\nLínea: " + line);
+    console.error(err);
+  };
+
   // ✅ db se inicializa DESPUÉS con guardas (para que no mate todo el script)
   let db = null;
 
@@ -208,37 +216,42 @@
   }
 
   function normalizeSongIds(v) {
-    // Devuelve SIEMPRE un array de números [1,2,3] sin importar el formato
     if (v == null) return [];
   
-    // Si ya es array: puede ser [1,2] o ["1","2"]
+    // Caso: ya viene como array (uuid[] o int[])
     if (Array.isArray(v)) {
-      return v.map(x => Number(x)).filter(Number.isFinite);
+      return v.map(x => String(x).trim()).filter(Boolean);
     }
   
-    // Si viene como número único
-    if (typeof v === "number") {
-      return Number.isFinite(v) ? [v] : [];
-    }
-  
-    // Si viene como string: "{1,2}", '{"1","2"}', "[1,2]", "1,2,3", etc.
+    // Caso: viene como string
     if (typeof v === "string") {
-      // Extraer TODOS los números que aparezcan en el texto (incluye formatos con comillas/braces)
-      const matches = v.match(/\d+/g);
-      if (!matches) return [];
-      return matches.map(n => Number(n)).filter(Number.isFinite);
+      const s = v.trim();
+      if (!s) return [];
+  
+      // Si viene como JSON string '["uuid","uuid"]'
+      try {
+        const j = JSON.parse(s);
+        if (Array.isArray(j)) return j.map(x => String(x).trim()).filter(Boolean);
+      } catch (e) {}
+  
+      // Detectar UUIDs dentro del string
+      const uuids = s.match(/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/g);
+      if (uuids && uuids.length) return uuids.map(x => x.trim());
+  
+      // Si no hay UUIDs, intentar números (por compatibilidad)
+      const nums = s.match(/\d+/g);
+      if (nums && nums.length) return nums.map(x => x.trim());
+  
+      // Fallback: split por coma
+      const cleaned = s.replace(/[\{\}\[\]\s"]/g, "");
+      if (!cleaned) return [];
+      return cleaned.split(",").map(x => x.trim()).filter(Boolean);
     }
   
-    // Si viene como objeto raro (por si acaso)
-    try {
-      const s = JSON.stringify(v);
-      const matches = s.match(/\d+/g);
-      if (!matches) return [];
-      return matches.map(n => Number(n)).filter(Number.isFinite);
-    } catch (e) {
-      return [];
-    }
+    // Otros tipos
+    return [String(v).trim()].filter(Boolean);
   }
+
 
 
   const state = {
@@ -549,7 +562,7 @@
   async function guardarListaCloud() {
     if (!db) { alert("Supabase no está listo."); return; }
   
-    const ids = state.setlist.map(s => Number(s.id)).filter(Number.isFinite);
+    const ids = state.setlist.map(s => String(s.id)).filter(Boolean);
     if (!ids.length) { alert("Setlist vacío."); return; }
   
     // Si ya hay setlist cargado -> UPDATE
@@ -649,22 +662,31 @@
   
     // ✅ Normalizar IDs SIEMPRE (sirve si viene int[], json, o "{1,2,3}" string)
     const ids = normalizeSongIds(data.canciones_ids);
-  
+
     if (!ids.length) {
       alert("Ese setlist no tiene canciones_ids válidos.");
       console.warn("canciones_ids crudo:", data.canciones_ids);
       return;
     }
-  
+    
     const { data: cans, error: err2 } = await db
       .from("canciones")
       .select("*")
-      .in("id", ids);
-  
+      .in("id", ids); // <- IMPORTANTÍSIMO: ids son strings (UUIDs)
+    
     if (err2) {
       alert("Error cargando canciones: " + (err2.message || err2));
       console.error(err2);
       return;
+    }
+    
+    state.setlist = [];
+    for (let id of ids) {
+      const s = (cans || []).find(x => String(x.id) === String(id));
+      if (s) await addToSetlist(s);
+    }
+    renderAll();
+
     }
   
     state.setlist = [];
