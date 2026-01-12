@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>2.17 Adoranza Pro v4.11</title>
+  <title>3.56 Adoranza Pro v4.11</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
@@ -516,15 +516,39 @@
 
   async function guardarListaCloud() {
     if (!db) { alert("Supabase no está listo."); return; }
-    const n = prompt("Nombre:");
-    if (!n) return;
-
+  
     const ids = state.setlist.map(s => s.id);
     if (!ids.length) { alert("Setlist vacío."); return; }
-
+  
+    // ✅ Caso A: ya hay un setlist cargado -> UPDATE
+    if (state.listIdUnico) {
+      const nombreActual = state.listName || "Setlist";
+      const nuevoNombre = prompt("Nombre del setlist:", nombreActual);
+      if (!nuevoNombre) return;
+  
+      const { error } = await db
+        .from("setlists_guardados")
+        .update({
+          nombre_lista: nuevoNombre,
+          canciones_ids: ids
+        })
+        .eq("id_unico", state.listIdUnico);
+  
+      if (error) { alert("Error al actualizar: " + (error.message || error)); return; }
+  
+      state.listName = nuevoNombre;
+      renderAll();
+      alert("Actualizado.\nID: " + state.listIdUnico);
+      return;
+    }
+  
+    // ✅ Caso B: no hay setlist cargado -> INSERT (crear nuevo)
+    const n = prompt("Nombre:");
+    if (!n) return;
+  
     let idUnico = "";
     let lastErr = null;
-
+  
     for (let i = 0; i < 6; i++) {
       idUnico = genSetlistId8();
       const { error } = await db.from("setlists_guardados").insert({
@@ -535,9 +559,9 @@
       if (!error) { lastErr = null; break; }
       lastErr = error;
     }
-
+  
     if (lastErr) { alert("Error al guardar: " + (lastErr.message || lastErr)); return; }
-
+  
     state.listName = n;
     state.listIdUnico = idUnico;
     renderAll();
@@ -557,10 +581,10 @@
 
     if (data) {
         state.listName = data.nombre_lista; 
-        state.currentListID = data.id_unico;
+        state.listIdUnico = data.id_unico;
         
         // Mostramos el NOMBRE de la lista en el badge, pero el match fue por ID
-        document.getElementById('list-name-badge').innerText = "» " + data.nombre_lista;
+        // document.getElementById('list-name-badge').innerText = "» " + data.nombre_lista;
         
         // Cargamos las canciones asociadas
         const { data: cans } = await db.from('canciones').select('*').in('id', data.canciones_ids);
