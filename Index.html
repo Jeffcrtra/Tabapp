@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>4.08 Adoranza Pro v4.11</title>
+  <title>4.14 Adoranza Pro v4.11</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
@@ -208,14 +208,38 @@
   }
 
   function normalizeSongIds(v) {
-    if (Array.isArray(v)) return v.map(Number).filter(Number.isFinite);
-    if (typeof v === "string") {
-      const cleaned = v.replace(/[\{\}\[\]\s]/g, "");
-      if (!cleaned) return [];
-      return cleaned.split(",").map(Number).filter(Number.isFinite);
+    // Devuelve SIEMPRE un array de números [1,2,3] sin importar el formato
+    if (v == null) return [];
+  
+    // Si ya es array: puede ser [1,2] o ["1","2"]
+    if (Array.isArray(v)) {
+      return v.map(x => Number(x)).filter(Number.isFinite);
     }
-    return [];
+  
+    // Si viene como número único
+    if (typeof v === "number") {
+      return Number.isFinite(v) ? [v] : [];
+    }
+  
+    // Si viene como string: "{1,2}", '{"1","2"}', "[1,2]", "1,2,3", etc.
+    if (typeof v === "string") {
+      // Extraer TODOS los números que aparezcan en el texto (incluye formatos con comillas/braces)
+      const matches = v.match(/\d+/g);
+      if (!matches) return [];
+      return matches.map(n => Number(n)).filter(Number.isFinite);
+    }
+  
+    // Si viene como objeto raro (por si acaso)
+    try {
+      const s = JSON.stringify(v);
+      const matches = s.match(/\d+/g);
+      if (!matches) return [];
+      return matches.map(n => Number(n)).filter(Number.isFinite);
+    } catch (e) {
+      return [];
+    }
   }
+
 
   const state = {
     setlist: [],
@@ -316,7 +340,15 @@
         (data || []).forEach(s => {
           const d = document.createElement("div");
           d.className = "item";
-          d.innerHTML = `<div>${s.titulo}</div><button class="btn btn-add" style="max-width:50px;" onclick='addToSetlist(${JSON.stringify(s)})'>ADD</button>`;
+          d.innerHTML = `
+              <div style="flex:1">
+                <div style="font-weight:600">${s.titulo}</div>
+                <div style="font-size:11px; color:var(--muted); margin-top:2px;">
+                  ${s.artista || ""}
+                </div>
+              </div>
+              <button class="btn btn-add" style="max-width:50px;" onclick='addToSetlist(${JSON.stringify(s)})'>ADD</button>
+            `;
           resDiv.appendChild(d);
         });
       };
