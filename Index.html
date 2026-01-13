@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>4.25 Adoranza Pro v5.0</title>
+  <title>4.48 Adoranza Pro v5.0</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
@@ -472,16 +472,16 @@
   </div>
 </div>
 
-  <div class="card" style="width:100%; max-width:520px; margin-top:14px;">
-    <div class="hd">Favoritos (Offline)</div>
-    <div class="bd">
-      <input class="input" id="favSearch" placeholder="Buscar en favoritos..." autocomplete="off" />
-      <div id="favList" style="display:grid; gap:10px; margin-top:10px;"></div>
-      <div style="margin-top:10px; font-size:11px; color:var(--muted);">
-        Estos favoritos viven en tu dispositivo (localStorage). Si borrás el navegador o datos, se pierden.
-      </div>
-    </div>
+<div class="card" style="width:100%; max-width:520px; margin-top:14px;">
+<div class="hd">Favoritos (Offline)</div>
+<div class="bd">
+  <input class="input" id="favSearch" placeholder="Buscar en favoritos..." autocomplete="off" />
+  <div id="favList" style="display:grid; gap:10px; margin-top:10px;"></div>
+  <div style="margin-top:10px; font-size:11px; color:var(--muted);">
+    Estos favoritos viven en tu dispositivo (localStorage). Si borrás el navegador o datos, se pierden.
   </div>
+</div>
+</div>
 
 <div id="fixedControlPanel">
   <div class="viewer-tools">
@@ -587,6 +587,7 @@
   // ===== Local Storage Keys (nuevos) =====
   const LS_FAV = "adoranza_favorites_v1";
   const LS_SUNG = "adoranza_sung_v1";
+  const LS_HIDDEN = "adoranza_hidden_v1";
 
   function genSetlistId8(prefix="") {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -778,7 +779,19 @@
     if (ud) ud.innerText = state.userId;
     if (un) un.innerText = state.username || "(sin username)";
     if (db) listarMisSetlists();
+  
+    // 👇 NUEVO: render favoritos en Config
+    renderFavoritesInConfig();
+  
+    // 👇 NUEVO: bind 1 vez al input de búsqueda
+    const fs = document.getElementById("favSearch");
+    if (fs && !fs._bound) {
+      fs._bound = true;
+      fs.addEventListener("input", () => renderFavoritesInConfig());
+    }
   }
+
+  
   function closeConfig() { document.getElementById("configPanel").style.display = "none"; }
   function showHome() {
     document.getElementById("roleSelector").style.display = "flex";
@@ -946,6 +959,8 @@
     seleccionar(state.setlist.length - 1);
     closeConfig();
   }
+
+  
   
   function removeFavorite(key, ev){
     if (ev) ev.stopPropagation();
@@ -978,6 +993,33 @@
     else delete sm[lk][k];
     setSungMap(sm);
   }
+
+  function getHiddenMap(){
+    const raw = localStorage.getItem(LS_HIDDEN) || "{}";
+    const j = safeJSONParse(raw, {});
+    return (j && typeof j === "object") ? j : {};
+  }
+  function setHiddenMap(obj){
+    localStorage.setItem(LS_HIDDEN, JSON.stringify(obj || {}));
+  }
+  
+  function isHidden(song){
+    const hm = getHiddenMap();
+    const lk = listKey();
+    const k = songKey(song);
+    return !!(hm[lk] && hm[lk][k]);
+  }
+  
+  function setHidden(song, val){
+    const hm = getHiddenMap();
+    const lk = listKey();
+    const k = songKey(song);
+    if (!hm[lk]) hm[lk] = {};
+    if (val) hm[lk][k] = true;
+    else delete hm[lk][k];
+    setHiddenMap(hm);
+  }
+
 
   // ============ CONFIG / SETLISTS ============
   async function listarMisSetlists() {
@@ -1132,100 +1174,115 @@
     }
   }
 
-  function renderAll() {
-    const sl = document.getElementById("setList");
-    if (!sl) return;
-    sl.innerHTML = "";
+function renderAll() {
+  const sl = document.getElementById("setList");
+  if (!sl) return;
+  sl.innerHTML = "";
 
-    state.setlist.forEach((s, idx) => {
-      const wrap = document.createElement("div");
-      wrap.className = "set-item-wrap";
+  // ✅ Visible = setlist sin los "hidden" (cantadas ocultas)
+  const visible = state.setlist
+    .map((s, originalIndex) => ({ s, originalIndex }))
+    .filter(x => !isHidden(x.s));
 
-      const actions = document.createElement("div");
-      actions.className = "swipe-actions";
-      actions.innerHTML = `
-        <div class="swipe-action left">🗑️ Quitar</div>
-        <div class="swipe-action right">✅ Cantada</div>
-      `;
+  visible.forEach(({ s, originalIndex }) => {
+    const wrap = document.createElement("div");
+    wrap.className = "set-item-wrap";
 
-      const row = document.createElement("div");
-      row.className = "set-item";
-      row.dataset.idx = String(idx);
+    const actions = document.createElement("div");
+    actions.className = "swipe-actions";
+    actions.innerHTML = `
+      <div class="swipe-action left">🗑️ Quitar</div>
+      <div class="swipe-action right">✅ Cantada</div>
+    `;
 
-      if (idx === state.currentIndex) row.classList.add("is-active");
-      if (isSung(s)) row.classList.add("is-sung");
+    const row = document.createElement("div");
+    row.className = "set-item";
 
-      const favOn = isFav(s);
+    // 🔥 IMPORTANTE: idx REAL en state.setlist
+    row.dataset.idx = String(originalIndex);
 
-      row.innerHTML = `
-        <span class="drag-handle">☰</span>
-        <div class="titlebox">
-          <div class="songtitle">${s.titulo || "(Sin título)"}</div>
-          <div class="songmeta">${s.artista || ""}${favOn ? " · Offline" : ""}${isSung(s) ? " · Cantada" : ""}</div>
-        </div>
-        <div class="pill heart ${favOn ? "on" : ""}" onclick="toggleFavByIndex(${idx}, event)" title="Favorito (offline)">
-          ${favOn ? "♥" : "♡"}
-        </div>
-      `;
+    if (originalIndex === state.currentIndex) row.classList.add("is-active");
+    if (isSung(s)) row.classList.add("is-sung");
 
-      row.onclick = () => seleccionar(idx);
+    const favOn = isFav(s);
 
-      wrap.appendChild(actions);
-      wrap.appendChild(row);
-      sl.appendChild(wrap);
+    row.innerHTML = `
+      <span class="drag-handle">☰</span>
+      <div class="titlebox">
+        <div class="songtitle">${s.titulo || "(Sin título)"}</div>
+        <div class="songmeta">${s.artista || ""}${favOn ? " · Offline" : ""}${isSung(s) ? " · Cantada" : ""}</div>
+      </div>
+      <div class="pill heart ${favOn ? "on" : ""}" onclick="toggleFavByIndex(${originalIndex}, event)" title="Favorito (offline)">
+        ${favOn ? "♥" : "♡"}
+      </div>
+    `;
 
-      // Swipe behavior
-      attachSwipe(row);
-    });
+    // click/tap selecciona (índice real)
+    row.onclick = () => seleccionar(originalIndex);
 
-    renderBadge();
+    wrap.appendChild(actions);
+    wrap.appendChild(row);
+    sl.appendChild(wrap);
 
-    const curr = state.setlist[state.currentIndex];
-    const view = document.getElementById("viewContent");
-    const info = document.getElementById("current-song-info");
-    const dots = document.getElementById("metro-dots");
+    // Swipe behavior (usa dataset.idx real)
+    attachSwipe(row);
+  });
 
-    if (curr && view) {
-      if (info) {
-        if (state.userRole === "drums") {
-          info.innerHTML = `${curr.titulo || ""}<span class="sub">BPM: ${state.half ? curr.bpm/2 : curr.bpm}</span>`;
-        } else {
-          info.innerHTML = `${curr.titulo || ""}<span class="sub">${curr.artista || ""}</span>`;
-        }
-      }
+  renderBadge();
 
-      // colapsar hueco en musico (esconder dots)
-      if (dots) {
-        if (state.userRole === "musico") dots.classList.add("is-hidden");
-        else dots.classList.remove("is-hidden");
-      }
+  // ✅ Si la canción actual está hidden, "des-seleccionamos" para no quedar en algo invisible
+  const currHidden = (state.currentIndex >= 0 && state.setlist[state.currentIndex] && isHidden(state.setlist[state.currentIndex]));
+  if (currHidden) state.currentIndex = -1;
 
-      let body = curr.body || "";
-      if (state.userRole !== "musico") {
-        body = body.replace(/\[([^\]]+)\]/g, "");
-        const lines = body.split(/\r?\n/);
-        const cleaned = [];
-        for (let l of lines) {
-          if (l.trim() !== "") cleaned.push(l);
-          else if (cleaned.length > 0 && cleaned[cleaned.length - 1] !== "") cleaned.push("");
-        }
-        body = cleaned.join("\n");
+  const curr = state.setlist[state.currentIndex];
+  const view = document.getElementById("viewContent");
+  const info = document.getElementById("current-song-info");
+  const dots = document.getElementById("metro-dots");
+
+  if (curr && view) {
+    if (info) {
+      if (state.userRole === "drums") {
+        info.innerHTML = `${curr.titulo || ""}<span class="sub">BPM: ${state.half ? curr.bpm/2 : curr.bpm}</span>`;
       } else {
-        body = body.replace(/\[([^\]]+)\]/g, '<span class="chord">[$1]</span>');
-      }
-
-      view.innerHTML = body;
-      view.style.fontSize = state.currentFontSize + "px";
-      state.currentBPM = state.half ? curr.bpm / 2 : curr.bpm;
-
-      if (state.userRole === "drums" && state.metroActive) startMetro();
-    } else {
-      if (dots) {
-        if (state.userRole === "musico") dots.classList.add("is-hidden");
-        else dots.classList.remove("is-hidden");
+        info.innerHTML = `${curr.titulo || ""}<span class="sub">${curr.artista || ""}</span>`;
       }
     }
+
+    // colapsar hueco en musico (esconder dots)
+    if (dots) {
+      if (state.userRole === "musico") dots.classList.add("is-hidden");
+      else dots.classList.remove("is-hidden");
+    }
+
+    let body = curr.body || "";
+    if (state.userRole !== "musico") {
+      body = body.replace(/\[([^\]]+)\]/g, "");
+      const lines = body.split(/\r?\n/);
+      const cleaned = [];
+      for (let l of lines) {
+        if (l.trim() !== "") cleaned.push(l);
+        else if (cleaned.length > 0 && cleaned[cleaned.length - 1] !== "") cleaned.push("");
+      }
+      body = cleaned.join("\n");
+    } else {
+      body = body.replace(/\[([^\]]+)\]/g, '<span class="chord">[$1]</span>');
+    }
+
+    view.innerHTML = body;
+    view.style.fontSize = state.currentFontSize + "px";
+    state.currentBPM = state.half ? curr.bpm / 2 : curr.bpm;
+
+    if (state.userRole === "drums" && state.metroActive) startMetro();
+  } else {
+    if (dots) {
+      if (state.userRole === "musico") dots.classList.add("is-hidden");
+      else dots.classList.remove("is-hidden");
+    }
+    if (info) info.innerHTML = `Adoranza Cloud`;
+    if (view) view.textContent = "Selecciona una canción.";
   }
+}
+
 
   function seleccionar(idx) {
     state.currentIndex = idx;
@@ -1354,17 +1411,17 @@
         return;
       }
   
-      if (dx >= thr) {
-        // swipe derecha: TOGGLE cantada
-        reset();
-        const song = state.setlist[idx];
-        if (song) {
-          const now = isSung(song);
-          markSung(song, !now);   // <-- toggle real
-          renderAll();
-        }
-        return;
+    if (dx >= thr) {
+      reset();
+      const song = state.setlist[idx];
+      if (song) {
+        markSung(song, true);   // cantada
+        setHidden(song, true);  // ocultar hasta recargar
+        saveLocal();
+        renderAll();
       }
+      return;
+    }
   
       // no pasó umbral
       reset();
@@ -1522,6 +1579,7 @@
       if (s) await addToSetlist(s);
     }
 
+    localStorage.removeItem(LS_HIDDEN);
     renderAll();
     window.history.replaceState({}, "", window.location.pathname);
     return true;
@@ -1687,6 +1745,8 @@
       const s = (cans || []).find(x => String(x.id) === String(id));
       if (s) await addToSetlist(s);
     }
+
+    localStorage.removeItem(LS_HIDDEN);
 
     renderAll();
   }
