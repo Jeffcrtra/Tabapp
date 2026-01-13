@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>11.55 Adoranza Pro v4.11</title>
+  <title>11.55 Adoranza Pro v4.14</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
@@ -86,7 +86,7 @@
 <body>
 
 <div id="roleSelector">
-  <h1 style="color:var(--accent); margin:0; font-size:24px;">ADORANZA PRO v4.11</h1>
+  <h1 style="color:var(--accent); margin:0; font-size:24px;">ADORANZA PRO v4.14</h1>
   <div class="role-grid">
     <div class="role-btn" onclick="setRole('musico')">🎸<small>PIANO<br>GUITARRA</small></div>
     <div class="role-btn" onclick="setRole('drums')">🥁<small>VOZ +<br>BATERÍA</small></div>
@@ -935,6 +935,7 @@
     renderAll();
   }
 
+  // ============ NAV ============
   function prevSong() {
     if (state.setlist.length === 0) return;
     if (state.currentIndex <= 0) state.currentIndex = 0;
@@ -953,16 +954,17 @@
     window.scrollTo({ top:0, behavior:"smooth" });
   }
 
-  /* Exponer funciones globales para onclick="" */
+  // Exponer globales para onclick=""
   window.setRole = setRole;
   window.openConfig = openConfig;
   window.closeConfig = closeConfig;
   window.showHome = showHome;
-  window.Estadisticas = Estadisticas;
 
   window.listarMisSetlists = listarMisSetlists;
   window.copiarSetlistId = copiarSetlistId;
   window.copiarMiSetlistActual = copiarMiSetlistActual;
+
+  window.Estadisticas = Estadisticas;
 
   window.guardarListaCloud = guardarListaCloud;
   window.cargarListaCloud = cargarListaCloud;
