@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>5.24 Adoranza Pro v4.11</title>
+  <title>10.33 Adoranza Pro v4.11</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
@@ -24,12 +24,12 @@
     .footer-credits{ position:absolute; bottom:20px; font-size:12px; color:var(--muted); text-align:center; }
     .footer-credits a{ color:var(--accent); text-decoration:none; font-weight:bold; }
 
-    #fixedControlPanel{ position:fixed; top:0; left:0; right:0; z-index:999; background:rgba(11,13,18,.98); backdrop-filter:blur(10px); border-bottom:2px solid var(--line); padding:12px 10px; }
+    #fixedControlPanel{ position:fixed; top:0; left:0; right:0; z-index:999; background:rgba(11,13,18,.98); backdrop-filter:blur(10px); border-bottom:2px solid var(--line); padding:8px 10px; }
     .viewer-tools{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; max-width:500px; margin:0 auto; }
     .tool-group{ display:grid; grid-template-columns:repeat(2,1fr); gap:4px; justify-content:center; align-items:center; padding:4px; border-radius:12px; border:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,.02); }
     .tool-group.triple{ grid-template-columns:repeat(3,1fr); grid-column:span 2; }
 
-    .btn{ border:1px solid rgba(255,255,255,.2); color:white; padding:10px 5px; border-radius:8px; cursor:pointer; font-size:12px; font-weight:600; display:inline-flex; align-items:center; justify-content:center; transition:.2s; width:100%; max-width:100px; margin:0 auto; height:40px; }
+    .btn{ border:1px solid rgba(255,255,255,.2); color:white; padding:10px 5px; border-radius:8px; cursor:pointer; font-size:12px; font-weight:600; display:inline-flex; align-items:center; justify-content:center; transition:.2s; width:100%; max-width:100px; margin:0 auto; height:36px; }
     .btn-nav{ background-color:#004173 !important; }
     .btn-tone{ background-color:#630b57 !important; }
     .btn-font{ background-color:#2E6F40 !important; }
@@ -98,6 +98,19 @@
     <div class="bd" style="text-align:center;">
       <p style="color:var(--muted)">ID de Usuario:</p>
       <h2 id="uid-display" style="color:var(--accent); font-family:var(--mono); letter-spacing:2px;"></h2>
+    </div>
+    <div class="card" style="width: 100%; max-width: 520px; margin-top: 14px;">
+      <div class="hd">Mis Setlists</div>
+      <div class="bd">
+        <div style="display:flex; gap:8px; margin-bottom:10px;">
+          <button class="btn btn-nav" style="max-width:160px; height:32px;" onclick="listarMisSetlists()">🔄 Actualizar</button>
+          <button class="btn" style="max-width:180px; height:32px; background:#2c5282; color:white;" onclick="copiarMiSetlistActual()">📋 Copiar ID actual</button>
+        </div>
+        <div id="mySetlists" style="display:grid; gap:8px;"></div>
+        <div style="margin-top:10px; font-size:11px; color:var(--muted);">
+          Tip: tocá un setlist para copiar su ID (sirve para Cargar o para compartir).
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -245,6 +258,88 @@
     return [String(v).trim()].filter(Boolean);
   }
 
+  async function copyToClipboard(text) {
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch(e) {}
+  // fallback
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  ta.style.position = "fixed";
+  ta.style.left = "-9999px";
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  try {
+    document.execCommand("copy");
+    document.body.removeChild(ta);
+    return true;
+  } catch (e) {
+    document.body.removeChild(ta);
+    return false;
+  }
+}
+
+async function listarMisSetlists() {
+    if (!db) { alert("Supabase no está listo."); return; }
+  
+    const box = document.getElementById("mySetlists");
+    if (box) box.innerHTML = `<div style="color:var(--muted); font-size:12px;">Cargando…</div>`;
+  
+    const { data, error } = await db
+      .from("setlists_guardados")
+      .select("id_unico,nombre_lista,created_at")
+      .order("created_at", { ascending: false })
+      .limit(25);
+  
+    if (error) {
+      console.error(error);
+      alert("No pude listar setlists: " + (error.message || error));
+      if (box) box.innerHTML = "";
+      return;
+    }
+  
+    if (!box) return;
+    box.innerHTML = "";
+  
+    (data || []).forEach(row => {
+      const id = String(row.id_unico || "").trim().toUpperCase();
+      const name = row.nombre_lista || "(Sin nombre)";
+      const el = document.createElement("div");
+      el.className = "item";
+      el.style.cursor = "pointer";
+      el.innerHTML = `
+        <div style="flex:1">
+          <div style="font-weight:700; font-size:13px;">${name}</div>
+          <div style="font-size:11px; color:var(--muted); margin-top:2px;">ID: <span style="font-family:var(--mono); color:var(--accent)">${id}</span></div>
+        </div>
+        <button class="btn btn-add" style="max-width:52px;" onclick="copiarSetlistId('${id}', event)">COP</button>
+      `;
+      // tap en toda la fila también copia
+      el.onclick = () => copiarSetlistId(id);
+      box.appendChild(el);
+    });
+  
+    if (!data || data.length === 0) {
+      box.innerHTML = `<div style="color:var(--muted); font-size:12px;">Aún no tenés setlists guardados.</div>`;
+    }
+  }
+  
+  async function copiarSetlistId(id, ev) {
+    if (ev) ev.stopPropagation();
+    const ok = await copyToClipboard(id);
+    alert(ok ? `Copiado ✅\n${id}` : `No pude copiar 😅\n${id}`);
+  }
+  
+  async function copiarMiSetlistActual() {
+    if (!state.listIdUnico) { alert("No hay un setlist cargado actualmente."); return; }
+    await copiarSetlistId(state.listIdUnico.trim().toUpperCase());
+  }
+
+
   const state = {
     setlist: [],
     currentIndex: -1,
@@ -270,7 +365,10 @@
     renderAll();
   }
 
-  function openConfig() { document.getElementById("configPanel").style.display = "flex"; }
+  function openConfig() {
+    document.getElementById("configPanel").style.display = "flex";
+    if (db) listarMisSetlists();
+  }
   function closeConfig() { document.getElementById("configPanel").style.display = "none"; }
   function showHome() {
     document.getElementById("roleSelector").style.display = "flex";
@@ -350,9 +448,12 @@
     }
 
     initSortable();
-
-    if (db) await revisarLinkCompartido();
-
+    
+    let handled = false;
+    if (db) handled = await revisarLinkSetlistId();   // primero sid
+    
+    if (db && !handled) await revisarLinkCompartido(); // luego list (fallback)
+    
     renderAll();
   };
 
@@ -392,8 +493,14 @@
     const curr = state.setlist[state.currentIndex];
     const view = document.getElementById("viewContent");
     if (curr && view) {
-      document.getElementById("current-song-info").innerText =
-        curr.titulo + " | BPM: " + (state.half ? curr.bpm / 2 : curr.bpm);
+      const info = document.getElementById("current-song-info");
+        if (info) {
+          if (state.userRole === "drums") {
+            info.innerText = `${curr.titulo} | BPM: ${state.half ? curr.bpm/2 : curr.bpm}`;
+          } else {
+            info.innerText = `${curr.titulo}`; // musico: sin BPM
+          }
+        }
 
       let body = curr.body || "";
       if (state.userRole !== "musico") {
@@ -530,12 +637,81 @@
     renderAll();
   }
 
-  function compartirWhatsApp() {
+    function compartirWhatsApp() {
+      // Forzar guardar antes de compartir (link corto con sid)
+      if (!state.listIdUnico) {
+        alert("Primero guardá el setlist para generar un código y poder compartirlo.");
+        return;
+      }
+    
+      const sid = state.listIdUnico.trim().toUpperCase();
+      const n = state.listName || "Setlist";
+      const url = `${window.location.origin}${window.location.pathname}?sid=${encodeURIComponent(sid)}`;
+    
+      const msg =
+        `🎶 *Setlist:* ${n}\n` +
+        `🔑 *Código:* ${sid}\n` +
+        `🔗 Abrir: ${url}`;
+    
+      window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");
+    }
+
+  
+    // Si NO hay ID (nunca lo guardaste), fallback al método largo
     const ids = state.setlist.map(s => String(s.id)).join(",");
     const n = state.listName || "Setlist";
     const url = `${window.location.origin}${window.location.pathname}?list=${encodeURIComponent(ids)}&n=${encodeURIComponent(n)}`;
-    window.open(`https://wa.me/?text=${encodeURIComponent("*Setlist:* " + n + "\n" + url)}`, "_blank");
+  
+    const msg =
+      `🎶 *Setlist:* ${n}\n` +
+      `🔗 Abrir: ${url}`;
+  
+    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");
   }
+
+  async function revisarLinkSetlistId() {
+    const p = new URLSearchParams(window.location.search);
+    const sid = p.get("sid");
+    if (!sid || !db) return false;
+  
+    const want = sid.trim().toUpperCase();
+  
+    const { data, error } = await db
+      .from("setlists_guardados")
+      .select("*")
+      .eq("id_unico", want)
+      .single();
+  
+    if (error || !data) {
+      alert("No se encontró el setlist con código: " + want);
+      console.error(error);
+      return true; // ya “manejó” el link
+    }
+  
+    state.listName = data.nombre_lista || "";
+    state.listIdUnico = String(data.id_unico || "").trim().toUpperCase();
+  
+    const ids = normalizeSongIds(data.canciones_ids);
+    if (!ids.length) { alert("Ese setlist no tiene canciones válidas."); return true; }
+  
+    const { data: cans, error: err2 } = await db
+      .from("canciones")
+      .select("*")
+      .in("id", ids);
+  
+    if (err2) { alert("Error cargando canciones."); console.error(err2); return true; }
+  
+    state.setlist = [];
+    for (let id of ids) {
+      const s = (cans || []).find(x => String(x.id) === String(id));
+      if (s) await addToSetlist(s);
+    }
+  
+    renderAll();
+    window.history.replaceState({}, "", window.location.pathname);
+    return true;
+  }
+
 
   async function revisarLinkCompartido() {
     const p = new URLSearchParams(window.location.search);
