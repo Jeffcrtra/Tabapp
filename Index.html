@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>4.20 Adoranza Pro v5.0</title>
+  <title>4.25 Adoranza Pro v5.0</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
@@ -472,6 +472,17 @@
   </div>
 </div>
 
+  <div class="card" style="width:100%; max-width:520px; margin-top:14px;">
+    <div class="hd">Favoritos (Offline)</div>
+    <div class="bd">
+      <input class="input" id="favSearch" placeholder="Buscar en favoritos..." autocomplete="off" />
+      <div id="favList" style="display:grid; gap:10px; margin-top:10px;"></div>
+      <div style="margin-top:10px; font-size:11px; color:var(--muted);">
+        Estos favoritos viven en tu dispositivo (localStorage). Si borrás el navegador o datos, se pierden.
+      </div>
+    </div>
+  </div>
+
 <div id="fixedControlPanel">
   <div class="viewer-tools">
     <div class="tool-group">
@@ -856,6 +867,100 @@
     }
     renderAll();
   }
+
+  function renderFavoritesInConfig(){
+    const box = document.getElementById("favList");
+    const sb = document.getElementById("favSearch");
+    if (!box) return;
+  
+    const favs = getFavorites();
+    const arr = Object.values(favs || {}).sort((a,b)=> (b.updatedAt||0) - (a.updatedAt||0));
+  
+    const q = (sb && sb.value ? sb.value : "").trim().toLowerCase();
+  
+    const filtered = !q ? arr : arr.filter(x => {
+      const t = (x.titulo || "").toLowerCase();
+      const a = (x.artista || "").toLowerCase();
+      return (t.includes(q) || a.includes(q));
+    });
+  
+    box.innerHTML = "";
+  
+    if (!filtered.length) {
+      box.innerHTML = `<div style="color:var(--muted); font-size:12px;">No hay favoritos offline.</div>`;
+      return;
+    }
+  
+    filtered.forEach(f => {
+      const title = f.titulo || "(Sin título)";
+      const artist = f.artista || "";
+      const key = f.key || "";
+  
+      const el = document.createElement("div");
+      el.className = "set-item";
+      el.innerHTML = `
+        <div class="titlebox" style="padding-left:6px;">
+          <div class="songtitle">${title}</div>
+          <div class="songmeta">${artist}</div>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <div class="pill" onclick="openFavorite('${escapeQuotes(key)}', event)">Abrir</div>
+          <div class="pill" onclick="removeFavorite('${escapeQuotes(key)}', event)" style="border-color: rgba(255,92,119,.35); background: rgba(255,92,119,.10);">Quitar</div>
+        </div>
+      `;
+  
+      box.appendChild(el);
+    });
+  }
+  
+  // helpers para strings en onclick
+  function escapeQuotes(s){
+    return String(s||"").replace(/\\/g,"\\\\").replace(/'/g,"\\'");
+  }
+  
+  function openFavorite(key, ev){
+    if (ev) ev.stopPropagation();
+    const favs = getFavorites();
+    const f = favs[key];
+    if (!f || !f.body) { alert("Ese favorito no tiene contenido guardado."); return; }
+  
+    // si ya está en setlist, solo seleccionar
+    const idx = state.setlist.findIndex(x => songKey(x) === key || String(x.id||"") === String(f.id||""));
+    if (idx >= 0) {
+      seleccionar(idx);
+      closeConfig();
+      return;
+    }
+  
+    // si no está, lo agregamos al setlist como fuente local
+    state.setlist.push({
+      id: f.id || null,
+      titulo: f.titulo || "",
+      artista: f.artista || "",
+      path_url: f.path_url || "",
+      body: f.body || ""
+    });
+  
+    saveLocal();
+    renderAll();
+    seleccionar(state.setlist.length - 1);
+    closeConfig();
+  }
+  
+  function removeFavorite(key, ev){
+    if (ev) ev.stopPropagation();
+    const favs = getFavorites();
+    if (!favs[key]) return;
+  
+    if (!confirm("¿Quitar este favorito offline?")) return;
+    delete favs[key];
+    setFavorites(favs);
+  
+    // refrescar UI (config + setlist)
+    renderFavoritesInConfig();
+    renderAll();
+  }
+
 
   // ============ Cantadas ============
   function isSung(song){
