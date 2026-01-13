@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>4.48 Adoranza Pro v5.0</title>
+  <title>5.45 Adoranza Pro v5.0</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
@@ -470,17 +470,21 @@
       </div>
     </div>
   </div>
-</div>
 
-<div class="card" style="width:100%; max-width:520px; margin-top:14px;">
-<div class="hd">Favoritos (Offline)</div>
-<div class="bd">
-  <input class="input" id="favSearch" placeholder="Buscar en favoritos..." autocomplete="off" />
-  <div id="favList" style="display:grid; gap:10px; margin-top:10px;"></div>
-  <div style="margin-top:10px; font-size:11px; color:var(--muted);">
-    Estos favoritos viven en tu dispositivo (localStorage). Si borrás el navegador o datos, se pierden.
+  <div class="card" style="width:100%; max-width:520px; margin-top:14px;">
+    <div class="hd">Favoritos (Offline)</div>
+    <div class="bd">
+      <input class="input" id="favSearch"
+        style="width:100%; background:#000; color:#fff; border:1px solid #333; padding:10px; border-radius:12px;"
+        placeholder="Buscar en favoritos..." autocomplete="off" />
+      <div id="favList" style="display:grid; gap:10px; margin-top:10px;"></div>
+  
+      <div style="margin-top:10px; font-size:11px; color:var(--muted);">
+        Estos favoritos viven en tu dispositivo (localStorage). Si borrás el navegador o datos, se pierden.
+      </div>
+    </div>
   </div>
-</div>
+
 </div>
 
 <div id="fixedControlPanel">
@@ -674,6 +678,153 @@
     localStorage.setItem(LS_SUNG, JSON.stringify(obj || {}));
   }
 
+  // ================= FAVORITOS (OFFLINE) =================
+  const LS_FAVS = "adoranza_favorites_v1";
+  
+  function safeJSONParse(txt, fallback){
+    try { return JSON.parse(txt); } catch(e){ return fallback; }
+  }
+  
+  function songKey(song){
+    // clave estable para favoritos
+    // preferimos id de DB; si no, path_url; si no, título+artista
+    const id = (song && song.id != null) ? String(song.id).trim() : "";
+    const p  = (song && song.path_url) ? String(song.path_url).trim() : "";
+    const t  = (song && song.titulo) ? String(song.titulo).trim() : "";
+    const a  = (song && song.artista) ? String(song.artista).trim() : "";
+    return (id ? `id:${id}` : (p ? `p:${p}` : `ta:${t}__${a}`));
+  }
+  
+  function getFavorites(){
+    const raw = localStorage.getItem(LS_FAVS) || "{}";
+    const obj = safeJSONParse(raw, {});
+    return (obj && typeof obj === "object") ? obj : {};
+  }
+  function setFavorites(obj){
+    localStorage.setItem(LS_FAVS, JSON.stringify(obj || {}));
+  }
+  
+  function isFav(song){
+    const favs = getFavorites();
+    const k = songKey(song);
+    return !!favs[k];
+  }
+  
+  function toggleFavByIndex(idx, ev){
+    if (ev) ev.stopPropagation(); // ✅ para que no seleccione la canción por accidente
+    const song = state.setlist[idx];
+    if (!song) return;
+  
+    const favs = getFavorites();
+    const k = songKey(song);
+  
+    if (favs[k]) {
+      // quitar favorito
+      delete favs[k];
+      setFavorites(favs);
+    } else {
+      // guardar favorito (incluye body para offline real)
+      favs[k] = {
+        key: k,
+        id: song.id || null,
+        titulo: song.titulo || "",
+        artista: song.artista || "",
+        path_url: song.path_url || "",
+        body: song.body || "",
+        updatedAt: Date.now()
+      };
+      setFavorites(favs);
+    }
+  
+    // refrescar UI
+    renderAll();
+    renderFavoritesInConfig();
+  }
+  
+  // Mostrar favoritos dentro de Config
+  function renderFavoritesInConfig(){
+    const box = document.getElementById("favList");
+    const sb  = document.getElementById("favSearch");
+    if (!box) return;
+  
+    const favs = getFavorites();
+    const arr = Object.values(favs).sort((a,b)=> (b.updatedAt||0) - (a.updatedAt||0));
+  
+    const q = (sb && sb.value ? sb.value : "").trim().toLowerCase();
+    const filtered = !q ? arr : arr.filter(x => {
+      const t = (x.titulo || "").toLowerCase();
+      const a = (x.artista || "").toLowerCase();
+      return t.includes(q) || a.includes(q);
+    });
+  
+    box.innerHTML = "";
+  
+    if (!filtered.length) {
+      box.innerHTML = `<div style="color:var(--muted); font-size:12px;">No hay favoritos offline.</div>`;
+      return;
+    }
+  
+    filtered.forEach(f => {
+      const el = document.createElement("div");
+      el.className = "item";
+      el.style.cursor = "pointer";
+      el.innerHTML = `
+        <div style="flex:1">
+          <div style="font-weight:700; font-size:13px;">${f.titulo || "(Sin título)"}</div>
+          <div style="font-size:11px; color:var(--muted); margin-top:2px;">${f.artista || ""}</div>
+        </div>
+        <button class="btn btn-add" style="max-width:70px;" onclick="openFavorite('${escapeQuotes(f.key)}', event)">ABRIR</button>
+        <button class="btn danger-x" style="max-width:44px;" onclick="removeFavorite('${escapeQuotes(f.key)}', event)">✕</button>
+      `;
+      el.onclick = () => openFavorite(f.key);
+      box.appendChild(el);
+    });
+  }
+  
+  function escapeQuotes(s){
+    return String(s||"").replace(/\\/g,"\\\\").replace(/'/g,"\\'");
+  }
+  
+  function openFavorite(key, ev){
+    if (ev) ev.stopPropagation();
+    const favs = getFavorites();
+    const f = favs[key];
+    if (!f) return;
+  
+    // Si ya está en setlist -> seleccionar
+    const idx = state.setlist.findIndex(x => songKey(x) === key || String(x.id||"") === String(f.id||""));
+    if (idx >= 0) {
+      seleccionar(idx);
+      closeConfig();
+      return;
+    }
+  
+    // Agregar al setlist desde local
+    state.setlist.push({
+      id: f.id || null,
+      titulo: f.titulo || "",
+      artista: f.artista || "",
+      path_url: f.path_url || "",
+      body: f.body || ""
+    });
+  
+    saveLocal();
+    renderAll();
+    seleccionar(state.setlist.length - 1);
+    closeConfig();
+  }
+  
+  function removeFavorite(key, ev){
+    if (ev) ev.stopPropagation();
+    const favs = getFavorites();
+    if (!favs[key]) return;
+    delete favs[key];
+    setFavorites(favs);
+    renderFavoritesInConfig();
+    renderAll();
+  }
+
+
   function normKey(s){
     return String(s||"")
       .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
@@ -780,17 +931,14 @@
     if (un) un.innerText = state.username || "(sin username)";
     if (db) listarMisSetlists();
   
-    // 👇 NUEVO: render favoritos en Config
     renderFavoritesInConfig();
   
-    // 👇 NUEVO: bind 1 vez al input de búsqueda
     const fs = document.getElementById("favSearch");
     if (fs && !fs._bound) {
       fs._bound = true;
-      fs.addEventListener("input", () => renderFavoritesInConfig());
+      fs.addEventListener("input", renderFavoritesInConfig);
     }
   }
-
   
   function closeConfig() { document.getElementById("configPanel").style.display = "none"; }
   function showHome() {
@@ -1771,6 +1919,11 @@ function renderAll() {
   }
 
   // Exponer globales para onclick=""
+  window.toggleFavByIndex = toggleFavByIndex;
+  window.renderFavoritesInConfig = renderFavoritesInConfig;
+  window.openFavorite = openFavorite;
+  window.removeFavorite = removeFavorite;
+  
   window.setRole = setRole;
   window.openConfig = openConfig;
   window.closeConfig = closeConfig;
