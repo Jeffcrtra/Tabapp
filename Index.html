@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>10.33 Adoranza Pro v4.11</title>
+  <title>10.46 Adoranza Pro v4.11</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
@@ -356,14 +356,14 @@ async function listarMisSetlists() {
     userId: localStorage.getItem("adoranza_uid") || genUid()
   };
 
-  function setRole(role) {
+  window.setRole = function(role){
     state.userRole = role;
     document.getElementById("roleSelector").style.display = "none";
     document.getElementById("tone-group").style.display = (role === "musico") ? "grid" : "none";
     document.getElementById("drums-group").style.display = (role === "drums") ? "grid" : "none";
     document.getElementById("volume-container").style.display = (role === "drums") ? "block" : "none";
     renderAll();
-  }
+  };
 
   function openConfig() {
     document.getElementById("configPanel").style.display = "flex";
@@ -637,38 +637,13 @@ async function listarMisSetlists() {
     renderAll();
   }
 
-    function compartirWhatsApp() {
-      // Forzar guardar antes de compartir (link corto con sid)
+  function compartirWhatsApp() {
+      // Forzar guardar antes de compartir (solo link corto con sid)
       if (!state.listIdUnico) {
         alert("Primero guardá el setlist para generar un código y poder compartirlo.");
         return;
       }
-    
-      const sid = state.listIdUnico.trim().toUpperCase();
-      const n = state.listName || "Setlist";
-      const url = `${window.location.origin}${window.location.pathname}?sid=${encodeURIComponent(sid)}`;
-    
-      const msg =
-        `🎶 *Setlist:* ${n}\n` +
-        `🔑 *Código:* ${sid}\n` +
-        `🔗 Abrir: ${url}`;
-    
-      window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");
-    }
-
   
-    // Si NO hay ID (nunca lo guardaste), fallback al método largo
-    const ids = state.setlist.map(s => String(s.id)).join(",");
-    const n = state.listName || "Setlist";
-    const url = `${window.location.origin}${window.location.pathname}?list=${encodeURIComponent(ids)}&n=${encodeURIComponent(n)}`;
-  
-    const msg =
-      `🎶 *Setlist:* ${n}\n` +
-      `🔗 Abrir: ${url}`;
-  
-    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");
-  }
-
   async function revisarLinkSetlistId() {
     const p = new URLSearchParams(window.location.search);
     const sid = p.get("sid");
@@ -912,7 +887,6 @@ async function listarMisSetlists() {
   }
 
   /* Exponer funciones globales para onclick="" (evita setRole undefined) */
-  window.setRole = setRole;
   window.openConfig = openConfig;
   window.closeConfig = closeConfig;
   window.showHome = showHome;
