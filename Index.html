@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>11 Adoranza Pro v4.12</title>
+  <title>11.55 Adoranza Pro v4.11</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
@@ -14,7 +14,7 @@
       --sans: ui-sans-serif, system-ui, sans-serif;
     }
     *{ box-sizing:border-box; }
-    body{ margin:0; font-family:var(--sans); background:var(--bg); color:var(--text); overflow-x:hidden; padding-top:240px; }
+    body{ margin:0; font-family:var(--sans); background:var(--bg); color:var(--text); overflow-x:hidden; padding-top:210px; }
 
     #roleSelector{ position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:10000; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px; }
     .role-grid{ display:grid; gap:14px; grid-template-columns:repeat(3,1fr); width:min(95vw,500px); }
@@ -24,7 +24,7 @@
     .footer-credits{ position:absolute; bottom:20px; font-size:12px; color:var(--muted); text-align:center; }
     .footer-credits a{ color:var(--accent); text-decoration:none; font-weight:bold; }
 
-    #fixedControlPanel{ position:fixed; top:0; left:0; right:0; z-index:999; background:rgba(11,13,18,.98); backdrop-filter:blur(10px); border-bottom:2px solid var(--line); padding:4px 6px; }
+    #fixedControlPanel{ position:fixed; top:0; left:0; right:0; z-index:999; background:rgba(11,13,18,.98); backdrop-filter:blur(10px); border-bottom:2px solid var(--line); padding:8px 10px; }
     .viewer-tools{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; max-width:500px; margin:0 auto; }
     .tool-group{ display:grid; grid-template-columns:repeat(2,1fr); gap:4px; justify-content:center; align-items:center; padding:4px; border-radius:12px; border:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,.02); }
     .tool-group.triple{ grid-template-columns:repeat(3,1fr); grid-column:span 2; }
@@ -39,6 +39,7 @@
     .btn-wa{ background-color:#075e54; border-color:#25d366; color:white; }
     .btn.danger-x{ border-color:var(--danger); color:var(--danger); background:rgba(255,92,119,.1); max-width:40px; }
 
+    /* ADD más pequeño */
     .btn-add{
       background:var(--accent);
       color:#000;
@@ -48,17 +49,22 @@
       height:28px;
       padding:0 8px;
       border-radius:10px;
-      max-width:52px;
+      max-width:40px;
     }
     .btn-add:hover{ filter:brightness(1.1); }
 
-    #metro-dots{ margin-top:10px; display:flex; justify-content:center; gap:15px; height:45px; align-items:center; }
+    /* Dots solo para drums: en musico colapsa y quita el hueco */
+    #info-display{ padding-bottom: 0; }
+    #current-song-info{ font-weight:bold; color:var(--accent); font-size:14px; text-align:center; margin-top:8px; line-height:1.2; }
+    #metro-dots{ margin-top:8px; display:flex; justify-content:center; gap:15px; height:45px; align-items:center; }
+    #metro-dots.is-hidden{ display:none; height:0; margin-top:0; }
+
     .beat-dot{ width:35px; height:35px; border-radius:50%; background:#222; border:2px solid #333; transition:.1s; }
     .beat-active-red{ background:var(--danger); box-shadow:0 0 25px var(--danger); transform:scale(1.15); border-color:#fff; }
     .beat-active-green{ background:var(--success); box-shadow:0 0 25px var(--success); transform:scale(1.15); border-color:#fff; }
     #volume-container{ display:none; text-align:center; margin-top:10px; }
 
-    #configPanel{ position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:10001; display:none; flex-direction:column; align-items:center; padding:40px 20px; }
+    #configPanel{ position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:10001; display:none; flex-direction:column; align-items:center; padding:40px 20px; overflow:auto; }
 
     .wrap{ padding:10px; max-width:1200px; margin:0 auto; }
     .grid{ display:grid; grid-template-columns:1fr; gap:15px; }
@@ -92,24 +98,28 @@
 
 <div id="configPanel">
   <button class="btn btn-nav" style="margin-bottom:30px; width:120px;" onclick="closeConfig()">🏠 Home</button>
-  <div class="card" style="width:100%; max-width:400px;">
+
+  <div class="card" style="width:100%; max-width:520px;">
     <div class="hd">Perfil de Usuario</div>
     <div class="bd" style="text-align:center;">
-      <p style="color:var(--muted)">ID de Usuario:</p>
-      <h2 id="uid-display" style="color:var(--accent); font-family:var(--mono); letter-spacing:2px;"></h2>
-    </div>
+      <p style="color:var(--muted); margin:0;">Usuario:</p>
+      <h2 id="uname-display" style="color:var(--accent); margin:8px 0 0 0;"></h2>
 
-    <div class="card" style="width: 100%; max-width: 520px; margin-top: 14px;">
-      <div class="hd">Mis Setlists</div>
-      <div class="bd">
-        <div style="display:flex; gap:8px; margin-bottom:10px;">
-          <button class="btn btn-nav" style="max-width:160px; height:32px;" onclick="listarMisSetlists()">🔄 Actualizar</button>
-          <button class="btn" style="max-width:180px; height:32px; background:#2c5282; color:white;" onclick="copiarMiSetlistActual()">📋 Copiar ID actual</button>
-        </div>
-        <div id="mySetlists" style="display:grid; gap:8px;"></div>
-        <div style="margin-top:10px; font-size:11px; color:var(--muted);">
-          Tip: tocá un setlist para copiar su ID (sirve para Cargar o para compartir).
-        </div>
+      <p style="color:var(--muted); margin:12px 0 0 0;">ID único:</p>
+      <div id="uid-display" style="color:var(--accent); font-family:var(--mono); letter-spacing:2px; font-size:16px; margin-top:6px;"></div>
+    </div>
+  </div>
+
+  <div class="card" style="width:100%; max-width:520px; margin-top:14px;">
+    <div class="hd">Mis Setlists</div>
+    <div class="bd">
+      <div style="display:flex; gap:8px; margin-bottom:10px;">
+        <button class="btn btn-nav" style="max-width:160px; height:32px;" onclick="listarMisSetlists()">🔄 Actualizar</button>
+        <button class="btn" style="max-width:180px; height:32px; background:#2c5282; color:white;" onclick="copiarMiSetlistActual()">📋 Copiar ID actual</button>
+      </div>
+      <div id="mySetlists" style="display:grid; gap:8px;"></div>
+      <div style="margin-top:10px; font-size:11px; color:var(--muted);">
+        Tip: tocá un setlist para copiar su ID (sirve para Cargar o para compartir).
       </div>
     </div>
   </div>
@@ -154,7 +164,7 @@
   </div>
 
   <div id="info-display">
-    <div id="current-song-info" style="font-weight:bold; color:var(--accent); font-size:14px; text-align:center; margin-top:8px;">Adoranza Cloud</div>
+    <div id="current-song-info">Adoranza Cloud</div>
     <div id="metro-dots"></div>
   </div>
 </div>
@@ -196,7 +206,7 @@
   const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlzdGxianZqb3FwcW9rbHZqZHJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5NzY4NDUsImV4cCI6MjA4MzU1Mjg0NX0.AQg9BuuGlbUtuyccvrBJwRGzx4Bgzx58aqGbfMPzKfg";
   const BUCKET_URL = `${SB_URL}/storage/v1/object/public/Cancionero_Adoranza/`;
 
-  // Debug global
+  // Debug (si ya no lo ocupás, lo quitás)
   window.onerror = function (msg, src, line, col, err) {
     alert("JS ERROR: " + msg + "\nLínea: " + line);
     console.error(err);
@@ -204,18 +214,7 @@
 
   let db = null;
 
-  function genUid() {
-    try {
-      if (window.crypto && crypto.getRandomValues) {
-        const a = new Uint32Array(3);
-        crypto.getRandomValues(a);
-        return "AD-" + Array.from(a).map(x => x.toString(36)).join("").toUpperCase().slice(0, 12);
-      }
-    } catch (e) {}
-    return "AD-" + Math.random().toString(36).slice(2, 10).toUpperCase();
-  }
-
-  function genSetlistId8() {
+  function genSetlistId8(prefix="") {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     let out = "";
     try {
@@ -223,20 +222,17 @@
         const arr = new Uint8Array(8);
         crypto.getRandomValues(arr);
         for (let i = 0; i < 8; i++) out += chars[arr[i] % chars.length];
-        return out;
+        return prefix + out;
       }
     } catch(e) {}
     for (let i = 0; i < 8; i++) out += chars[Math.floor(Math.random() * chars.length)];
-    return out;
+    return prefix + out;
   }
 
   // UUID-friendly
   function normalizeSongIds(v) {
     if (v == null) return [];
-
-    if (Array.isArray(v)) {
-      return v.map(x => String(x).trim()).filter(Boolean);
-    }
+    if (Array.isArray(v)) return v.map(x => String(x).trim()).filter(Boolean);
 
     if (typeof v === "string") {
       const s = v.trim();
@@ -282,63 +278,6 @@
     }
   }
 
-  async function listarMisSetlists() {
-    if (!db) { alert("Supabase no está listo."); return; }
-
-    const box = document.getElementById("mySetlists");
-    if (box) box.innerHTML = `<div style="color:var(--muted); font-size:12px;">Cargando…</div>`;
-
-    const { data, error } = await db
-      .from("setlists_guardados")
-      .select("id_unico,nombre_lista,created_at")
-      .order("created_at", { ascending: false })
-      .limit(25);
-
-    if (error) {
-      console.error(error);
-      alert("No pude listar setlists: " + (error.message || error));
-      if (box) box.innerHTML = "";
-      return;
-    }
-
-    if (!box) return;
-    box.innerHTML = "";
-
-    (data || []).forEach(row => {
-      const id = String(row.id_unico || "").trim().toUpperCase();
-      const name = row.nombre_lista || "(Sin nombre)";
-      const el = document.createElement("div");
-      el.className = "item";
-      el.style.cursor = "pointer";
-      el.innerHTML = `
-        <div style="flex:1">
-          <div style="font-weight:700; font-size:13px;">${name}</div>
-          <div style="font-size:11px; color:var(--muted); margin-top:2px;">
-            ID: <span style="font-family:var(--mono); color:var(--accent)">${id}</span>
-          </div>
-        </div>
-        <button class="btn btn-add" onclick="copiarSetlistId('${id}', event)">COP</button>
-      `;
-      el.onclick = () => copiarSetlistId(id);
-      box.appendChild(el);
-    });
-
-    if (!data || data.length === 0) {
-      box.innerHTML = `<div style="color:var(--muted); font-size:12px;">Aún no tenés setlists guardados.</div>`;
-    }
-  }
-
-  async function copiarSetlistId(id, ev) {
-    if (ev) ev.stopPropagation();
-    const ok = await copyToClipboard(id);
-    alert(ok ? `Copiado ✅\n${id}` : `No pude copiar 😅\n${id}`);
-  }
-
-  async function copiarMiSetlistActual() {
-    if (!state.listIdUnico) { alert("No hay un setlist cargado actualmente."); return; }
-    await copiarSetlistId(state.listIdUnico.trim().toUpperCase());
-  }
-
   const state = {
     setlist: [],
     currentIndex: -1,
@@ -352,10 +291,61 @@
     half: false,
     scrollInt: null,
     scrollSpeed: 1.0,
-    userId: localStorage.getItem("adoranza_uid") || genUid()
+
+    // user
+    userId: localStorage.getItem("adoranza_user_id") || "",
+    username: localStorage.getItem("adoranza_username") || ""
   };
 
-  function setRole(role){
+  function initSupabaseOrWarn() {
+    if (!window.supabase || !supabase.createClient) {
+      alert("No cargó Supabase (CDN). Revisa internet o bloqueo de CDN.");
+      console.error("Supabase no disponible:", window.supabase);
+      return null;
+    }
+    try {
+      return supabase.createClient(SB_URL, SB_KEY);
+    } catch (e) {
+      alert("Error inicializando Supabase. Revisa consola.");
+      console.error(e);
+      return null;
+    }
+  }
+
+  // ============ PUNTO 3: Username obligatorio ============
+  function ensureLocalUserOrBlock() {
+    // userId
+    if (!state.userId) {
+      state.userId = genSetlistId8("ID");
+      localStorage.setItem("adoranza_user_id", state.userId);
+    }
+
+    // username obligatorio: si cancela o vacío -> loop (bloquea avance)
+    while (!state.username || !state.username.trim()) {
+      const u = prompt("Elegí tu nombre de usuario (obligatorio):", "");
+      if (u == null) continue; // cancel -> sigue pidiendo
+      if (!u.trim()) continue;
+      state.username = u.trim();
+      localStorage.setItem("adoranza_username", state.username);
+    }
+  }
+
+  async function upsertUserToCloudNonBlocking() {
+    if (!db) return;
+    try {
+      const payload = {
+        user_id: state.userId,
+        username: state.username
+      };
+      const { error } = await db.from("adoranza_users").upsert(payload, { onConflict: "user_id" });
+      if (error) console.warn("No pude registrar usuario en nube (no bloqueo):", error);
+    } catch (e) {
+      console.warn("No pude registrar usuario en nube (no bloqueo):", e);
+    }
+  }
+
+  // ============ UI ============
+  function setRole(role) {
     state.userRole = role;
     document.getElementById("roleSelector").style.display = "none";
     document.getElementById("tone-group").style.display = (role === "musico") ? "grid" : "none";
@@ -366,6 +356,10 @@
 
   function openConfig() {
     document.getElementById("configPanel").style.display = "flex";
+    const ud = document.getElementById("uid-display");
+    const un = document.getElementById("uname-display");
+    if (ud) ud.innerText = state.userId;
+    if (un) un.innerText = state.username || "(sin username)";
     if (db) listarMisSetlists();
   }
   function closeConfig() { document.getElementById("configPanel").style.display = "none"; }
@@ -391,27 +385,84 @@
     else badge.innerText = `» ${state.listIdUnico}`;
   }
 
-  function initSupabaseOrWarn() {
-    if (!window.supabase || !supabase.createClient) {
-      alert("No cargó Supabase (CDN). Revisa internet o bloqueo de CDN.");
-      console.error("Supabase no disponible:", window.supabase);
-      return null;
+  // ============ CONFIG / SETLISTS ============
+  async function listarMisSetlists() {
+    if (!db) { alert("Supabase no está listo."); return; }
+    const box = document.getElementById("mySetlists");
+    if (box) box.innerHTML = `<div style="color:var(--muted); font-size:12px;">Cargando…</div>`;
+
+    const { data, error } = await db
+      .from("setlists_guardados")
+      .select("id_unico,nombre_lista,created_at,owner_id,owner_name,shared_from_id,shared_from_name")
+      .eq("owner_id", state.userId)
+      .order("created_at", { ascending: false })
+      .limit(50);
+
+    if (error) {
+      console.error(error);
+      alert("No pude listar setlists: " + (error.message || error));
+      if (box) box.innerHTML = "";
+      return;
     }
-    try {
-      return supabase.createClient(SB_URL, SB_KEY);
-    } catch (e) {
-      alert("Error inicializando Supabase. Revisa consola.");
-      console.error(e);
-      return null;
+
+    if (!box) return;
+    box.innerHTML = "";
+
+    if (!data || data.length === 0) {
+      box.innerHTML = `<div style="color:var(--muted); font-size:12px;">Aún no tenés setlists guardados.</div>`;
+      return;
     }
+
+    (data || []).forEach(row => {
+      const id = String(row.id_unico || "").trim().toUpperCase();
+      const name = row.nombre_lista || "(Sin nombre)";
+      const isShared = !!(row.shared_from_id || row.shared_from_name);
+      const who = (row.shared_from_name || row.shared_from_id || "").toString().trim();
+
+      const el = document.createElement("div");
+      el.className = "item";
+      el.style.cursor = "pointer";
+      el.innerHTML = `
+        <div style="flex:1">
+          <div style="font-weight:700; font-size:13px;">${name}</div>
+          <div style="font-size:11px; color:var(--muted); margin-top:2px;">
+            ID: <span style="font-family:var(--mono); color:var(--accent)">${id}</span>
+            <span style="margin-left:8px; padding:2px 8px; border-radius:999px; border:1px solid var(--line);">
+              ${isShared ? ("Compartido por " + (who || "alguien")) : "Propio"}
+            </span>
+          </div>
+        </div>
+        <button class="btn btn-add" style="max-width:52px;" onclick="copiarSetlistId('${id}', event)">COP</button>
+      `;
+      el.onclick = () => copiarSetlistId(id);
+      box.appendChild(el);
+    });
   }
 
+  async function copiarSetlistId(id, ev) {
+    if (ev) ev.stopPropagation();
+    const ok = await copyToClipboard(id);
+    alert(ok ? `Copiado ✅\n${id}` : `No pude copiar 😅\n${id}`);
+  }
+
+  async function copiarMiSetlistActual() {
+    if (!state.listIdUnico) { alert("No hay un setlist cargado actualmente."); return; }
+    await copiarSetlistId(state.listIdUnico.trim().toUpperCase());
+  }
+
+  // ============ STARTUP ============
   window.onload = async () => {
-    document.getElementById("uid-display").innerText = "ID: " + state.userId;
-    localStorage.setItem("adoranza_uid", state.userId);
+    ensureLocalUserOrBlock(); // bloquea SOLO si no hay username
+
+    const ud = document.getElementById("uid-display");
+    const un = document.getElementById("uname-display");
+    if (ud) ud.innerText = state.userId;
+    if (un) un.innerText = state.username;
 
     db = initSupabaseOrWarn();
+    await upsertUserToCloudNonBlocking(); // no bloquea
 
+    // Buscador
     const sb = document.getElementById("searchBox");
     if (sb) {
       sb.oninput = async (e) => {
@@ -448,13 +499,15 @@
 
     initSortable();
 
+    // Links
     let handled = false;
     if (db) handled = await revisarLinkSetlistId();   // primero sid
-    if (db && !handled) await revisarLinkCompartido(); // luego list fallback
+    if (db && !handled) await revisarLinkCompartido(); // fallback list
 
     renderAll();
   };
 
+  // ============ CORE ============
   async function addToSetlist(song) {
     try {
       const resp = await fetch(BUCKET_URL + song.path_url);
@@ -490,14 +543,22 @@
 
     const curr = state.setlist[state.currentIndex];
     const view = document.getElementById("viewContent");
+    const info = document.getElementById("current-song-info");
+    const dots = document.getElementById("metro-dots");
+
     if (curr && view) {
-      const info = document.getElementById("current-song-info");
       if (info) {
         if (state.userRole === "drums") {
           info.innerText = `${curr.titulo} | BPM: ${state.half ? curr.bpm/2 : curr.bpm}`;
         } else {
-          info.innerText = `${curr.titulo}`;
+          info.innerText = `${curr.titulo}`; // musico: sin BPM
         }
+      }
+
+      // Punto 1: colapsar hueco en musico (esconder dots)
+      if (dots) {
+        if (state.userRole === "musico") dots.classList.add("is-hidden");
+        else dots.classList.remove("is-hidden");
       }
 
       let body = curr.body || "";
@@ -519,6 +580,12 @@
       state.currentBPM = state.half ? curr.bpm / 2 : curr.bpm;
 
       if (state.userRole === "drums" && state.metroActive) startMetro();
+    } else {
+      // si no hay canción seleccionada, igual respetar el colapso en musico
+      if (dots) {
+        if (state.userRole === "musico") dots.classList.add("is-hidden");
+        else dots.classList.remove("is-hidden");
+      }
     }
   }
 
@@ -550,6 +617,7 @@
 
   function changeFontSize(d) { state.currentFontSize += d; renderAll(); }
 
+  // ============ METRO ============
   function toggleMetroManual() {
     state.metroActive = !state.metroActive;
     const b = document.getElementById("btnMetroState");
@@ -602,6 +670,7 @@
     if (md) md.innerHTML = "";
   }
 
+  // ============ SCROLL ============
   function toggleScroll() {
     if (state.scrollInt) {
       clearInterval(state.scrollInt);
@@ -621,6 +690,7 @@
     }
   }
 
+  // ============ TRANSPOSE ============
   function transpose(delta) {
     const scale = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
     const curr = state.setlist[state.currentIndex];
@@ -635,6 +705,7 @@
     renderAll();
   }
 
+  // ============ SHARE ============
   function compartirWhatsApp() {
     // Forzar guardar antes de compartir (solo link corto con sid)
     if (!state.listIdUnico) {
@@ -654,6 +725,7 @@
     window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");
   }
 
+  // ============ LINKS ============
   async function revisarLinkSetlistId() {
     const p = new URLSearchParams(window.location.search);
     const sid = p.get("sid");
@@ -703,7 +775,6 @@
     if (!ids || !db) return;
 
     const arr = ids.split(",").map(s => s.trim()).filter(Boolean);
-
     const { data, error } = await db.from("canciones").select("*").in("id", arr);
     if (error) { console.error(error); return; }
 
@@ -718,6 +789,7 @@
     window.history.replaceState({}, "", window.location.pathname);
   }
 
+  // ============ SORT ============
   function initSortable() {
     const el = document.getElementById("setList");
     if (el && window.Sortable) {
@@ -734,6 +806,7 @@
     }
   }
 
+  // ============ STATS ============
   async function Estadisticas() {
     if (!db) { alert("Supabase no está listo."); return; }
     const { data, error } = await db
@@ -747,26 +820,26 @@
     alert("TOP 5:\n" + (data || []).map(s => `- ${s.titulo} (${s.veces_tocada})`).join("\n"));
   }
 
+  // ============ SAVE / LOAD ============
   async function guardarListaCloud() {
     if (!db) { alert("Supabase no está listo."); return; }
 
     const ids = state.setlist.map(s => String(s.id)).filter(Boolean);
     if (!ids.length) { alert("Setlist vacío."); return; }
 
-    // UPDATE si ya hay setlist cargado
+    // UPDATE (sin prompt, solo actualiza y listo)
     if (state.listIdUnico) {
-      const nombreActual = state.listName || "Setlist";
-      const nuevoNombre = prompt("Nombre del setlist:", nombreActual);
-      if (!nuevoNombre) return;
-
       const target = state.listIdUnico.trim().toUpperCase();
+      const payload = {
+        canciones_ids: ids,
+        owner_id: state.userId,
+        owner_name: state.username
+      };
 
       const { error } = await db
         .from("setlists_guardados")
-        .update({ nombre_lista: nuevoNombre, canciones_ids: ids })
+        .update(payload)
         .eq("id_unico", target);
-
-      console.log("GUARDAR->", target, ids);
 
       if (error) {
         alert("NO se pudo actualizar:\n" + (error.message || error));
@@ -774,45 +847,27 @@
         return;
       }
 
-      const { data: check, error: e2 } = await db
-        .from("setlists_guardados")
-        .select("canciones_ids")
-        .eq("id_unico", target)
-        .single();
-
-      if (e2) {
-        alert("Actualizó, pero falló la verificación:\n" + (e2.message || e2));
-        console.error(e2);
-        return;
-      }
-
-      const saved = normalizeSongIds(check?.canciones_ids);
-      if (saved.length !== ids.length) {
-        alert("Ojo: Supabase no guardó la misma cantidad.\nGuardadas: " + saved.length + "\nLocal: " + ids.length);
-        console.warn("Guardado:", saved, "Local:", ids);
-      } else {
-        alert("Actualizado.\nID: " + target);
-      }
-
-      state.listName = nuevoNombre;
-      state.listIdUnico = target;
+      alert("Setlist actualizado ✅\nID: " + target);
+      if (document.getElementById("configPanel").style.display === "flex") listarMisSetlists();
       renderAll();
       return;
     }
 
-    // INSERT nuevo
-    const n = prompt("Nombre:");
+    // INSERT nuevo (pide nombre)
+    const n = prompt("Nombre del setlist:");
     if (!n) return;
 
     let idUnico = "";
     let lastErr = null;
 
     for (let i = 0; i < 6; i++) {
-      idUnico = genSetlistId8();
+      idUnico = genSetlistId8(""); // setlist: 8 chars
       const { error } = await db.from("setlists_guardados").insert({
         nombre_lista: n,
         canciones_ids: ids,
-        id_unico: idUnico
+        id_unico: idUnico,
+        owner_id: state.userId,
+        owner_name: state.username
       });
       if (!error) { lastErr = null; break; }
       lastErr = error;
@@ -823,8 +878,11 @@
     state.listName = n;
     state.listIdUnico = idUnico;
     renderAll();
-    alert("Guardada.\nID: " + idUnico);
+    alert("Guardada ✅\nID: " + idUnico);
+    if (document.getElementById("configPanel").style.display === "flex") listarMisSetlists();
   }
+
+  //   apartir de este putno se cayo el internet y decide reutilizar el codigo viejo, asi que puede dar fallos.
 
   async function cargarListaCloud() {
     if (!db) { alert("Supabase no está listo."); return; }
