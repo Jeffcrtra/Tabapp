@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>6.16 Adoranza Pro v5.0</title>
+  <title>6.33 Adoranza Pro v5.0</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
@@ -1335,11 +1335,16 @@ function clearOrCloseSetlist(){
           const d = document.createElement("div");
           d.className = "set-item";
           d.innerHTML = `
-            <div class="titlebox" style="padding-left:6px;">
-              <div class="songtitle">${s.titulo || ""}</div>
-              <div class="songmeta">${s.artista || ""}</div>
-            </div>
-            <button class="btn btn-add" onclick='addToSetlist(${JSON.stringify(s)})'>ADD</button>
+              <div style="flex:1">
+                <div style="font-weight:600; font-size:13px;">${s.titulo || ""}</div>
+                <div style="font-size:11px; color:var(--muted); margin-top:2px;">${s.artista || ""}</div>
+              </div>
+              <button class="btn btn-add">ADD</button>
+            `;
+            
+            d.querySelector(".btn-add").onclick = (ev) => {
+              ev.stopPropagation();
+              addToSetlist(s);
           `;
           resDiv.appendChild(d);
         });
