@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>6.33 Adoranza Pro v5.0</title>
+  <title>10.51 Adoranza Pro v5.0</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
@@ -699,9 +699,6 @@
     }
   }
 
-  function safeJSONParse(s, fallback){
-    try { return JSON.parse(s); } catch(e){ return fallback; }
-  }
 
   function getFavorites(){
     const raw = localStorage.getItem(LS_FAV) || "{}";
@@ -1313,43 +1310,48 @@ function clearOrCloseSetlist(){
 
     // Buscador
     const sb = document.getElementById("searchBox");
-    if (sb) {
-      sb.oninput = async (e) => {
-        const val = (e.target.value || "").trim();
-        const resDiv = document.getElementById("results");
-        if (!resDiv) return;
-
-        if (!db) { resDiv.innerHTML = ""; return; }
-        if (val.length < 2) { resDiv.innerHTML = ""; return; }
-
-        const { data, error } = await db
-          .from("canciones")
-          .select("*")
-          .or(`titulo.ilike.%${val}%,artista.ilike.%${val}%`)
-          .limit(6);
-
-        if (error) { console.error(error); resDiv.innerHTML = ""; return; }
-
-        resDiv.innerHTML = "";
-        (data || []).forEach(s => {
-          const d = document.createElement("div");
-          d.className = "set-item";
-          d.innerHTML = `
+      if (sb) {
+        sb.oninput = async (e) => {
+          const val = (e.target.value || "").trim();
+          const resDiv = document.getElementById("results");
+          if (!resDiv) return;
+      
+          if (!db) { resDiv.innerHTML = ""; return; }
+          if (val.length < 2) { resDiv.innerHTML = ""; return; }
+      
+          const { data, error } = await db
+            .from("canciones")
+            .select("*")
+            .or(`titulo.ilike.%${val}%,artista.ilike.%${val}%`)
+            .limit(6);
+      
+          if (error) { console.error(error); resDiv.innerHTML = ""; return; }
+      
+          resDiv.innerHTML = "";
+          (data || []).forEach((s) => {
+            const d = document.createElement("div");
+            d.className = "set-item";
+            d.innerHTML = `
               <div style="flex:1">
                 <div style="font-weight:600; font-size:13px;">${s.titulo || ""}</div>
                 <div style="font-size:11px; color:var(--muted); margin-top:2px;">${s.artista || ""}</div>
               </div>
               <button class="btn btn-add">ADD</button>
             `;
-            
-            d.querySelector(".btn-add").onclick = (ev) => {
-              ev.stopPropagation();
-              addToSetlist(s);
-          `;
-          resDiv.appendChild(d);
-        });
-      };
-    }
+      
+            const btn = d.querySelector(".btn-add");
+            if (btn) {
+              btn.onclick = (ev) => {
+                ev.stopPropagation();
+                addToSetlist(s);
+              };
+            }
+      
+            resDiv.appendChild(d);
+          });
+        };
+      }
+
 
     initSortable();
 
@@ -1419,12 +1421,11 @@ function renderAll() {
     // 🔥 IMPORTANTE: idx REAL en state.setlist
     row.dataset.idx = String(originalIndex);
 
+    const favOn = isFav(s);
+    
     if (originalIndex === state.currentIndex) row.classList.add("is-active");
     if (isSung(s)) row.classList.add("is-sung");
     if (favOn) row.classList.add("is-fav");
-
-
-    const favOn = isFav(s);
 
     row.innerHTML = `
       <span class="drag-handle">☰</span>
