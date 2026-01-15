@@ -1216,19 +1216,24 @@ function updateClearCloseBtn(){
   }
 }
 
-function clearOrCloseSetlist(){
-  if (hasLoadedNamedList()) {
-    // Cerrar: limpia UI local, pero NO toca la nube
-    const ok = confirm("¿Cerrar este setlist? (No se borra en la nube)");
-    if (!ok) return;
-    clearSetlist(); // reutilizamos tu función actual
-  } else {
-    // Vaciar: lista temporal
-    const ok = confirm("¿Vaciar la lista temporal?");
-    if (!ok) return;
-    clearSetlist();
+  function clearOrCloseSetlist(){
+    // Protección: Si hay cambios y es una lista guardada, avisar
+    if (state.listIdUnico && state.hasUnsavedChanges) {
+      if (!confirm("⚠️ Tienes cambios de tono o letra sin guardar en la nube.\n\nSi cierras ahora, volverán a su estado original.\n¿Cerrar de todos modos?")) {
+        return;
+      }
+    }
+  
+    if (hasLoadedNamedList()) {
+      const ok = confirm("¿Cerrar este setlist? (No se borra en la nube)");
+      if (!ok) return;
+      clearSetlist(); 
+    } else {
+      const ok = confirm("¿Vaciar la lista temporal?");
+      if (!ok) return;
+      clearSetlist();
+    }
   }
-}
 
 
 
@@ -1547,7 +1552,11 @@ function renderAll() {
     renderAll();
   }
 
-  function changeFontSize(d) { state.currentFontSize += d; renderAll(); state.hasUnsavedChanges = true;}
+  function changeFontSize(d) { 
+      state.currentFontSize += d; 
+      state.hasUnsavedChanges = true;
+      renderAll(); 
+  }
 
   // ============ Swipe Implementation ============
   function attachSwipe(el){
@@ -1741,6 +1750,7 @@ function renderAll() {
         return idx === -1 ? note : scale[(idx + delta + 12) % 12];
       }) + "]";
     });
+    state.hasUnsavedChanges = true;
     renderAll();
   }
 
@@ -1860,149 +1870,184 @@ function renderAll() {
   }
 
   // ============ SAVE / LOAD ============
-  async function guardarListaCloud() {
-  if (!db) { alert("Supabase no está listo."); return; }
-
-  // 1. Validar que haya canciones
-  if (!state.setlist.length) { 
-    alert("El setlist está vacío. Agrega canciones antes de guardar."); 
-    return; 
-  }
-
-  // 2. Mapear el setlist actual con sus estados de transposición y fuente
-  // Guardamos el 'body' tal cual está en el momento (ya transpuesto)
-  const cancionesConEstado = state.setlist.map(s => ({
-    id: s.id,
-    titulo: s.titulo,
-    artista: s.artista,
-    path_url: s.path_url,
-    bpm: s.bpm,
-    time_signature: s.time_signature,
-    body: s.body, // Persiste el cambio de tono (transpose)
-    customFontSize: state.currentFontSize // Persiste el tamaño de letra
-  }));
-
-  // 3. Lógica para ACTUALIZAR setlist existente
-  if (state.listIdUnico) {
-    const target = state.listIdUnico.trim().toUpperCase();
-    
-    const payload = {
-      canciones_ids: cancionesConEstado, // Enviamos el JSON completo
-      owner_id: state.userId,
-      owner_name: state.username,
-      updated_at: new Date().toISOString()
-    };
-
-    const { error } = await db
-      .from("setlists_guardados")
-      .update(payload)
-      .eq("id_unico", target);
-
-    if (error) {
-      alert("No se pudo actualizar en la nube: " + (error.message || error));
-      console.error("Update error:", error);
+    async function guardarListaCloud() {
+    if (!db) { alert("Supabase no está listo."); return; }
+  
+    if (!state.setlist.length) { 
+      alert("El setlist está vacío. Agrega canciones antes de guardar."); 
+      return; 
+    }
+  
+    // Mapeamos el setlist con su estado actual (body transpuesto y fuente)
+    const cancionesConEstado = state.setlist.map(s => ({
+      id: s.id,
+      titulo: s.titulo,
+      artista: s.artista,
+      path_url: s.path_url,
+      bpm: s.bpm,
+      time_signature: s.time_signature,
+      body: s.body, 
+      customFontSize: state.currentFontSize
+    }));
+  
+    // Lógica para ACTUALIZAR
+    if (state.listIdUnico) {
+      const target = state.listIdUnico.trim().toUpperCase();
+      
+      const payload = {
+        canciones_ids: cancionesConEstado,
+        owner_id: state.userId,
+        owner_name: state.username,
+        updated_at: new Date().toISOString()
+      };
+  
+      const { error } = await db
+        .from("setlists_guardados")
+        .update(payload)
+        .eq("id_unico", target);
+  
+      if (error) {
+        alert("No se pudo actualizar: " + (error.message || error));
+        return;
+      }
+  
+      state.hasUnsavedChanges = false;
+      alert("Cambios guardados correctamente ✅");
+      if (document.getElementById("configPanel").style.display === "flex") listarMisSetlists();
+      renderAll();
       return;
     }
-
-    state.hasUnsavedChanges = false; // Reset de bandera de cambios
-    alert("Cambios guardados correctamente en: " + target + " ✅");
+  
+    // Lógica para NUEVO (INSERT)
+    const n = prompt("Nombre del setlist:");
+    if (!n) return;
+  
+    let idUnico = "";
+    let success = false;
+    let lastErr = null;
+  
+    for (let i = 0; i < 6; i++) {
+      idUnico = genSetlistId8(""); 
+      const { error } = await db.from("setlists_guardados").insert({
+        nombre_lista: n,
+        canciones_ids: cancionesConEstado,
+        id_unico: idUnico,
+        owner_id: state.userId,
+        owner_name: state.username
+      });
+      
+      if (!error) { 
+        success = true;
+        break; 
+      }
+      lastErr = error;
+    }
+  
+    if (!success) {
+      alert("Error al crear setlist: " + (lastErr ? lastErr.message : "Desconocido"));
+      return;
+    }
+  
+    state.listName = n;
+    state.listIdUnico = idUnico;
+    state.hasUnsavedChanges = false;
     
+    alert("Guardado con éxito ✅\nCódigo: " + idUnico);
     if (document.getElementById("configPanel").style.display === "flex") listarMisSetlists();
     renderAll();
-    return;
   }
 
-  // 4. Lógica para GUARDAR NUEVO setlist
-  const n = prompt("Dale un nombre a tu nuevo setlist:");
-  if (!n) return;
-
-  let idUnico = "";
-  let lastErr = null;
-
-  // Intentos para generar un ID único que no colisione
-  for (let i = 0; i < 6; i++) {
-    idUnico = genSetlistId8(""); 
-    const { error } = await db.from("setlists_guardados").insert({
-      nombre_lista: n,
-      canciones_ids: cancionesConEstado,
-      id_unico: idUnico,
-      owner_id: state.userId,
-      owner_name: state.username
-    });
-    
-    if (!error) { 
-      lastErr = null; 
-      break; 
-    }
-    lastErr = error;
-  }
-
-  if (lastErr) {
-    alert("Error crítico al crear setlist: " + (lastErr.message || lastErr));
-    return;
-  }
-
-  // 5. Actualizar estado local tras creación exitosa
-  state.listName = n;
-  state.listIdUnico = idUnico;
-  state.hasUnsavedChanges = false;
-  
-  alert("Setlist creado y guardado con éxito ✅\nCódigo: " + idUnico);
-  
-  if (document.getElementById("configPanel").style.display === "flex") listarMisSetlists();
-  renderAll();
-}
-
-  async function cargarListaCloud() {
+    async function cargarListaCloud() {
     if (!db) { alert("Supabase no está listo."); return; }
-
+  
+    // 1. Verificación de cambios sin guardar antes de cargar una nueva lista
+    if (state.hasUnsavedChanges) {
+      if (!confirm("Tienes cambios sin guardar en la lista actual. Si cargas otra, se perderán. ¿Deseas continuar?")) {
+        return;
+      }
+    }
+  
     const uid = prompt("Ingresa el ID del Setlist (ej: ENSAYO01):");
     if (!uid) return;
-
+  
     const want = uid.trim().toUpperCase();
-
+  
     const { data, error } = await db
       .from("setlists_guardados")
       .select("*")
       .eq("id_unico", want)
       .single();
-
+  
     if (error || !data) {
       alert("No se encontró ningún setlist con el ID: " + want);
       console.error(error);
       return;
     }
-
+  
     state.listName = data.nombre_lista || "";
     state.listIdUnico = String(data.id_unico || "").trim().toUpperCase();
-
-    const ids = normalizeSongIds(data.canciones_ids);
-
-    if (!ids.length) {
-      alert("Ese setlist no tiene canciones_ids válidos.");
-      console.warn("canciones_ids crudo:", data.canciones_ids);
-      return;
+  
+    // 2. Procesar canciones (Soporte Híbrido: Viejo vs Nuevo)
+    let rawList = data.canciones_ids;
+    
+    // Si viene como string JSON (a veces pasa en Supabase según el tipo de columna), lo parseamos
+    if (typeof rawList === 'string') {
+      try { rawList = JSON.parse(rawList); } catch(e) { rawList = []; }
     }
-
-    const { data: cans, error: err2 } = await db
-      .from("canciones")
-      .select("*")
-      .in("id", ids);
-
-    if (err2) {
-      alert("Error cargando canciones: " + (err2.message || err2));
-      console.error(err2);
-      return;
-    }
-
+    if (!Array.isArray(rawList)) rawList = [];
+  
     state.setlist = [];
-    for (let id of ids) {
-      const s = (cans || []).find(x => String(x.id) === String(id));
-      if (s) await addToSetlist(s);
+    const idsLegacy = [];
+  
+    // Clasificamos: ¿Viene completa o solo ID?
+    for (let item of rawList) {
+      if (typeof item === 'object' && item.body) {
+        // FORMATO NUEVO: Ya trae todo (body transpuesto, fontSize, etc.)
+        // Aplicamos el tamaño de fuente guardado si existe, o mantenemos el actual
+        if (item.customFontSize) state.currentFontSize = item.customFontSize;
+        state.setlist.push(item);
+      } else {
+        // FORMATO VIEJO: Es solo un ID o un objeto simple sin body
+        const id = (typeof item === 'object') ? item.id : item;
+        idsLegacy.push(String(id));
+        // Insertamos un placeholder temporal para mantener el orden
+        state.setlist.push({ isPlaceholder: true, id: String(id) });
+      }
     }
-
+  
+    // 3. Si hay canciones formato viejo, las buscamos en DB + Bucket
+    if (idsLegacy.length > 0) {
+      const { data: cans, error: err2 } = await db
+        .from("canciones")
+        .select("*")
+        .in("id", idsLegacy);
+  
+      if (!err2 && cans) {
+        // Reemplazamos los placeholders con la data real
+        for (let i = 0; i < state.setlist.length; i++) {
+          if (state.setlist[i].isPlaceholder) {
+            const found = cans.find(c => String(c.id) === state.setlist[i].id);
+            if (found) {
+              // Importante: aquí hay que descargar el body del bucket porque es formato viejo
+              try {
+                const body = await fetchSongBodyFromBucket(found);
+                state.setlist[i] = { ...found, body };
+              } catch (e) {
+                console.error("Error cargando body:", e);
+                state.setlist[i] = found; // Se queda sin body si falla
+              }
+            }
+          }
+        }
+      }
+    }
+  
+    // Limpiamos placeholders fallidos si quedaron
+    state.setlist = state.setlist.filter(s => !s.isPlaceholder);
+  
+    state.hasUnsavedChanges = false; // Acabamos de cargar, así que estamos "limpios"
     localStorage.removeItem(LS_HIDDEN);
-
+  
     renderAll();
   }
 
