@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#0b0d12">
+  <meta name="theme-color" content="#0b0d12" name="viewport" content="width=device-width, initial-scale=1" >
   <meta charset="utf-8" />
   <title>Adoranza Pro v5.0</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -1646,6 +1646,16 @@
   window.removeSong = removeSong;
   window.undoLastRemove = undoLastRemove;
   window.checkUnsavedChanges = () => state.hasUnsavedChanges;
+
+  // ===== PWA: Service Worker =====
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker
+      .register("/sw.js")
+      .then(() => console.log("SW registrado"))
+      .catch(err => console.warn("SW error", err));
+  });
+}
 </script>
 </body>
 </html>
