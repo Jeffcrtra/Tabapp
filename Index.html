@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>11.57 Adoranza Pro v5.0</title>
+  <title>12.10 Adoranza Pro v5.0</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
@@ -586,7 +586,7 @@
             Setlist <span id="list-name-badge"></span>
           </div>
           <div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;">
-            <button class="btn btn-save" style="width:auto; padding:0 10px; height:30px; font-size:11px; max-width:none;" onclick="()">Guardar</button>
+            <button class="btn btn-save" style="width:auto; padding:0 10px; height:30px; font-size:11px; max-width:none;" onclick="guardarListaCloud()">Guardar</button>
             <button class="btn" style="width:auto; padding:0 10px; height:30px; font-size:11px; background:rgba(44,82,130,.9); color:white; border-color:rgba(255,255,255,.12); max-width:none;" onclick="cargarListaCloud()">Cargar</button>
             <button class="btn" id="btnClearOrClose"
               style="width:auto; padding:0 6px; height:24px; font-size:10px; background:#551111;"
@@ -1361,6 +1361,13 @@
     state.half = false;
     renderAll();
     window.scrollTo({ top:0, behavior:"smooth" });
+  }
+
+  function stopScroll() {
+    if (state.scrollInt) clearInterval(state.scrollInt);
+    state.scrollInt = null;
+    const sb = document.getElementById("scrollBtn");
+    if (sb) sb.innerText = "AUTO";
   }
 
   function toggleScroll() {
