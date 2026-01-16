@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0b0d12" />
   <link rel="manifest" href="/manifest.json" />
 
-  <title>rr Adoranza Pro v5.0</title>
+  <title>Adoranza Pro v5.0</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -59,7 +59,7 @@
     .role-grid{
       display:grid;
       gap:14px;
-      grid-template-columns:repeat(3,1fr);
+      grid-template-columns:repeat(2,1fr);
       width:min(95vw,520px);
     }
     .role-btn{
@@ -484,8 +484,8 @@
   <div class="role-grid">
     <div class="role-btn" onclick="setRole('musico')">🎸<small>PIANO<br>GUITARRA</small></div>
     <div class="role-btn" onclick="setRole('drums')">🥁<small>VOZ +<br>BATERÍA</small></div>
-    <div class="role-btn" onclick="Estadisticas()" style="grid-column: span 1.5">📊<small>STATS</small></div>
-    <div class="role-btn" onclick="openConfig()" style="grid-column: span 1.5">⚙️<small>CONFIG</small></div>
+    <div class="role-btn" onclick="Estadisticas()">📊<small>STATS</small></div>
+    <div class="role-btn" onclick="openConfig()">⚙️<small>CONFIG</small></div>
   </div>
   <div class="footer-credits">App creada por <a href="https://www.linkedin.com/in/jeffrey-trigueros-371191123/" target="_blank">Jeffrey Trigueros</a></div>
 </div>
