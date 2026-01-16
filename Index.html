@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0b0d12" />
   <link rel="manifest" href="/manifest.json" />
 
-  <title>Adoranza Pro v5.0</title>
+  <title>5.07 Adoranza Pro v5.0</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -471,6 +471,39 @@
       transition: transform .12s ease, filter .12s ease;
     }
     #toastUndo .undoBtn:active{ transform:translateY(1px) scale(.99); filter:brightness(1.06); }
+
+    /* ===== Mobile tightening for setlist cards ===== */
+    @media (max-width: 520px){
+      #setlist-container{ width: 96%; }
+    
+      .set-item{
+        padding: 12px 12px;          /* antes 16px 18px */
+        border-radius: 16px;         /* antes 22px */
+      }
+    
+      .drag-handle{
+        padding: 0 8px;
+        font-size: 16px;
+      }
+    
+      .songtitle{
+        font-size: 13px;             /* más compacto */
+      }
+    
+      .songmeta{
+        font-size: 10px;
+        margin-top: 2px;
+      }
+    
+      /* heart pill más pequeño en mobile */
+      .pill.heart{
+        min-width: 36px;
+        padding: 8px 12px;
+      }
+    }
+    
+    .set-item{ touch-action: pan-y; }
+        
   </style>
 </head>
 
@@ -579,7 +612,7 @@
     <section class="card">
       <div class="hd">Buscador</div>
       <div class="bd">
-        <input class="input" id="searchBox" placeholder="Buscar..." autocomplete="off" />
+        <input class="input" id="searchBox" type="search" placeholder="Buscar..." autocomplete="off" />
         <div id="results" style="margin-top:10px;"></div>
       </div>
     </section>
@@ -1470,6 +1503,7 @@
   }
 
   function attachSwipe(el){
+    el.style.touchAction = "pan-y";
     let startX = 0, startY = 0, dx = 0, dy = 0;
     let dragging = false;
     let pointerId = null;
