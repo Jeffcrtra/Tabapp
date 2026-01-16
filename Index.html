@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0b0d12" />
   <link rel="manifest" href="/manifest.json" />
 
-  <title>Adoranza Pro v5.0</title>
+  <title>rr Adoranza Pro v5.0</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -1352,22 +1352,39 @@
     renderAll();
   }
 
+  function scrollToReader(){
+    // Queremos que el panel fijo quede visible, y la lectura empiece debajo.
+    const panel = document.getElementById("fixedControlPanel");
+    const view = document.getElementById("viewContent");
+    if (!panel || !view) return;
+  
+    const y = view.getBoundingClientRect().top + window.scrollY - (panel.offsetHeight + 10);
+    window.scrollTo({ top: Math.max(0, y), behavior: "smooth" });
+  }
+  
+  function seleccionar(idx) {
+    state.currentIndex = idx;
+    state.half = false;
+    renderAll();
+    scrollToReader();
+  }
+  
   function prevSong() {
     if (state.setlist.length === 0) return;
     if (state.currentIndex <= 0) state.currentIndex = 0;
     else state.currentIndex--;
     state.half = false;
     renderAll();
-    window.scrollTo({ top:0, behavior:"smooth" });
+    scrollToReader();
   }
-
+  
   function nextSong() {
     if (state.setlist.length === 0) return;
     if (state.currentIndex < 0) state.currentIndex = 0;
     else if (state.currentIndex < state.setlist.length - 1) state.currentIndex++;
     state.half = false;
     renderAll();
-    window.scrollTo({ top:0, behavior:"smooth" });
+    scrollToReader();
   }
 
   function stopScroll() {
