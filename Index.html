@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>12.10 Adoranza Pro v5.0</title>
+  <title>12.16 Adoranza Pro v5.0</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
@@ -1193,7 +1193,8 @@
     if (state.listIdUnico) {
       const target = state.listIdUnico.trim().toUpperCase();
       const payload = {
-        canciones_ids: cancionesConEstado,
+        canciones_ids: cancionesConEstado.map(x => x.id).filter(Boolean), // UUIDs ONLY
+        canciones_json: cancionesConEstado,                               // JSON completo
         owner_id: state.userId,
         owner_name: state.username,
         updated_at: new Date().toISOString()
@@ -1214,12 +1215,13 @@
     for (let i = 0; i < 6; i++) {
       idUnico = genSetlistId8(""); 
       const { error } = await db.from("setlists_guardados").insert({
-        nombre_lista: n,
-        canciones_ids: cancionesConEstado,
-        id_unico: idUnico,
-        owner_id: state.userId,
-        owner_name: state.username
-      });
+          nombre_lista: n,
+          canciones_ids: cancionesConEstado.map(x => x.id).filter(Boolean),
+          canciones_json: cancionesConEstado,
+          id_unico: idUnico,
+          owner_id: state.userId,
+          owner_name: state.username
+        });
       if (!error) { lastErr = null; break; }
       lastErr = error;
     }
@@ -1248,7 +1250,7 @@
     state.listName = data.nombre_lista || "";
     state.listIdUnico = String(data.id_unico || "").trim().toUpperCase();
 
-    let rawList = data.canciones_ids;
+    let rawList = data.canciones_json ?? data.canciones_ids;
     if (typeof rawList === 'string') { try { rawList = JSON.parse(rawList); } catch(e) { rawList = []; } }
     if (!Array.isArray(rawList)) rawList = [];
 
