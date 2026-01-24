@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0b0d12" />
   <link rel="manifest" href="./manifest.json" />
 
-  <title>3.40 Adoranza Pro v5.1</title>
+  <title>3.47 Adoranza Pro v5.1</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -661,7 +661,7 @@
   const BUCKET_URL = `${SB_URL}/storage/v1/object/public/Cancionero_Adoranza/`;
 
   window.onerror = function (msg, src, line, col, err) {
-    alert("JS ERROR: " + msg + "\nLínea: " + line);
+    appAlert("No se pudo cargar el archivo:\n" + (song?.path_url || ""));
     console.error(err);
   };
 
@@ -787,7 +787,7 @@
   // ===== SUPABASE & USER =====
   function initSupabaseOrWarn() {
     if (!window.supabase || !supabase.createClient) {
-      alert("No cargó Supabase (CDN). Revisa internet o bloqueo de CDN.");
+      appAlert("No cargó Supabase (CDN). Revisa internet o bloqueo de CDN.");
       return null;
     }
     try {
@@ -1067,7 +1067,7 @@
       renderAll();
     } catch (e) {
       console.error(e);
-      alert("No se pudo cargar el archivo:\n" + (song?.path_url || ""));
+      appAlert("No se pudo cargar el archivo:\n" + (song?.path_url || ""));
     }
   }
 
@@ -1220,9 +1220,9 @@
 
   // ===== NEW CLOUD LOGIC =====
   async function guardarListaCloud() {
-    if (!db) { alert("Supabase no está listo."); return; }
+    if (!db) { appAlert("EL Data base no está listo."); return; }
     if (!state.setlist.length) { 
-      alert("El setlist está vacío. Agrega canciones antes de guardar."); 
+      appAlert("El setlist está vacío. Agrega canciones antes de guardar."); 
       return; 
     }
 
@@ -1247,9 +1247,9 @@
         updated_at: new Date().toISOString()
       };
       const { error } = await db.from("setlists_guardados").update(payload).eq("id_unico", target);
-      if (error) { alert("Error al actualizar: " + error.message); return; }
+      if (error) { appAlert("Error al actualizar: " + error.message); return; }
       state.hasUnsavedChanges = false;
-      alert("Cambios guardados correctamente ✅");
+      appAlert("Cambios guardados correctamente ✅");
       if (document.getElementById("configPanel").style.display === "flex") listarMisSetlists();
       renderAll();
       return;
@@ -1272,17 +1272,17 @@
       if (!error) { lastErr = null; break; }
       lastErr = error;
     }
-    if (lastErr) { alert("Error al crear setlist: " + lastErr.message); return; }
+    if (lastErr) { appAlert("Error al crear setlist: " + lastErr.message); return; }
     state.listName = n;
     state.listIdUnico = idUnico;
     state.hasUnsavedChanges = false;
-    alert("Guardado con éxito ✅\nCódigo: " + idUnico);
+    appAlert("Guardado con éxito ✅\nCódigo: " + idUnico);
     if (document.getElementById("configPanel").style.display === "flex") listarMisSetlists();
     renderAll();
   }
 
   async function cargarListaCloud() {
-    if (!db) { alert("Supabase no está listo."); return; }
+    if (!db) { appAlert("Supabase no está listo."); return; }
     if (state.hasUnsavedChanges) {
       if (!confirm("Tienes cambios sin guardar en la lista actual. Si cargas otra, se perderán. ¿Deseas continuar?")) return;
     }
@@ -1292,7 +1292,7 @@
     const want = uid.trim().toUpperCase();
 
     const { data, error } = await db.from("setlists_guardados").select("*").eq("id_unico", want).single();
-    if (error || !data) { alert("No se encontró: " + want); return; }
+    if (error || !data) { appAlert("No se encontró: " + want); return; }
 
     state.listName = data.nombre_lista || "";
     state.listIdUnico = String(data.id_unico || "").trim().toUpperCase();
@@ -1366,10 +1366,10 @@
   async function copiarSetlistId(id, ev) {
     if (ev) ev.stopPropagation();
     const ok = await copyToClipboard(id);
-    alert(ok ? `Copiado ✅\n${id}` : `No copiado\n${id}`);
+    appAlert(ok ? `Copiado ✅\n${id}` : `No copiado\n${id}`);
   }
   async function copiarMiSetlistActual() {
-    if (!state.listIdUnico) { alert("No hay setlist cargado."); return; }
+    if (!state.listIdUnico) { appAlert("No hay setlist cargado."); return; }
     await copiarSetlistId(state.listIdUnico.trim().toUpperCase());
   }
 
@@ -1496,8 +1496,8 @@
   }
 
   function compartirWhatsApp() {
-    if (!state.listIdUnico) { alert("Guarda el setlist primero."); return; }
-    if (state.hasUnsavedChanges) { alert("⚠️ Tienes cambios pendientes. Guarda antes de compartir."); return; }
+    if (!state.listIdUnico) { appAlert("Guarda el setlist primero."); return; }
+    if (state.hasUnsavedChanges) { appAlert("⚠️ Tienes cambios pendientes. Guarda antes de compartir."); return; }
     const sid = state.listIdUnico.trim().toUpperCase();
     const n = state.listName || "Setlist";
     const url = `${window.location.origin}${window.location.pathname}?sid=${encodeURIComponent(sid)}`;
@@ -1508,7 +1508,7 @@
   async function Estadisticas() {
     if (!db) return;
     const { data } = await db.from("canciones").select("titulo, veces_tocada").gt("veces_tocada", 0).order("veces_tocada", { ascending:false }).limit(5);
-    alert("TOP 5:\n" + (data || []).map(s => `- ${s.titulo} (${s.veces_tocada})`).join("\n"));
+    appAlert("TOP 5:\n" + (data || []).map(s => `- ${s.titulo} (${s.veces_tocada})`).join("\n"));
   }
 
   function attachSwipe(el){
@@ -1679,7 +1679,23 @@
     if (db) handled = await revisarLinkSetlistId();
     renderAll();
   };
+  
+  function appAlert(message) {
+  const box = document.getElementById("appAlert");
+  const msg = document.getElementById("appAlertMsg");
+  const ok = document.getElementById("appAlertOk");
+  if (!box || !msg || !ok) return alert(message); // fallback
 
+  msg.textContent = message;
+  box.style.display = "block";
+  ok.onclick = () => (box.style.display = "none");
+}
+
+  window.onerror = function (msg, src, line, col, err) {
+  appAlert("JS ERROR: " + msg + "\nLínea: " + (line || 0));
+  return false;
+};
+  
   // Expose globals
   window.toggleFavByIndex = toggleFavByIndex;
   window.renderFavoritesInConfig = renderFavoritesInConfig;
@@ -1721,5 +1737,16 @@ if ("serviceWorker" in navigator) {
   });
 }
 </script>
+  
+  <div id="appAlert" style="display:none; position:fixed; inset:0; z-index:99999; background:rgba(0,0,0,.55);">
+  <div style="max-width:520px; margin:14vh auto; background:#111; color:#fff; border-radius:16px; padding:18px; box-shadow:0 12px 40px rgba(0,0,0,.55);">
+    <div style="font-weight:700; font-size:18px; margin-bottom:10px;">Adoranza</div>
+    <div id="appAlertMsg" style="white-space:pre-wrap; line-height:1.35; opacity:.95;"></div>
+    <div style="text-align:right; margin-top:14px;">
+      <button id="appAlertOk" style="padding:10px 14px; border-radius:12px; border:none; background:#2b6cff; color:white; font-weight:700;">OK</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
