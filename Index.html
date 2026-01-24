@@ -4,9 +4,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#0b0d12" />
-  <link rel="manifest" href="/manifest.json" />
+  <link rel="manifest" href="./manifest.json" />
 
-  <title>Adoranza Pro v5.1</title>
+  <title>3.40 Adoranza Pro v5.1</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -1037,9 +1037,18 @@
   }
 
   // ===== CORE LOGIC =====
-  async function fetchSongBodyFromBucket(song){
-    const resp = await fetch(BUCKET_URL + song.path_url);
-    if (!resp.ok) throw new Error("Fetch " + resp.status + " " + song.path_url);
+  async function fetchSongBodyFromBucket(song) {
+    // Si path_url ya viene como URL completa (http...), úsala tal cual.
+    // Si viene como path relativo, construye con BUCKET_URL.
+    const rawUrl = (song.path_url || "").trim();
+    const fullUrl = /^https?:\/\//i.test(rawUrl) ? rawUrl : (BUCKET_URL + rawUrl);
+  
+    // Protege contra espacios y caracteres raros (evita 400)
+    const safeUrl = encodeURI(fullUrl);
+  
+    const resp = await fetch(safeUrl, { cache: "no-store" });
+    if (!resp.ok) throw new Error("Fetch " + resp.status + " " + fullUrl);
+  
     const text = await resp.text();
     return text.replace(/\{(\w+):\s*([^}]+)\}/g, "").trim();
   }
