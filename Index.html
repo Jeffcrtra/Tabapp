@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0b0d12" />
   <link rel="manifest" href="./manifest.json" />
 
-  <title>3.47 Adoranza Pro v5.1</title>
+  <title>10.46 Adoranza Pro v5.1</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -1695,6 +1695,22 @@
   appAlert("JS ERROR: " + msg + "\nLínea: " + (line || 0));
   return false;
 };
+
+
+  window.addEventListener("error", (e) => {
+  const msg = e?.message || "Unknown error";
+  const src = e?.filename || "";
+  const line = e?.lineno || 0;
+  const col = e?.colno || 0;
+  appAlert(`JS ERROR: ${msg}\n${src ? "Src: " + src + "\n" : ""}Línea: ${line}:${col}`);
+});
+
+window.addEventListener("unhandledrejection", (e) => {
+  const reason = e?.reason;
+  const msg = (reason && (reason.message || String(reason))) || "Unhandled promise rejection";
+  appAlert(`PROMISE ERROR: ${msg}`);
+});
+
   
   // Expose globals
   window.toggleFavByIndex = toggleFavByIndex;
