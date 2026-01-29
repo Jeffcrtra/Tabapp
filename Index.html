@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0b0d12" />
   <link rel="manifest" href="./manifest.json" />
 
-  <title>5.04 Adoranza Pro v5.2</title>
+  <title>5.15 Adoranza Pro v5.2</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -173,12 +173,23 @@
     #volume-container{ display:none; text-align:center; margin-top:8px; }
 
     #info-display{ padding-bottom:0; }
+
+    .now-next-row{
+      display:flex;
+      justify-content:space-between;
+      gap:14px;
+      align-items:flex-start;
+      margin-top:8px;
+    }
+    
     #current-song-info{
       font-weight:900;
       color: rgba(255,255,255,.92);
       font-size:14px;
       text-align:center;
-      margin-top:8px;
+      flex:1;
+      text-align:left;
+      margin-top:0px;
       line-height:1.15;
       letter-spacing:.01em;
     }
@@ -191,13 +202,16 @@
     }
 
     #next-song-info{
-      font-weight:800;
+      flex:1;
+      text-align:right;
+      font-weight:900;
       font-size:12px;
-      text-align:center;
-      margin-top:4px;
       color:#7dd3fc; /* celeste */
       opacity:.95;
       line-height:1.15;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
     
     #next-song-info .sub2{
@@ -206,7 +220,10 @@
       font-weight:700;
       font-size:11px;
       color:#7dd3fc;
-      opacity:.9;
+      opacity:.85;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
 
     #metro-dots{
@@ -653,8 +670,10 @@
   </div>
 
   <div id="info-display">
-    <div id="current-song-info">Adoranza Cloud</div>
-    <div id="next-song-info"></div>
+    <div class="now-next-row">
+      <div id="current-song-info">Adoranza Cloud</div>
+      <div id="next-song-info"></div>
+    </div>
     <div id="metro-dots"></div>
   </div>
 </div>
@@ -1150,9 +1169,9 @@
   
     // Texto para “Siguiente”
     if (nextSong){
-      next.innerHTML = `Siguiente: <span class="sub2">${nextSong.titulo || "(Sin título)"}</span>`;
+      next.innerHTML = `${nextSong.titulo || "(Sin título)"}<span class="sub2">Siguiente</span>`;
     } else {
-      next.innerHTML = `Siguiente: <span class="sub2">(no hay más)</span>`;
+      next.innerHTML = `(no hay más)<span class="sub2">Siguiente</span>`;
     }
   }
 
@@ -1651,15 +1670,58 @@
     const el = document.getElementById("setList");
     if (el && window.Sortable) {
       Sortable.create(el, {
-        animation:150, handle:".drag-handle",
-        onEnd:(evt)=>{
-          const item = state.setlist.splice(evt.oldIndex, 1)[0];
-          state.setlist.splice(evt.newIndex, 0, item);
-          saveLocal(); renderAll();
+        animation: 150,
+        handle: ".drag-handle",
+        onEnd: (evt) => {
+          try {
+            // Índices reales de state.setlist que están visibles (no hidden)
+            const visibleIdxs = state.setlist
+              .map((s, i) => (!isHidden(s) ? i : null))
+              .filter(v => v !== null);
+  
+            const fromVisible = evt.oldIndex;
+            const toVisible = evt.newIndex;
+  
+            // Guardas
+            if (fromVisible == null || toVisible == null) return;
+            if (fromVisible === toVisible) return;
+            if (fromVisible < 0 || fromVisible >= visibleIdxs.length) return;
+            if (toVisible < 0) return;
+  
+            const fromActual = visibleIdxs[fromVisible];
+            if (fromActual == null) return;
+  
+            // Sacar el item real
+            const item = state.setlist.splice(fromActual, 1)[0];
+            if (!item) return;
+  
+            // Recalcular visibles después de remover
+            const visibleIdxs2 = state.setlist
+              .map((s, i) => (!isHidden(s) ? i : null))
+              .filter(v => v !== null);
+  
+            // Determinar índice real de inserción
+            let insertAt;
+            if (toVisible >= visibleIdxs2.length) {
+              insertAt = state.setlist.length; // al final
+            } else {
+              insertAt = visibleIdxs2[toVisible];
+            }
+  
+            state.setlist.splice(insertAt, 0, item);
+  
+            saveLocal();
+            renderAll();
+          } catch (e) {
+            console.error("Sortable onEnd error:", e);
+            appAlert("Error al reordenar. Reintentá.");
+            renderAll();
+          }
         }
       });
     }
   }
+
 
   // ===== STARTUP =====
   async function revisarLinkSetlistId() {
