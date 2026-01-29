@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0b0d12" />
   <link rel="manifest" href="./manifest.json" />
 
-  <title>10.46 Adoranza Pro v5.1</title>
+  <title>5.04 Adoranza Pro v5.2</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -190,6 +190,25 @@
       color: rgba(255,213,74,.85);
     }
 
+    #next-song-info{
+      font-weight:800;
+      font-size:12px;
+      text-align:center;
+      margin-top:4px;
+      color:#7dd3fc; /* celeste */
+      opacity:.95;
+      line-height:1.15;
+    }
+    
+    #next-song-info .sub2{
+      display:block;
+      margin-top:2px;
+      font-weight:700;
+      font-size:11px;
+      color:#7dd3fc;
+      opacity:.9;
+    }
+
     #metro-dots{
       margin-top:8px;
       display:flex;
@@ -309,23 +328,23 @@
       border-color: rgba(74,255,128,.35);
     }
 
-  /* Base más limpia */
   .set-item{
-    background: rgba(255,255,255,.03);
-    border: 1px solid rgba(255,255,255,.10);
-    border-radius: 22px;
-    padding: 16px 18px;
-    transition: transform .12s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease, opacity .18s ease;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    border-radius:999px;
+    padding:10px 12px;
+    background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+    border:1px solid rgba(255,255,255,.10);
   }
 
   /* Activa (seleccionada) = protagonista */
-    .set-item.is-active{
-      border-color: rgba(255,213,74,.70);
-      box-shadow:
-        0 0 0 1px rgba(255,213,74,.25),
-        0 18px 40px rgba(0,0,0,.35);
-      background: rgba(255,255,255,.04);
-    }
+  .set-item.is-active{
+    border-color: rgba(255,213,74,.75);
+    box-shadow:
+      0 0 0 1px rgba(255,213,74,.20),
+      0 14px 34px rgba(0,0,0,.35);
+  }
       
   /* Cantada = NO glow, solo más discreta */
   .set-item.is-sung{
@@ -376,18 +395,38 @@
       margin-top: 6px;
       font-size: 15px;
     }
-    .drag-handle{ cursor:grab; padding:0 10px; color:var(--muted); font-size:18px; }
-    .titlebox{ flex:1; min-width:0; }
+    
+    .drag-handle{
+      width:34px;
+      height:34px;
+      border-radius:999px;
+      display:grid;
+      place-items:center;
+      background: rgba(0,0,0,.25);
+      border:1px solid rgba(255,255,255,.10);
+      padding:0;
+      flex:0 0 auto;
+      font-size:18px;
+    }
+    
+    .titlebox{
+        flex:1 1 auto;
+        min-width:0;
+        display:flex;
+        flex-direction:column;
+        gap:2px;
+      }
+
     .songtitle{
       font-weight:900;
       font-size:14px;
-      line-height:1.2;
+      line-height:1.15;
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
     }
+    
     .songmeta{
-      margin-top:2px;
       font-size:11px;
       color: rgba(152,162,179,.95);
       white-space:nowrap;
@@ -409,12 +448,24 @@
       transition: transform .12s ease, filter .12s ease, border-color .12s ease;
       user-select:none;
     }
+    
     .pill:active{ transform: translateY(1px) scale(.99); filter:brightness(1.06); }
 
-    .pill.heart{ min-width:44px; justify-content:center; }
+    .pill.heart{
+      width:40px;
+      height:36px;
+      min-width:40px;
+      border-radius:999px;
+      padding:0;
+      display:grid;
+      place-items:center;
+      background: rgba(0,0,0,.22);
+      border:1px solid rgba(255,255,255,.12);
+    }
+    
     .pill.heart.on{
-      border-color: rgba(255,92,119,.55);
-      background: rgba(255,92,119,.10);
+      border-color: rgba(255,213,74,.55);
+      background: rgba(255,213,74,.10);
     }
 
     #viewContent{
@@ -603,6 +654,7 @@
 
   <div id="info-display">
     <div id="current-song-info">Adoranza Cloud</div>
+    <div id="next-song-info"></div>
     <div id="metro-dots"></div>
   </div>
 </div>
@@ -1070,7 +1122,41 @@
       appAlert("No se pudo cargar el archivo:\n" + (song?.path_url || ""));
     }
   }
+  
+  function getNextVisibleIndex(fromIdx){
+    if (!state.setlist.length) return -1;
+    for (let i = fromIdx + 1; i < state.setlist.length; i++){
+      const s = state.setlist[i];
+      if (s && !isHidden(s)) return i;
+    }
+    return -1;
+  }
+  
+  function updateNowNextInfo(){
+    const info = document.getElementById("current-song-info");
+    const next = document.getElementById("next-song-info");
+    const curr = state.setlist[state.currentIndex];
+  
+    if (!next) return;
+  
+    if (!curr){
+      if (info) info.innerHTML = "Adoranza Cloud";
+      next.innerHTML = "";
+      return;
+    }
+  
+    const nextIdx = getNextVisibleIndex(state.currentIndex);
+    const nextSong = nextIdx >= 0 ? state.setlist[nextIdx] : null;
+  
+    // Texto para “Siguiente”
+    if (nextSong){
+      next.innerHTML = `Siguiente: <span class="sub2">${nextSong.titulo || "(Sin título)"}</span>`;
+    } else {
+      next.innerHTML = `Siguiente: <span class="sub2">(no hay más)</span>`;
+    }
+  }
 
+  
   function renderAll() {
     const sl = document.getElementById("setList");
     if (!sl) return;
@@ -1130,6 +1216,9 @@
           info.innerHTML = `${curr.titulo || ""}<span class="sub">${curr.artista || ""}</span>`;
         }
       }
+
+      updateNowNextInfo();
+      
       if (dots) {
         if (state.userRole === "musico") dots.classList.add("is-hidden");
         else dots.classList.remove("is-hidden");
@@ -1158,6 +1247,7 @@
       }
       if (info) info.innerHTML = `Adoranza Cloud`;
       if (view) view.textContent = "Selecciona una canción.";
+      updateNowNextInfo();
     }
   }
 
