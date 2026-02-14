@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0b0d12" />
   <link rel="manifest" href="./manifest.json" />
 
-  <title>6.25 Adoranza Pro v5.3</title>
+  <title>11.12 Adoranza Pro v5.3</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -1492,35 +1492,49 @@
 
   async function resolveSetlistSongs(setlist, supabase) {
     const ids = Array.isArray(setlist.canciones_ids) ? setlist.canciones_ids : [];
-    const ovById = overridesToMap(setlist.canciones_json);
-
+    const overridesById = normalizeOverrides(setlist.canciones_json);
+  
     if (!ids.length) return [];
-
+  
+    // 1) Traer metadata de canciones
     const { data: metas, error } = await supabase
       .from("canciones")
       .select("id, titulo, artista, album, bpm, time_signature, tono_original, path_url")
       .in("id", ids);
-
+  
     if (error) throw error;
-
-    const byId = new Map((metas || []).map(m => [String(m.id), m]));
-    const ordered = ids.map(id => byId.get(String(id))).filter(Boolean);
-
+  
+    const byId = new Map((metas || []).map(m => [m.id, m]));
+  
+    // 2) Mantener el orden del array canciones_ids
+    const ordered = ids.map(id => byId.get(id)).filter(Boolean);
+  
+    // 3) Bajar SIEMPRE el texto actualizado desde Supabase Storage (bucket),
+    //    y aplicar overrides. Si una canción falla, NO matamos todo el setlist.
     const resolved = [];
     for (const meta of ordered) {
-      const ov = ovById.get(String(meta.id)) || {};
-      const resp = await fetch(meta.path_url, { cache: "no-store" });
-      const body = await resp.text();
-
+      const ov = overridesById.get(meta.id) || {};
+      let body = "";
+      try {
+        body = await fetchSongBodyFromBucket(meta); // ✅ aquí está el fix
+      } catch (e) {
+        console.warn("No se pudo bajar canción:", meta?.path_url, e);
+        body = `⚠️ No se pudo cargar el archivo:\n${meta?.path_url || "(sin path_url)"}\n\n(Verifica que exista en el bucket o que el path_url sea correcto)`;
+      }
+  
       resolved.push({
         ...meta,
-        body_base: (body || "").replace(/\{(\w+):\s*([^}]+)\}/g, "").trim(),
-        transpose_steps: Number.isFinite(ov.transpose_steps) ? ov.transpose_steps : 0,
-        bpm_override: Number.isFinite(ov.bpm_override) ? ov.bpm_override : null
+        body,
+        bpm_effective: ov.bpm_override ?? meta.bpm ?? null,
+        tono_effective: ov.tono_override ?? meta.tono_original ?? null,
+        tono_override: ov.tono_override ?? null,
+        bpm_override: ov.bpm_override ?? null,
       });
     }
+  
     return resolved;
   }
+
 
   async function guardarListaCloud() {
     if (!db) { appAlert("EL Data base no está listo."); return; }
@@ -1847,7 +1861,7 @@
     if (un) un.innerText = state.username;
 
     db = initSupabaseOrWarn();
-    await upsertUserToCloudNonBlocking();
+    // await upsertUserToCloudNonBlocking();  // comentada termporalmentw
 
     // Cargar setlist local (si existe)
     loadLocal();
