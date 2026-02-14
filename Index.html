@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0b0d12" />
   <link rel="manifest" href="./manifest.json" />
 
-  <title>12.41 Adoranza Pro v5.4</title>
+  <title>12.46 Adoranza Pro v5.4</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -1403,13 +1403,11 @@
         else dots.classList.remove("is-hidden");
       }
       
+        let bodyBase = curr.body || "";
         const currentKey = String(curr.key || "").trim();
-        const keyNorm = currentKey.replace(/\s+/g, ""); // "D m" -> "Dm"
+        const keyNorm = currentKey.replace(/\s+/g, "");
         
-        // detecta si la tonalidad (texto) usa bemol real (Bb, Eb, etc.)
         const hasFlatKey = /^[A-G]b/.test(keyNorm);
-        
-        // menores típicamente escritos con bemoles (relativas de keys con bemoles)
         const flatMinorKeys = ["Dm","Gm","Cm","Fm","Bbm","Ebm","Abm"];
         
         const preferFlats =
