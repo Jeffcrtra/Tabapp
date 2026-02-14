@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0b0d12" />
   <link rel="manifest" href="./manifest.json" />
 
-  <title>12.46 Adoranza Pro v5.4</title>
+  <title>1.17Adoranza Pro v5.4</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -730,6 +730,7 @@
   const SB_URL = "https://ystlbjvjoqpqoklvjdrj.supabase.co";
   const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlzdGxianZqb3FwcW9rbHZqZHJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5NzY4NDUsImV4cCI6MjA4MzU1Mjg0NX0.AQg9BuuGlbUtuyccvrBJwRGzx4Bgzx58aqGbfMPzKfg";
   const BUCKET_URL = `${SB_URL}/storage/v1/object/public/Cancionero_Adoranza/`;
+  const LS_ADOPT = "adoranza_adopted_setlists_v1";
 
   window.onerror = function (msg, src, line, col, err) {
     appAlert("No se pudo cargar el archivo:\n" + (song?.path_url || ""));
@@ -744,6 +745,22 @@
   const LS_HIDDEN = "adoranza_hidden_v1";
 
   // ===== Helpers =====
+
+  function getAdoptedSetlists(){
+    return safeJSONParse(localStorage.getItem(LS_ADOPT) || "[]", []);
+  }
+  function setAdoptedSetlists(arr){
+    localStorage.setItem(LS_ADOPT, JSON.stringify(arr || []));
+  }
+  function adoptSetlistId(id){
+    const list = getAdoptedSetlists();
+    const u = String(id).trim().toUpperCase();
+    if (!list.includes(u)){
+      list.push(u);
+      setAdoptedSetlists(list);
+    }
+  }
+
   function genSetlistId8(prefix="") {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     let out = "";
@@ -793,6 +810,35 @@
       .sort((a, b) => a.orden - b.orden);
   }
 
+  async function saveSetlistOverrides(supabase, setlistId) {
+    // Construye el JSON con overrides por canción
+    const canciones_json = (state.setlist || []).map((s, idx) => {
+      const songId = s.id || s.song_id; // <- SI TU ID SE LLAMA DISTINTO, CAMBIÁ AQUÍ
+      return {
+        song_id: songId,
+        position: idx,
+        transpose_steps: Number.isFinite(s.transpose_steps) ? s.transpose_steps : 0,
+      };
+    });
+  
+    // También mantené canciones_ids por compatibilidad (si tu app lo usa)
+    const canciones_ids = canciones_json.map(x => x.song_id);
+  
+    const { error } = await supabase
+      .from("setlists_guardados")
+      .update({
+        canciones_ids,
+        canciones_json,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", setlistId);
+  
+    if (error) throw error;
+  
+    state.hasUnsavedChanges = false;
+  }
+
+
   async function resolveSetlistSongs(setlist, supabase) {
     const ids = Array.isArray(setlist.canciones_ids) ? setlist.canciones_ids : [];
     const overridesById = normalizeOverrides(setlist.canciones_json);
@@ -822,7 +868,8 @@
       
         resolved.push({
           ...meta,
-          body, // ✅ SIEMPRE última versión
+          body,
+          transpose_steps: ov.transpose_steps ?? 0,  // 🔥 ESTE ES EL FIX
           bpm_effective: ov.bpm_override ?? meta.bpm ?? null,
           tono_effective: ov.tono_override ?? meta.tono_original ?? null,
           tono_override: ov.tono_override ?? null,
@@ -865,7 +912,7 @@
   async function loadSetlistByCode(code, supabase) {
     const { data: setlist, error } = await supabase
       .from("setlists_guardados")
-      .select("id, nombre_lista, canciones_ids, canciones_json, updated_at")
+      .select("id, id_unico, nombre_lista, owner_id, canciones_ids, canciones_json, updated_at")
       .eq("id_unico", code)
       .single();
   
@@ -879,14 +926,16 @@
   
     for (const x of arr) {
       if (!x?.id) continue;
+  
       map.set(x.id, {
-        bpm_override: Number.isFinite(x.bpm_override) ? x.bpm_override
-                    : (Number.isFinite(x.bpm) ? x.bpm : null),
+        bpm_override: Number.isFinite(x.bpm_override) ? x.bpm_override : null,
         tono_override: (typeof x.tono_override === "string" && x.tono_override.trim())
           ? x.tono_override.trim()
-          : null
+          : null,
+        transpose_steps: Number.isFinite(x.transpose_steps) ? x.transpose_steps : 0
       });
     }
+  
     return map;
   }
 
@@ -1580,6 +1629,13 @@
   
     state.listName = setlist.nombre_lista || "";
     state.listIdUnico = String(setlist.id_unico || want).trim().toUpperCase();
+
+    if (setlist.owner_id && setlist.owner_id !== state.userId){
+      const wantAdopt = confirm("¿Deseas adoptar este setlist y que aparezca en 'Mis Setlists'?");
+      if (wantAdopt){
+        adoptSetlistId(want);
+      }
+    }
   
     // ✅ resuelve siempre por IDs, baja el txt actual, aplica overrides
     const resolved = await resolveSetlistSongs(setlist, db);
@@ -1587,8 +1643,8 @@
     // adaptar al formato interno de tu app
     state.setlist = resolved.map(s => ({
       ...s,
-      body_base: s.body,                 // base viene del fetch
-      transpose_steps: s.transpose_steps || 0,
+      body_base: s.body,
+      transpose_steps: Number.isFinite(s.transpose_steps) ? s.transpose_steps : 0,
       bpm_override: s.bpm_override ?? null,
     }));
   
@@ -1602,7 +1658,17 @@
     if (!db) return;
     const box = document.getElementById("mySetlists");
     if (box) box.innerHTML = `<div style="color:var(--muted); font-size:12px;">Cargando…</div>`;
-    const { data, error } = await db.from("setlists_guardados").select("*").eq("owner_id", state.userId).order("created_at", { ascending: false }).limit(50);
+    const adoptedIds = getAdoptedSetlists();
+      if (adoptedIds.length){
+        const { data: adopted } = await db
+          .from("setlists_guardados")
+          .select("*")
+          .in("id_unico", adoptedIds);
+      
+        if (adopted){
+          data.push(...adopted.filter(a => a.owner_id !== state.userId));
+        }
+      }
     if (!box) return;
     box.innerHTML = "";
     if (error || !data || data.length === 0) { box.innerHTML = `<div style="color:var(--muted); font-size:12px;">Sin setlists.</div>`; return; }
