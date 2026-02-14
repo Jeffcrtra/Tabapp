@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0b0d12" />
   <link rel="manifest" href="./manifest.json" />
 
-  <title>1.25 Adoranza Pro v5.4</title>
+  <title>1.28 Adoranza Pro v5.4</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -1457,6 +1457,15 @@
           curr.tono_effective || curr.tono_override || curr.tono_original || curr.key || ""
         ).trim();
         const keyNorm = currentKey.replace(/\s+/g, "");
+
+
+      console.log("DEBUG KEY:", {
+        key: curr.key,
+        tono_effective: curr.tono_effective,
+        tono_override: curr.tono_override,
+        tono_original: curr.tono_original,
+        transpose_steps: curr.transpose_steps
+      });
         
         const hasFlatKey = /^[A-G]b/.test(keyNorm);
         const flatMinorKeys = ["Dm","Gm","Cm","Fm","Bbm","Ebm","Abm"];
