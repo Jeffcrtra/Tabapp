@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0b0d12" />
   <link rel="manifest" href="./manifest.json" />
 
-  <title>12.10 Adoranza Pro v5.4</title>
+  <title>12.41 Adoranza Pro v5.4</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -942,22 +942,36 @@
     return String(s||"").replace(/\\/g,"\\\\").replace(/'/g,"\\'");
   }
 
-  function transposeBody(raw, steps){
+  function transposeBody(raw, steps, preferFlats=false){
     if (!steps) return raw || "";
+  
     const scale = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+  
+    // Para convertir salida con # a su equivalente en b
+    const sharpToFlat = { "C#":"Db", "D#":"Eb", "F#":"Gb", "G#":"Ab", "A#":"Bb" };
+  
     return String(raw||"").replace(/\[([^\]]+)\]/g, (m, chord) => {
       const out = chord.replace(/[A-G](?:#|b)?/g, (note) => {
-        // normaliza bemol a su equivalente sharp
+        // normaliza bemol a su equivalente sharp (para transponer)
         const n = note.toUpperCase();
-        const flats = { "DB":"C#", "EB":"D#", "GB":"F#", "AB":"G#", "BB":"A#" };
-        const nn = flats[n] || n;
+        const flatsToSharps = { "DB":"C#", "EB":"D#", "GB":"F#", "AB":"G#", "BB":"A#" };
+        const nn = flatsToSharps[n] || n;
+  
         const idx = scale.indexOf(nn);
         if (idx === -1) return note;
-        return scale[(idx + steps + 1200) % 12];
+  
+        let res = scale[(idx + steps + 1200) % 12];
+  
+        // si queremos bemoles, convertimos la salida (A# -> Bb, etc.)
+        if (preferFlats && sharpToFlat[res]) res = sharpToFlat[res];
+  
+        return res;
       });
+  
       return "[" + out + "]";
     });
   }
+
   
   function buildCloudSetlistPayload(){
     const ids = state.setlist.map(s => s.id).filter(Boolean);
@@ -1388,8 +1402,28 @@
         if (state.userRole === "musico") dots.classList.add("is-hidden");
         else dots.classList.remove("is-hidden");
       }
-      let bodyBase = curr.body_base || curr.body || ""; // compat legacy
-      let body = transposeBody(bodyBase, curr.transpose_steps || 0);
+      
+        const currentKey = String(curr.key || "").trim();
+        const keyNorm = currentKey.replace(/\s+/g, ""); // "D m" -> "Dm"
+        
+        // detecta si la tonalidad (texto) usa bemol real (Bb, Eb, etc.)
+        const hasFlatKey = /^[A-G]b/.test(keyNorm);
+        
+        // menores típicamente escritos con bemoles (relativas de keys con bemoles)
+        const flatMinorKeys = ["Dm","Gm","Cm","Fm","Bbm","Ebm","Abm"];
+        
+        const preferFlats =
+          hasFlatKey ||
+          ["F","Bb","Eb","Ab","Db","Gb","Cb"].includes(keyNorm) ||
+          flatMinorKeys.includes(keyNorm);
+        
+        let body = transposeBody(
+          bodyBase,
+          curr.transpose_steps || 0,
+          preferFlats
+        );
+
+      
       if (state.userRole !== "musico") {
         body = body.replace(/\[([^\]]+)\]/g, "");
         const lines = body.split(/\r?\n/);
