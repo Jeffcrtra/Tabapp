@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0b0d12" />
   <link rel="manifest" href="./manifest.json" />
 
-  <title>1.28 Adoranza Pro v5.4</title>
+  <title>1.33 Adoranza Pro v5.4</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -1453,27 +1453,27 @@
       }
       
         let bodyBase = curr.body || "";
-        const currentKey = String(
+        const currentKeyRaw = String(
           curr.tono_effective || curr.tono_override || curr.tono_original || curr.key || ""
         ).trim();
-        const keyNorm = currentKey.replace(/\s+/g, "");
-
-
-      console.log("DEBUG KEY:", {
-        key: curr.key,
-        tono_effective: curr.tono_effective,
-        tono_override: curr.tono_override,
-        tono_original: curr.tono_original,
-        transpose_steps: curr.transpose_steps
-      });
         
-        const hasFlatKey = /^[A-G]b/.test(keyNorm);
+        let keyNorm = currentKeyRaw.replace(/\s+/g, "");
+        const mm = keyNorm.match(/^([A-G])([#b]?)(m)?/i);
+        keyNorm = mm ? (mm[1].toUpperCase() + (mm[2] || "") + (mm[3] ? "m" : "")) : "";
+        
+        // 2) Prefer bemoles por tonalidad (si existe)
+        const hasFlatKey = /^[A-G]b/i.test(keyNorm);
         const flatMinorKeys = ["Dm","Gm","Cm","Fm","Bbm","Ebm","Abm"];
-        
-        const preferFlats =
+        let preferFlats =
           hasFlatKey ||
           ["F","Bb","Eb","Ab","Db","Gb","Cb"].includes(keyNorm) ||
           flatMinorKeys.includes(keyNorm);
+        
+        // 3) Fallback: si NO hay tonalidad, inferir por el texto
+        if (!keyNorm) {
+          // si el cuerpo ya contiene Bb/Eb/Ab/Db/Gb/Cb, usamos bemoles
+          preferFlats = /\b[A-G]b\b/.test(bodyBase);
+        }
         
         let body = transposeBody(
           bodyBase,
