@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0b0d12" />
   <link rel="manifest" href="./manifest.json" />
 
-  <title>11.12 Adoranza Pro v5.3</title>
+  <title>11.41 Adoranza Pro v5.3</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -1486,17 +1486,22 @@
       .select("id, id_unico, nombre_lista, canciones_ids, canciones_json, updated_at")
       .eq("id_unico", code)
       .single();
+  
     if (error) throw error;
+  
+    // ✅ Normaliza canciones_ids venga como venga (array, JSON string, CSV, etc.)
+    setlist.canciones_ids = normalizeSongIds(setlist.canciones_ids);
+  
     return setlist;
   }
 
+
   async function resolveSetlistSongs(setlist, supabase) {
-    const ids = Array.isArray(setlist.canciones_ids) ? setlist.canciones_ids : [];
+    const ids = normalizeSongIds(setlist.canciones_ids);
     const overridesById = normalizeOverrides(setlist.canciones_json);
   
     if (!ids.length) return [];
   
-    // 1) Traer metadata de canciones
     const { data: metas, error } = await supabase
       .from("canciones")
       .select("id, titulo, artista, album, bpm, time_signature, tono_original, path_url")
@@ -1504,22 +1509,21 @@
   
     if (error) throw error;
   
-    const byId = new Map((metas || []).map(m => [m.id, m]));
+    const byId = new Map((metas || []).map(m => [String(m.id), m]));
   
-    // 2) Mantener el orden del array canciones_ids
-    const ordered = ids.map(id => byId.get(id)).filter(Boolean);
+    // Mantener orden exacto del setlist
+    const ordered = ids.map(id => byId.get(String(id))).filter(Boolean);
   
-    // 3) Bajar SIEMPRE el texto actualizado desde Supabase Storage (bucket),
-    //    y aplicar overrides. Si una canción falla, NO matamos todo el setlist.
     const resolved = [];
     for (const meta of ordered) {
       const ov = overridesById.get(meta.id) || {};
       let body = "";
+  
       try {
-        body = await fetchSongBodyFromBucket(meta); // ✅ aquí está el fix
+        body = await fetchSongBodyFromBucket(meta); // ✅ bucket (no GitHub)
       } catch (e) {
         console.warn("No se pudo bajar canción:", meta?.path_url, e);
-        body = `⚠️ No se pudo cargar el archivo:\n${meta?.path_url || "(sin path_url)"}\n\n(Verifica que exista en el bucket o que el path_url sea correcto)`;
+        body = `⚠️ No se pudo cargar el archivo:\n${meta?.path_url || "(sin path_url)"}\n`;
       }
   
       resolved.push({
@@ -1534,6 +1538,7 @@
   
     return resolved;
   }
+
 
 
   async function guardarListaCloud() {
@@ -1963,10 +1968,18 @@
   window.checkUnsavedChanges = () => state.hasUnsavedChanges;
 
   // ===== PWA: Service Worker =====
+  // if ("serviceWorker" in navigator) {
+  //   window.addEventListener("load", () => {
+  //     navigator.serviceWorker
+  //       .register("./sw.js")
+  //       .then(() => console.log("SW registrado"))
+  //       .catch(err => console.warn("SW error", err));
+  //   });
+  // }
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
       navigator.serviceWorker
-        .register("./sw.js")
+        .register("./sw.js?v=5.2.1") // <- cambia este número cada release
         .then(() => console.log("SW registrado"))
         .catch(err => console.warn("SW error", err));
     });
