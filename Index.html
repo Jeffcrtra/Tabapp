@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0b0d12" />
   <link rel="manifest" href="./manifest.json" />
 
-  <title>11.58 Adoranza Pro v5.4</title>
+  <title>12.10 Adoranza Pro v5.4</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -814,20 +814,21 @@
   
     // 3) Fetch del texto actualizado desde path_url + aplicar overrides
     const resolved = [];
-    for (const meta of ordered) {
-      const ov = overridesById.get(meta.id) || {};
-      const resp = await fetch(meta.path_url);
-      const body = await resp.text();
-  
-      resolved.push({
-        ...meta,
-        body, // ✅ SIEMPRE última versión
-        bpm_effective: ov.bpm_override ?? meta.bpm ?? null,
-        tono_effective: ov.tono_override ?? meta.tono_original ?? null,
-        tono_override: ov.tono_override ?? null,
-        bpm_override: ov.bpm_override ?? null,
-      });
-    }
+      for (const meta of ordered) {
+        const ov = overridesById.get(meta.id) || {};
+      
+        // ✅ SIEMPRE usa el bucket si path_url es relativo
+        const body = await fetchSongBodyFromBucket(meta);
+      
+        resolved.push({
+          ...meta,
+          body, // ✅ SIEMPRE última versión
+          bpm_effective: ov.bpm_override ?? meta.bpm ?? null,
+          tono_effective: ov.tono_override ?? meta.tono_original ?? null,
+          tono_override: ov.tono_override ?? null,
+          bpm_override: ov.bpm_override ?? null,
+        });
+      }
     return resolved;
   }
 
@@ -1250,7 +1251,8 @@
   async function fetchSongBodyFromBucket(song) {
     // Si path_url ya viene como URL completa (http...), úsala tal cual.
     // Si viene como path relativo, construye con BUCKET_URL.
-    const rawUrl = (song.path_url || "").trim();
+    let rawUrl = (song.path_url || "").trim();
+    rawUrl = rawUrl.replace(/^\.\//, ""); // quita ./ al inicio si existe
     const fullUrl = /^https?:\/\//i.test(rawUrl) ? rawUrl : (BUCKET_URL + rawUrl);
   
     // Protege contra espacios y caracteres raros (evita 400)
