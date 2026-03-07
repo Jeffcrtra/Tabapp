@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0b0d12" />
   <link rel="manifest" href="./manifest.json" />
 
-  <title>1.33 Adoranza Pro v5.4</title>
+  <title>12.33 Adoranza Pro v5.4</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -1338,6 +1338,7 @@
   
       state.setlist.push({
         ...song,
+        body: bodyBase,
         body_base: bodyBase,
         transpose_steps: 0,
         bpm_override: null
@@ -1444,7 +1445,7 @@
           info.innerHTML = `${curr.titulo || ""}<span class="sub">${curr.artista || ""}</span>`;
         }
       }
-
+    
       updateNowNextInfo();
       
       if (dots) {
@@ -1452,7 +1453,7 @@
         else dots.classList.remove("is-hidden");
       }
       
-        let bodyBase = curr.body || "";
+        let bodyBase = curr.body_base || curr.body || "";
         const currentKeyRaw = String(
           curr.tono_effective || curr.tono_override || curr.tono_original || curr.key || ""
         ).trim();
