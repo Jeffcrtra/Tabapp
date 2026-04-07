@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0b0d12" />
   <link rel="manifest" href="./manifest.json" />
 
-  <title>4.45 Adoranza Pro v6.2</title>
+  <title>5.07 Adoranza Pro v6.2</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -771,76 +771,12 @@
     return prefix + out;
   }
 
-  function normalizeSongIds(v) {
-    if (v == null) return [];
-    if (Array.isArray(v)) return v.map(x => String(x).trim()).filter(Boolean);
-    if (typeof v === "string") {
-      const s = v.trim();
-      if (!s) return [];
-      try {
-        const j = JSON.parse(s);
-        if (Array.isArray(j)) return j.map(x => String(x).trim()).filter(Boolean);
-      } catch (e) {}
-      const uuids = s.match(/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/g);
-      if (uuids && uuids.length) return uuids.map(x => x.trim());
-      const cleaned = s.replace(/[\{\}\[\]\s"]/g, "");
-      if (!cleaned) return [];
-      return cleaned.split(",").map(x => x.trim()).filter(Boolean);
-    }
-    return [String(v).trim()].filter(Boolean);
-  }
-
-  function normalizeSetlistSongs(canciones_json) {
-    const arr = Array.isArray(canciones_json) ? canciones_json : [];
-    return arr
-      .filter(x => x && x.id)
-      .map((x, idx) => ({
-        id: x.id,
-        orden: Number.isFinite(x.orden) ? x.orden : idx,
-        // Compatibilidad vieja:
-        bpm_override: Number.isFinite(x.bpm_override) ? x.bpm_override
-                    : (Number.isFinite(x.bpm) ? x.bpm : null),
-        tono_override: typeof x.tono_override === "string" ? x.tono_override : null,
-      }))
-      .sort((a, b) => a.orden - b.orden);
-  }
-
-  async function saveSetlistOverrides(supabase, setlistId) {
-    // Construye el JSON con overrides por canción
-    const canciones_json = (state.setlist || []).map((s, idx) => {
-      const songId = s.id || s.song_id; // <- SI TU ID SE LLAMA DISTINTO, CAMBIÁ AQUÍ
-      return {
-        song_id: songId,
-        position: idx,
-        transpose_steps: Number.isFinite(s.transpose_steps) ? s.transpose_steps : 0,
-      };
-    });
-  
-    // También mantené canciones_ids por compatibilidad (si tu app lo usa)
-    const canciones_ids = canciones_json.map(x => x.song_id);
-  
-    const { error } = await supabase
-      .from("setlists_guardados")
-      .update({
-        canciones_ids,
-        canciones_json,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", setlistId);
-  
-    if (error) throw error;
-  
-    state.hasUnsavedChanges = false;
-  }
-
-
   async function resolveSetlistSongs(setlist, supabase) {
     const ids = Array.isArray(setlist.canciones_ids) ? setlist.canciones_ids : [];
     const overridesById = normalizeOverrides(setlist.canciones_json);
   
     if (!ids.length) return [];
   
-    // 1) Traer metadata de canciones
     const { data: metas, error } = await supabase
       .from("canciones")
       .select("id, titulo, artista, album, bpm, time_signature, tono_original, path_url")
@@ -848,60 +784,34 @@
   
     if (error) throw error;
   
-    const byId = new Map(metas.map(m => [m.id, m]));
-  
-    // 2) Mantener el orden del array canciones_ids
+    const byId = new Map((metas || []).map(m => [m.id, m]));
     const ordered = ids.map(id => byId.get(id)).filter(Boolean);
   
-    // 3) Fetch del texto actualizado desde path_url + aplicar overrides
-    const resolved = [];
-      for (const meta of ordered) {
+    const resolved = await Promise.all(
+      ordered.map(async (meta) => {
         const ov = overridesById.get(meta.id) || {};
-      
-        // ✅ SIEMPRE usa el bucket si path_url es relativo
-        const body = await fetchSongBodyFromBucket(meta);
-      
-        resolved.push({
+  
+        let body = "";
+        try {
+          body = await fetchSongBodyFromBucket(meta);
+        } catch (e) {
+          console.warn("No se pudo cargar body de canción:", meta.path_url, e);
+          body = "";
+        }
+  
+        return {
           ...meta,
           body,
-          transpose_steps: ov.transpose_steps ?? 0,  // 🔥 ESTE ES EL FIX
+          transpose_steps: ov.transpose_steps ?? 0,
           bpm_effective: ov.bpm_override ?? meta.bpm ?? null,
           tono_effective: ov.tono_override ?? meta.tono_original ?? null,
           tono_override: ov.tono_override ?? null,
           bpm_override: ov.bpm_override ?? null,
-        });
-      }
+        };
+      })
+    );
+  
     return resolved;
-  }
-
-  function buildSetlistOverridesJson(songsInOrder) {
-    return songsInOrder.map(s => ({
-      id: s.id,
-      tono_override: s.tono_override ?? null,
-      bpm_override: Number.isFinite(s.bpm_override) ? s.bpm_override : null
-    }));
-  }
-  
-  async function saveSetlist(code, songsInOrder, supabase) {
-    const canciones_ids = songsInOrder.map(s => s.id);
-    const canciones_json = buildSetlistOverridesJson(songsInOrder);
-  
-    const { error } = await supabase
-      .from("setlists_guardados")
-      .update({ canciones_ids, canciones_json })
-      .eq("id_unico", code);
-  
-    if (error) throw error;
-  }
-
-  function buildSetlistJsonForSave(songsInSetlist) {
-    // songsInSetlist: tu estructura interna actual
-    return songsInSetlist.map((s, idx) => ({
-      id: s.id,
-      orden: idx,
-      tono_override: s.tono_override ?? null,
-      bpm_override: Number.isFinite(s.bpm_override) ? s.bpm_override : null,
-    }));
   }
 
   async function loadSetlistByCode(code, supabase) {
@@ -920,9 +830,10 @@
     const map = new Map();
   
     for (const x of arr) {
-      if (!x?.id) continue;
+      const key = x?.id || x?.song_id;
+      if (!key) continue;
   
-      map.set(x.id, {
+      map.set(key, {
         bpm_override: Number.isFinite(x.bpm_override) ? x.bpm_override : null,
         tono_override: (typeof x.tono_override === "string" && x.tono_override.trim())
           ? x.tono_override.trim()
@@ -1032,7 +943,7 @@
   const state = {
     setlist: [],
     currentIndex: -1,
-    currentFontSize: 18,
+    currentFontSize: parseInt(localStorage.getItem("adoranza_font_size") || "18", 10),
     hasUnsavedChanges: false, // Nueva bandera de control
     userRole: "musico",
     listName: "",
@@ -1307,13 +1218,11 @@
 
   // ===== CORE LOGIC =====
   async function fetchSongBodyFromBucket(song) {
-    // Si path_url ya viene como URL completa (http...), úsala tal cual.
-    // Si viene como path relativo, construye con BUCKET_URL.
     let rawUrl = (song.path_url || "").trim();
-    rawUrl = rawUrl.replace(/^\.\//, ""); // quita ./ al inicio si existe
-    const fullUrl = /^https?:\/\//i.test(rawUrl) ? rawUrl : (BUCKET_URL + rawUrl);
+    if (!rawUrl) throw new Error("path_url vacío");
   
-    // Protege contra espacios y caracteres raros (evita 400)
+    rawUrl = rawUrl.replace(/^\.\//, "");
+    const fullUrl = /^https?:\/\//i.test(rawUrl) ? rawUrl : (BUCKET_URL + rawUrl);
     const safeUrl = encodeURI(fullUrl);
   
     const resp = await fetch(safeUrl, { cache: "no-store" });
@@ -1532,6 +1441,9 @@
     state.listName = "";
     state.listIdUnico = "";
     state.hasUnsavedChanges = false;
+  
+    localStorage.removeItem(LS_HIDDEN);
+  
     saveLocal();
     renderAll();
   }
@@ -1757,6 +1669,7 @@
   // ===== CONTROLS =====
   function changeFontSize(d) {
     state.currentFontSize = Math.max(12, Math.min(42, state.currentFontSize + d));
+    localStorage.setItem("adoranza_font_size", String(state.currentFontSize));
     renderAll();
   }
   
@@ -1815,18 +1728,22 @@
 
   function toggleScroll() {
     if (state.scrollInt) {
-      clearInterval(state.scrollInt); state.scrollInt = null;
+      clearInterval(state.scrollInt);
+      state.scrollInt = null;
       document.getElementById("scrollBtn").innerText = "AUTO";
     } else {
-      state.scrollInt = setInterval(() => window.scrollBy(0, 1), 50 / state.scrollSpeed);
+      const intervalMs = Math.max(10, 50 / state.scrollSpeed);
+      state.scrollInt = setInterval(() => window.scrollBy(0, 1), intervalMs);
       document.getElementById("scrollBtn").innerText = "PAUSA";
     }
   }
+  
   function adjScroll(d) {
-    state.scrollSpeed = Math.max(0.1, state.scrollSpeed + d);
+    state.scrollSpeed = Math.max(0.1, Math.min(5, state.scrollSpeed + d));
     if (state.scrollInt) {
       clearInterval(state.scrollInt);
-      state.scrollInt = setInterval(() => window.scrollBy(0, 1), 50 / state.scrollSpeed);
+      const intervalMs = Math.max(10, 50 / state.scrollSpeed);
+      state.scrollInt = setInterval(() => window.scrollBy(0, 1), intervalMs);
     }
   }
 
@@ -1836,6 +1753,7 @@
     if (b) b.innerText = state.metroActive ? "⏹" : "▶";
     state.metroActive ? startMetro() : stopMetro();
   }
+  
   function halfTime() { state.half = !state.half; renderAll(); }
   function startMetro() {
     stopMetro();
@@ -2066,6 +1984,7 @@
         newSize = Math.max(MIN_FONT, Math.min(MAX_FONT, newSize));
   
         state.currentFontSize = Math.round(newSize);
+        localStorage.setItem("adoranza_font_size", String(state.currentFontSize));
         renderAll();
       }
     });
@@ -2139,51 +2058,36 @@
   }
 
 
-  // ===== STARTUP =====
   async function revisarLinkSetlistId() {
     const p = new URLSearchParams(window.location.search);
     const sid = p.get("sid");
     if (!sid || !db) return false;
+  
     const want = sid.trim().toUpperCase();
-    const { data } = await db.from("setlists_guardados").select("*").eq("id_unico", want).single();
-    if (!data) return true;
-    state.listName = data.nombre_lista || "";
-    state.listIdUnico = String(data.id_unico || "").trim().toUpperCase();
-    let raw = data.canciones_ids;
-    if (typeof raw === 'string') { try { raw = JSON.parse(raw); } catch(e) { raw = []; } }
-    if (!Array.isArray(raw)) raw = [];
-    
-    state.setlist = [];
-    // Logica simplificada para startup link: tratamos de cargar lo que venga
-    const idsLegacy = [];
-    for(let item of raw){
-      if(typeof item === 'object' && item.body){
-         state.setlist.push(item);
-      } else {
-         const id = (typeof item === 'object') ? item.id : item;
-         idsLegacy.push(String(id));
-         state.setlist.push({ isPlaceholder:true, id:String(id) });
-      }
+  
+    try {
+      const setlist = await loadSetlistByCode(want, db);
+      if (!setlist) return true;
+  
+      state.listName = setlist.nombre_lista || "";
+      state.listIdUnico = String(setlist.id_unico || want).trim().toUpperCase();
+  
+      const resolved = await resolveSetlistSongs(setlist, db);
+  
+      state.setlist = resolved.map(s => ({
+        ...s,
+        body_base: s.body,
+        transpose_steps: Number.isFinite(s.transpose_steps) ? s.transpose_steps : 0,
+        bpm_override: s.bpm_override ?? null,
+      }));
+  
+      state.hasUnsavedChanges = false;
+      localStorage.removeItem(LS_HIDDEN);
+      renderAll();
+    } catch (e) {
+      console.error("revisarLinkSetlistId error:", e);
     }
-    if(idsLegacy.length > 0){
-      const { data: cans } = await db.from("canciones").select("*").in("id", idsLegacy);
-      if(cans){
-        for(let i=0; i<state.setlist.length; i++){
-          if(state.setlist[i].isPlaceholder){
-             const f = cans.find(c=>String(c.id) === state.setlist[i].id);
-             if(f) {
-                try {
-                  const b = await fetchSongBodyFromBucket(f);
-                  state.setlist[i] = { ...f, body: b };
-                } catch(e) { state.setlist[i] = f; }
-             }
-          }
-        }
-      }
-    }
-    state.setlist = state.setlist.filter(s => !s.isPlaceholder);
-    localStorage.removeItem(LS_HIDDEN);
-    renderAll();
+  
     window.history.replaceState({}, "", window.location.pathname);
     return true;
   }
@@ -2248,6 +2152,11 @@
     
     let handled = false;
     if (db) handled = await revisarLinkSetlistId();
+    
+    if (!handled) {
+      loadLocalSetlist();
+    }
+    
     renderAll();
   };
   
