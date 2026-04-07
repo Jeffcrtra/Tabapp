@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0b0d12" />
   <link rel="manifest" href="./manifest.json" />
 
-  <title>12.33 Adoranza Pro v6.0</title>
+  <title>12.33 Adoranza Pro v6.1</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -578,7 +578,7 @@
 <body>
 
 <div id="roleSelector">
-  <h1 style="color:var(--accent); margin:0; font-size:24px; letter-spacing:.02em;">ADORANZA PRO v6.0</h1>
+  <h1 style="color:var(--accent); margin:0; font-size:24px; letter-spacing:.02em;">ADORANZA PRO v6.1</h1>
   <div style="color:rgba(255,255,255,.70); font-size:12px; text-align:center; max-width:520px; line-height:1.4;">
     Setlists, tabs y letras. Swipe para marcar <b>cantada</b> o quitar de la vista. ❤️ para guardar offline.
   </div>
@@ -1978,6 +1978,68 @@
     el.addEventListener("pointercancel", reset, { passive: true });
   }
 
+  function initPinchZoom() {
+    const el = document.getElementById("viewContent");
+    if (!el) return;
+  
+    if (el.dataset.pinchReady === "1") return;
+    el.dataset.pinchReady = "1";
+  
+    let pointers = new Map();
+    let initialDistance = null;
+    let initialFontSize = state.currentFontSize;
+  
+    const MIN_FONT = 12;
+    const MAX_FONT = 42;
+  
+    function getDistance(p1, p2) {
+      const dx = p1.clientX - p2.clientX;
+      const dy = p1.clientY - p2.clientY;
+      return Math.sqrt(dx * dx + dy * dy);
+    }
+  
+    el.addEventListener("pointerdown", (e) => {
+      pointers.set(e.pointerId, e);
+  
+      if (pointers.size === 2) {
+        const pts = Array.from(pointers.values());
+        initialDistance = getDistance(pts[0], pts[1]);
+        initialFontSize = state.currentFontSize;
+      }
+    });
+  
+    el.addEventListener("pointermove", (e) => {
+      if (!pointers.has(e.pointerId)) return;
+  
+      pointers.set(e.pointerId, e);
+  
+      if (pointers.size === 2) {
+        const pts = Array.from(pointers.values());
+        const currentDistance = getDistance(pts[0], pts[1]);
+  
+        if (!initialDistance) return;
+  
+        const scale = currentDistance / initialDistance;
+  
+        let newSize = initialFontSize * scale;
+        newSize = Math.max(MIN_FONT, Math.min(MAX_FONT, newSize));
+  
+        state.currentFontSize = Math.round(newSize);
+        applyFontSize();
+      }
+    });
+  
+    const cleanup = (e) => {
+      pointers.delete(e.pointerId);
+      if (pointers.size < 2) {
+        initialDistance = null;
+      }
+    };
+  
+    el.addEventListener("pointerup", cleanup);
+    el.addEventListener("pointercancel", cleanup);
+    el.addEventListener("pointerleave", cleanup);
+  }
   
   function initSortable() {
     const el = document.getElementById("setList");
@@ -2141,6 +2203,7 @@
 
     initSortable();
     initReaderSwipe();
+    initPinchZoom();
     
     let handled = false;
     if (db) handled = await revisarLinkSetlistId();
