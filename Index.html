@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0b0d12" />
   <link rel="manifest" href="./manifest.json" />
 
-  <title>5.07 Adoranza Pro v6.2</title>
+  <title>5.11 Adoranza Pro v6.2</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -1431,9 +1431,19 @@
     renderAll();
     showUndoToast(`Quitada: ${song.titulo || "Canción"}`);
   }
+  
   function removeSong(idx, e) { if (e) e.stopPropagation(); softRemoveSong(idx); }
-
   function saveLocal() { localStorage.setItem("adoranza_v4_setlist", JSON.stringify(state.setlist)); }
+
+  function loadLocalSetlist() {
+    const raw = localStorage.getItem("adoranza_v4_setlist");
+    const parsed = safeJSONParse(raw, []);
+    if (Array.isArray(parsed)) {
+      state.setlist = parsed;
+    } else {
+      state.setlist = [];
+    }
+  }
 
   function clearSetlist() {
     state.setlist = [];
