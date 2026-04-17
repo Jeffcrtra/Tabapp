@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0b0d12" />
   <link rel="manifest" href="./manifest.json" />
 
-  <title>5.11 Adoranza Pro v6.2</title>
+  <title>5.11 Adoranza Pro v6.3</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -539,6 +539,34 @@
       transition: transform .12s ease, filter .12s ease;
     }
     #toastUndo .undoBtn:active{ transform:translateY(1px) scale(.99); filter:brightness(1.06); }
+
+
+window.addEventListener("error", function (e) {
+  const msg = [
+    "JS ERROR:",
+    e.message || "Sin mensaje",
+    "Archivo: " + (e.filename || "(desconocido)"),
+    "Línea: " + (e.lineno || 0) + ":" + (e.colno || 0),
+    "Stack: " + (e.error && e.error.stack ? e.error.stack : "sin stack")
+  ].join("\n");
+
+  console.error(msg, e.error || e);
+  alert(msg);
+});
+
+window.addEventListener("unhandledrejection", function (e) {
+  const reason = e.reason;
+  const msg = [
+    "PROMISE ERROR:",
+    reason && reason.message ? reason.message : String(reason),
+    "Stack: " + (reason && reason.stack ? reason.stack : "sin stack")
+  ].join("\n");
+
+  console.error(msg, reason);
+  alert(msg);
+});
+
+    
 
     /* ===== Mobile tightening for setlist cards ===== */
     @media (max-width: 520px){
