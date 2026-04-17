@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0b0d12" />
   <link rel="manifest" href="./manifest.json" />
 
-  <title>5.11 Adoranza Pro v6.3</title>
+  <title>1.49 Adoranza Pro v6.3</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -451,6 +451,10 @@
       padding:0;
       flex:0 0 auto;
       font-size:18px;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+      cursor: grab;
     }
     
     .titlebox{
@@ -524,6 +528,12 @@
       box-shadow: var(--shadow2);
     }
     .chord{ color:var(--accent); font-weight:900; }
+
+    .is-dragging-sortable,
+    .is-dragging-sortable *{
+      user-select: none !important;
+      -webkit-user-select: none !important;
+    }
 
     #list-name-badge{ font-size:10px; color: rgba(255,213,74,.85); margin-top:4px; display:block; font-weight:700; }
 
