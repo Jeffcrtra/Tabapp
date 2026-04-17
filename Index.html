@@ -2040,58 +2040,72 @@
   
   function initSortable() {
     const el = document.getElementById("setList");
-    if (el && window.Sortable) {
-      Sortable.create(el, {
+      if (!el || !window.Sortable) return;
+    
+      if (el._sortable) {
+        el._sortable.destroy();
+        el._sortable = null;
+      }
+    
+      el._sortable = Sortable.create(el, {
         animation: 150,
         handle: ".drag-handle",
+    
+        forceFallback: true,
+        fallbackOnBody: true,
+        fallbackTolerance: 8,
+        touchStartThreshold: 8,
+        delayOnTouchOnly: true,
+        delay: 120,
+    
+        onStart: () => {
+          document.body.classList.add("is-dragging-sortable");
+        },
+    
         onEnd: (evt) => {
+          document.body.classList.remove("is-dragging-sortable");
+    
           try {
-            // Índices reales de state.setlist que están visibles (no hidden)
             const visibleIdxs = state.setlist
               .map((s, i) => (!isHidden(s) ? i : null))
               .filter(v => v !== null);
-  
+    
             const fromVisible = evt.oldIndex;
             const toVisible = evt.newIndex;
-  
-            // Guardas
+    
             if (fromVisible == null || toVisible == null) return;
             if (fromVisible === toVisible) return;
             if (fromVisible < 0 || fromVisible >= visibleIdxs.length) return;
             if (toVisible < 0) return;
-  
+    
             const fromActual = visibleIdxs[fromVisible];
             if (fromActual == null) return;
-  
-            // Sacar el item real
+    
             const item = state.setlist.splice(fromActual, 1)[0];
             if (!item) return;
-  
-            // Recalcular visibles después de remover
+    
             const visibleIdxs2 = state.setlist
               .map((s, i) => (!isHidden(s) ? i : null))
               .filter(v => v !== null);
-  
-            // Determinar índice real de inserción
+    
             let insertAt;
             if (toVisible >= visibleIdxs2.length) {
-              insertAt = state.setlist.length; // al final
+              insertAt = state.setlist.length;
             } else {
               insertAt = visibleIdxs2[toVisible];
             }
-  
+    
             state.setlist.splice(insertAt, 0, item);
-  
+    
             saveLocal();
             renderAll();
           } catch (e) {
             console.error("Sortable onEnd error:", e);
-            appAlert("Error al reordenar. Reintentá.");
+            appAlert("Error al reordenar:\n" + (e?.message || e));
             renderAll();
           }
         }
       });
-    }
   }
 
 
