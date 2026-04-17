@@ -11,6 +11,33 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
+        <script>
+        /* 👇 PEGÁ ESTO AQUÍ 👇 */
+        window.addEventListener("error", function (e) {
+          const msg = [
+            "JS ERROR:",
+            e.message || "Sin mensaje",
+            "Archivo: " + (e.filename || "(desconocido)"),
+            "Línea: " + (e.lineno || 0) + ":" + (e.colno || 0),
+            "Stack: " + (e.error && e.error.stack ? e.error.stack : "sin stack")
+          ].join("\n");
+        
+          console.error(msg, e.error || e);
+          alert(msg);
+        });
+        
+        window.addEventListener("unhandledrejection", function (e) {
+          const reason = e.reason;
+          const msg = [
+            "PROMISE ERROR:",
+            reason && reason.message ? reason.message : String(reason),
+            "Stack: " + (reason && reason.stack ? reason.stack : "sin stack")
+          ].join("\n");
+        
+          console.error(msg, reason);
+          alert(msg);
+        });
+        </script>
 
   <style>
     :root{
@@ -538,35 +565,7 @@
       user-select:none;
       transition: transform .12s ease, filter .12s ease;
     }
-    #toastUndo .undoBtn:active{ transform:translateY(1px) scale(.99); filter:brightness(1.06); }
-
-
-window.addEventListener("error", function (e) {
-  const msg = [
-    "JS ERROR:",
-    e.message || "Sin mensaje",
-    "Archivo: " + (e.filename || "(desconocido)"),
-    "Línea: " + (e.lineno || 0) + ":" + (e.colno || 0),
-    "Stack: " + (e.error && e.error.stack ? e.error.stack : "sin stack")
-  ].join("\n");
-
-  console.error(msg, e.error || e);
-  alert(msg);
-});
-
-window.addEventListener("unhandledrejection", function (e) {
-  const reason = e.reason;
-  const msg = [
-    "PROMISE ERROR:",
-    reason && reason.message ? reason.message : String(reason),
-    "Stack: " + (reason && reason.stack ? reason.stack : "sin stack")
-  ].join("\n");
-
-  console.error(msg, reason);
-  alert(msg);
-});
-
-    
+    #toastUndo .undoBtn:active{ transform:translateY(1px) scale(.99); filter:brightness(1.06); } 
 
     /* ===== Mobile tightening for setlist cards ===== */
     @media (max-width: 520px){
@@ -606,7 +605,7 @@ window.addEventListener("unhandledrejection", function (e) {
 <body>
 
 <div id="roleSelector">
-  <h1 style="color:var(--accent); margin:0; font-size:24px; letter-spacing:.02em;">ADORANZA PRO v6.2</h1>
+  <h1 style="color:var(--accent); margin:0; font-size:24px; letter-spacing:.02em;">ADORANZA PRO v6.3</h1>
   <div style="color:rgba(255,255,255,.70); font-size:12px; text-align:center; max-width:520px; line-height:1.4;">
     Setlists, tabs y letras. Swipe para marcar <b>cantada</b> o quitar de la vista. ❤️ para guardar offline.
   </div>
