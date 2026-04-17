@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0b0d12" />
   <link rel="manifest" href="./manifest.json" />
 
-  <title>1.54 Adoranza Pro v6.3</title>
+  <title>2.56 Adoranza Pro v6.3</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -67,6 +67,11 @@
       color:var(--text);
       overflow-x:hidden;
       padding-top:188px; /* antes 210px: compactamos un toque */
+      transition: padding-top .22s ease;
+    }
+
+    body.controls-hidden{
+      padding-top:12px;
     }
 
     /* ===== Pantalla inicial ===== */
@@ -132,6 +137,13 @@
       backdrop-filter: blur(14px);
       border-bottom:1px solid rgba(255,255,255,.08);
       padding:10px 12px 8px 12px;
+      transition: transform .22s ease, opacity .18s ease;
+    }
+
+    body.controls-hidden #fixedControlPanel{
+      transform: translateY(-100%);
+      opacity: 0;
+      pointer-events: none;
     }
     .viewer-tools{
       display:grid;
@@ -451,10 +463,16 @@
       padding:0;
       flex:0 0 auto;
       font-size:18px;
-      touch-action: none;
-      user-select: none;
-      -webkit-user-select: none;
-      cursor: grab;
+      touch-action:none;
+      user-select:none;
+      -webkit-user-select:none;
+      cursor:grab;
+    }
+
+    .is-dragging-sortable,
+    .is-dragging-sortable *{
+      user-select:none !important;
+      -webkit-user-select:none !important;
     }
     
     .titlebox{
@@ -528,12 +546,6 @@
       box-shadow: var(--shadow2);
     }
     .chord{ color:var(--accent); font-weight:900; }
-
-    .is-dragging-sortable,
-    .is-dragging-sortable *{
-      user-select: none !important;
-      -webkit-user-select: none !important;
-    }
 
     #list-name-badge{ font-size:10px; color: rgba(255,213,74,.85); margin-top:4px; display:block; font-weight:700; }
 
@@ -689,9 +701,13 @@
       <button class="btn btn-nav" onclick="showHome()">🏠 Inicio</button>
     </div>
 
-    <div class="tool-group">
+    <div class="tool-group" id="font-group">
       <button class="btn btn-font" onclick="changeFontSize(-2)">A-</button>
       <button class="btn btn-font" onclick="changeFontSize(2)">A+</button>
+    </div>
+
+    <div class="tool-group single" id="download-group" style="display:none;">
+      <button class="btn btn-nav" onclick="descargarTexto()">⬇ Descarga</button>
     </div>
 
     <div class="tool-group triple">
@@ -1041,9 +1057,19 @@
   function setRole(role) {
     state.userRole = role;
     document.getElementById("roleSelector").style.display = "none";
-    document.getElementById("tone-group").style.display = (role === "musico") ? "grid" : "none";
-    document.getElementById("drums-group").style.display = (role === "drums") ? "grid" : "none";
-    document.getElementById("volume-container").style.display = (role === "drums") ? "block" : "none";
+
+    const toneGroup = document.getElementById("tone-group");
+    const drumsGroup = document.getElementById("drums-group");
+    const volumeContainer = document.getElementById("volume-container");
+    const fontGroup = document.getElementById("font-group");
+    const downloadGroup = document.getElementById("download-group");
+
+    if (toneGroup) toneGroup.style.display = (role === "musico") ? "grid" : "none";
+    if (drumsGroup) drumsGroup.style.display = (role === "drums") ? "grid" : "none";
+    if (volumeContainer) volumeContainer.style.display = (role === "drums") ? "block" : "none";
+    if (fontGroup) fontGroup.style.display = (role === "drums") ? "none" : "grid";
+    if (downloadGroup) downloadGroup.style.display = (role === "drums") ? "grid" : "none";
+
     renderAll();
   }
 
@@ -1365,7 +1391,7 @@
       wrap.appendChild(actions);
       wrap.appendChild(row);
       sl.appendChild(wrap);
-      // attachSwipe(row);
+      attachSwipe(row);
     });
 
     renderBadge();
@@ -1429,13 +1455,18 @@
       
       if (state.userRole !== "musico") {
         body = body.replace(/\[([^\]]+)\]/g, "");
+
         const lines = body.split(/\r?\n/);
         const cleaned = [];
+
         for (let l of lines) {
-          if (l.trim() !== "") cleaned.push(l);
-          else if (cleaned.length > 0 && cleaned[cleaned.length - 1] !== "") cleaned.push("");
+          const t = l.trim();
+          if (!t) continue;
+          if (!t.replace(/\s+/g, "")) continue;
+          cleaned.push(t);
         }
-        body = cleaned.join("\n");
+
+        body = cleaned.join("\n\n");
       } else {
         body = body.replace(/\[([^\]]+)\]/g, '<span class="chord">[$1]</span>');
       }
@@ -2050,74 +2081,230 @@
   
   function initSortable() {
     const el = document.getElementById("setList");
-      if (!el || !window.Sortable) return;
-    
-      if (el._sortable) {
-        el._sortable.destroy();
-        el._sortable = null;
-      }
-    
-      el._sortable = Sortable.create(el, {
-        animation: 150,
-        handle: ".drag-handle",
-    
-        forceFallback: true,
-        fallbackOnBody: true,
-        fallbackTolerance: 8,
-        touchStartThreshold: 8,
-        delayOnTouchOnly: true,
-        delay: 120,
-    
-        onStart: () => {
-          document.body.classList.add("is-dragging-sortable");
-        },
-    
-        onEnd: (evt) => {
-          document.body.classList.remove("is-dragging-sortable");
-    
-          try {
-            const visibleIdxs = state.setlist
-              .map((s, i) => (!isHidden(s) ? i : null))
-              .filter(v => v !== null);
-    
-            const fromVisible = evt.oldIndex;
-            const toVisible = evt.newIndex;
-    
-            if (fromVisible == null || toVisible == null) return;
-            if (fromVisible === toVisible) return;
-            if (fromVisible < 0 || fromVisible >= visibleIdxs.length) return;
-            if (toVisible < 0) return;
-    
-            const fromActual = visibleIdxs[fromVisible];
-            if (fromActual == null) return;
-    
-            const item = state.setlist.splice(fromActual, 1)[0];
-            if (!item) return;
-    
-            const visibleIdxs2 = state.setlist
-              .map((s, i) => (!isHidden(s) ? i : null))
-              .filter(v => v !== null);
-    
-            let insertAt;
-            if (toVisible >= visibleIdxs2.length) {
-              insertAt = state.setlist.length;
-            } else {
-              insertAt = visibleIdxs2[toVisible];
-            }
-    
-            state.setlist.splice(insertAt, 0, item);
-    
-            saveLocal();
-            renderAll();
-          } catch (e) {
-            console.error("Sortable onEnd error:", e);
-            appAlert("Error al reordenar:\n" + (e?.message || e));
-            renderAll();
+    if (!el || !window.Sortable) return;
+
+    if (el._sortable) {
+      el._sortable.destroy();
+      el._sortable = null;
+    }
+
+    el._sortable = Sortable.create(el, {
+      animation: 150,
+      handle: ".drag-handle",
+      forceFallback: true,
+      fallbackOnBody: true,
+      fallbackTolerance: 8,
+      touchStartThreshold: 8,
+      delayOnTouchOnly: true,
+      delay: 120,
+
+      onStart: () => {
+        document.body.classList.add("is-dragging-sortable");
+      },
+
+      onEnd: (evt) => {
+        document.body.classList.remove("is-dragging-sortable");
+
+        try {
+          const visibleIdxs = state.setlist
+            .map((s, i) => (!isHidden(s) ? i : null))
+            .filter(v => v !== null);
+
+          const fromVisible = evt.oldIndex;
+          const toVisible = evt.newIndex;
+
+          if (fromVisible == null || toVisible == null) return;
+          if (fromVisible === toVisible) return;
+          if (fromVisible < 0 || fromVisible >= visibleIdxs.length) return;
+          if (toVisible < 0) return;
+
+          const fromActual = visibleIdxs[fromVisible];
+          if (fromActual == null) return;
+
+          const item = state.setlist.splice(fromActual, 1)[0];
+          if (!item) return;
+
+          const visibleIdxs2 = state.setlist
+            .map((s, i) => (!isHidden(s) ? i : null))
+            .filter(v => v !== null);
+
+          let insertAt;
+          if (toVisible >= visibleIdxs2.length) {
+            insertAt = state.setlist.length;
+          } else {
+            insertAt = visibleIdxs2[toVisible];
           }
+
+          state.setlist.splice(insertAt, 0, item);
+
+          saveLocal();
+          renderAll();
+        } catch (e) {
+          console.error("Sortable onEnd error:", e);
+          appAlert("Error al reordenar:\n" + (e?.message || e));
+          renderAll();
         }
-      });
+      }
+    });
   }
 
+
+  function stripChordsAndCompactText(raw) {
+    let body = String(raw || "");
+    body = body.replace(/\[([^\]]+)\]/g, "");
+
+    const lines = body.split(/\r?\n/);
+    const cleaned = [];
+
+    for (let l of lines) {
+      const t = l.trim();
+      if (!t) continue;
+      if (!t.replace(/\s+/g, "")) continue;
+      cleaned.push(t);
+    }
+
+    return cleaned.join("\n\n");
+  }
+
+  function buildCurrentSongText() {
+    const curr = state.setlist[state.currentIndex];
+    if (!curr) return "";
+
+    const title = curr.titulo || "Sin título";
+    const artist = curr.artista || "";
+    const bodyBase = curr.body_base || curr.body || "";
+    const lyric = stripChordsAndCompactText(bodyBase);
+
+    let out = title;
+    if (artist) out += "\n" + artist;
+    out += "\n\n" + lyric;
+
+    return out.trim();
+  }
+
+  function buildFullSetlistText() {
+    if (!Array.isArray(state.setlist) || !state.setlist.length) return "";
+
+    const parts = [];
+    const listTitle = state.listName || state.listIdUnico || "Setlist";
+
+    parts.push(listTitle);
+    parts.push("=".repeat(listTitle.length));
+    parts.push("");
+
+    state.setlist.forEach((song, i) => {
+      const title = song?.titulo || `Canción ${i + 1}`;
+      const artist = song?.artista || "";
+      const bodyBase = song?.body_base || song?.body || "";
+      const lyric = stripChordsAndCompactText(bodyBase);
+
+      parts.push(`${i + 1}. ${title}`);
+      if (artist) parts.push(artist);
+      parts.push("");
+      parts.push(lyric);
+      parts.push("");
+      parts.push("-".repeat(32));
+      parts.push("");
+    });
+
+    return parts.join("\n").trim();
+  }
+
+  function downloadTxt(filename, content) {
+    const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  function safeFileName(s) {
+    return String(s || "archivo")
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^\w\- ]+/g, "")
+      .trim()
+      .replace(/\s+/g, "_");
+  }
+
+  function descargarTexto() {
+    if (state.userRole !== "drums") return;
+
+    const choice = prompt(
+      "¿Qué deseas descargar?\n\n1 = Canción actual\n2 = Todo el setlist",
+      "1"
+    );
+
+    if (choice == null) return;
+
+    const val = String(choice).trim();
+
+    if (val === "1") {
+      const curr = state.setlist[state.currentIndex];
+      if (!curr) {
+        appAlert("No hay una canción seleccionada.");
+        return;
+      }
+
+      const content = buildCurrentSongText();
+      if (!content) {
+        appAlert("No se pudo generar el texto de la canción.");
+        return;
+      }
+
+      const filename = safeFileName(curr.titulo || "cancion") + ".txt";
+      downloadTxt(filename, content);
+      return;
+    }
+
+    if (val === "2") {
+      if (!state.setlist.length) {
+        appAlert("El setlist está vacío.");
+        return;
+      }
+
+      const content = buildFullSetlistText();
+      if (!content) {
+        appAlert("No se pudo generar el texto del setlist.");
+        return;
+      }
+
+      const filename = safeFileName(state.listName || state.listIdUnico || "setlist") + ".txt";
+      downloadTxt(filename, content);
+      return;
+    }
+
+    appAlert("Opción inválida. Usa 1 o 2.");
+  }
+
+  function initAutoHideControls() {
+    let ticking = false;
+
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+
+      requestAnimationFrame(() => {
+        const y = window.scrollY || window.pageYOffset || 0;
+
+        if (y < 40) {
+          document.body.classList.remove("controls-hidden");
+        } else {
+          document.body.classList.add("controls-hidden");
+        }
+
+        ticking = false;
+      });
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+  }
 
   async function revisarLinkSetlistId() {
     const p = new URLSearchParams(window.location.search);
@@ -2210,6 +2397,7 @@
     initSortable();
     initReaderSwipe();
     initPinchZoom();
+    initAutoHideControls();
     
     let handled = false;
     if (db) handled = await revisarLinkSetlistId();
@@ -2282,6 +2470,7 @@ window.addEventListener("unhandledrejection", (e) => {
   window.seleccionar = seleccionar;
   window.removeSong = removeSong;
   window.undoLastRemove = undoLastRemove;
+  window.descargarTexto = descargarTexto;
   window.checkUnsavedChanges = () => state.hasUnsavedChanges;
 
   // ===== PWA: Service Worker =====
