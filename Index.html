@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0b0d12" />
   <link rel="manifest" href="./manifest.json" />
 
-  <title>12.40 Adoranza Pro v6.4</title>
+  <title>12.46 Adoranza Pro v6.4</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -463,8 +463,9 @@
       padding:0;
       flex:0 0 auto;
       font-size:18px;
-      touch-action:none;
-      user-select:none;
+      touch-action:none !important;
+      user-select:none !important;
+      -ms-touch-action:none !important;
       -webkit-user-select:none;
       cursor:grab;
     }
@@ -678,11 +679,11 @@
   }
   
   .set-item-wrap{
-    touch-action:pan-y;
+    touch-action:none !important;
   }
   
   .set-item{
-    touch-action:pan-y;
+    touch-action:none !important;
   }
   
   .is-dragging-sortable,
@@ -2201,15 +2202,18 @@
       handle: ".drag-handle",
   
       forceFallback: true,
-      fallbackOnBody: false,
-      fallbackTolerance: 5,
+      fallbackOnBody: true,
+      fallbackTolerance: 0,
   
       delayOnTouchOnly: true,
-      delay: 300,
-      touchStartThreshold: 15,
+      delay: 180,
+      touchStartThreshold: 0,
   
       scroll: true,
       bubbleScroll: true,
+      invertSwap: true,
+      swapThreshold: 0.65,
+      fallbackOffset: { x: 0, y: 0 },
   
       onStart: () => {
         document.body.classList.add("is-dragging-sortable");
