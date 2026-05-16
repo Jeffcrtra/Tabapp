@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0b0d12" />
   <link rel="manifest" href="./manifest.json" />
 
-  <title>12.05 Adoranza Pro v6.4</title>
+  <title>12.40 Adoranza Pro v6.4</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -690,7 +690,21 @@
     user-select:none !important;
     -webkit-user-select:none !important;
   }
-    
+
+  .sortable-ghost{
+    opacity:.25 !important;
+  }
+  
+  .sortable-chosen{
+    opacity:.95 !important;
+  }
+  
+  .sortable-drag{
+    opacity:.95 !important;
+    transform:scale(1.02);
+    z-index:99999 !important;
+  }
+      
   </style>
 </head>
 
@@ -1578,6 +1592,7 @@
       if (view) view.textContent = "Selecciona una canción.";
       updateNowNextInfo();
     }
+  setTimeout(initSortable, 0);
   }
 
   function softRemoveSong(idx) {
@@ -2186,7 +2201,7 @@
       handle: ".drag-handle",
   
       forceFallback: true,
-      fallbackOnBody: true,
+      fallbackOnBody: false,
       fallbackTolerance: 5,
   
       delayOnTouchOnly: true,
