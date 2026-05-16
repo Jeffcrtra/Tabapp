@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0b0d12" />
   <link rel="manifest" href="./manifest.json" />
 
-  <title>11.59 Adoranza Pro v6.4</title>
+  <title>12.05 Adoranza Pro v6.4</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -659,18 +659,37 @@
       outline:none;
     }
 
+    .drag-handle{
+      touch-action:none !important;
+    }
+    
+    .is-dragging-sortable .set-item{
+      pointer-events:none;
+    }
+    
+    .is-dragging-sortable .drag-handle{
+      pointer-events:auto;
+    }
+  
   .drag-handle{
     touch-action:none !important;
+    -webkit-user-select:none !important;
+    user-select:none !important;
   }
   
-  .is-dragging-sortable .set-item{
-    pointer-events:none;
+  .set-item-wrap{
+    touch-action:pan-y;
   }
   
-  .is-dragging-sortable .drag-handle{
-    pointer-events:auto;
+  .set-item{
+    touch-action:pan-y;
   }
-
+  
+  .is-dragging-sortable,
+  .is-dragging-sortable *{
+    user-select:none !important;
+    -webkit-user-select:none !important;
+  }
     
   </style>
 </head>
@@ -1462,7 +1481,9 @@
       wrap.appendChild(actions);
       wrap.appendChild(row);
       sl.appendChild(wrap);
-      attachSwipe(row);
+      if (state.userRole !== "musico") {
+        attachSwipe(row);
+      }
     });
 
     renderBadge();
@@ -2151,85 +2172,82 @@
   }
   
   function initSortable() {
-  const el = document.getElementById("setList");
-  if (!el || !window.Sortable) return;
-
-  if (el._sortable) {
-    try { el._sortable.destroy(); } catch(e) {}
-    el._sortable = null;
-  }
-
-  el._sortable = Sortable.create(el, {
-    animation: 150,
-    draggable: ".set-item-wrap",
-    handle: ".drag-handle",
-
-    forceFallback: false,
-    fallbackOnBody: true,
-    fallbackTolerance: 12,
-
-    delayOnTouchOnly: true,
-    delay: 220,
-    touchStartThreshold: 10,
-
-    preventOnFilter: false,
-
-    onStart: () => {
-      document.body.classList.add("is-dragging-sortable");
-      stopScroll();
-    },
-
-    onEnd: (evt) => {
-      document.body.classList.remove("is-dragging-sortable");
-
-      try {
-        const oldIndex = evt.oldIndex;
-        const newIndex = evt.newIndex;
-
-        if (oldIndex == null || newIndex == null) return;
-        if (oldIndex === newIndex) return;
-
-        const visibleIdxs = state.setlist
-          .map((s, i) => (!isHidden(s) ? i : null))
-          .filter(i => i !== null);
-
-        const fromActual = visibleIdxs[oldIndex];
-        const toActualVisible = visibleIdxs[newIndex];
-
-        if (fromActual == null) return;
-
-        const moved = state.setlist.splice(fromActual, 1)[0];
-        if (!moved) return;
-
-        const visibleAfterRemove = state.setlist
-          .map((s, i) => (!isHidden(s) ? i : null))
-          .filter(i => i !== null);
-
-        let insertAt;
-
-        if (newIndex >= visibleAfterRemove.length) {
-          insertAt = state.setlist.length;
-        } else {
-          insertAt = visibleAfterRemove[newIndex];
-        }
-
-        state.setlist.splice(insertAt, 0, moved);
-
-        if (state.currentIndex === fromActual) {
-          state.currentIndex = insertAt;
-        }
-
-        saveLocal();
-        renderAll();
-
-      } catch (e) {
-        console.error("Sortable reorder error:", e);
-        appAlert("Error al reordenar:\n" + (e?.message || e));
-        renderAll();
-      }
+    const el = document.getElementById("setList");
+    if (!el || !window.Sortable) return;
+  
+    if (el._sortable) {
+      try { el._sortable.destroy(); } catch(e) {}
+      el._sortable = null;
     }
-  });
-}
+  
+    el._sortable = Sortable.create(el, {
+      animation: 150,
+      draggable: ".set-item-wrap",
+      handle: ".drag-handle",
+  
+      forceFallback: true,
+      fallbackOnBody: true,
+      fallbackTolerance: 5,
+  
+      delayOnTouchOnly: true,
+      delay: 300,
+      touchStartThreshold: 15,
+  
+      scroll: true,
+      bubbleScroll: true,
+  
+      onStart: () => {
+        document.body.classList.add("is-dragging-sortable");
+        stopScroll();
+      },
+  
+      onEnd: (evt) => {
+        document.body.classList.remove("is-dragging-sortable");
+  
+        try {
+          const oldIndex = evt.oldIndex;
+          const newIndex = evt.newIndex;
+  
+          if (oldIndex == null || newIndex == null) return;
+          if (oldIndex === newIndex) return;
+  
+          const visibleIdxs = state.setlist
+            .map((s, i) => (!isHidden(s) ? i : null))
+            .filter(i => i !== null);
+  
+          const fromActual = visibleIdxs[oldIndex];
+          if (fromActual == null) return;
+  
+          const moved = state.setlist.splice(fromActual, 1)[0];
+          if (!moved) return;
+  
+          const visibleAfterRemove = state.setlist
+            .map((s, i) => (!isHidden(s) ? i : null))
+            .filter(i => i !== null);
+  
+          let insertAt;
+  
+          if (newIndex >= visibleAfterRemove.length) {
+            insertAt = state.setlist.length;
+          } else {
+            insertAt = visibleAfterRemove[newIndex];
+          }
+  
+          state.setlist.splice(insertAt, 0, moved);
+  
+          state.currentIndex = state.setlist.findIndex(s => s === moved);
+  
+          saveLocal();
+          renderAll();
+  
+        } catch (e) {
+          console.error("Sortable reorder error:", e);
+          appAlert("Error al reordenar:\n" + (e?.message || e));
+          renderAll();
+        }
+      }
+    });
+  }
 
 
   function stripChordsAndCompactText(raw) {
