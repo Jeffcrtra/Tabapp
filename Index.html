@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0b0d12" />
   <link rel="manifest" href="./manifest.json" />
 
-  <title>11.45 Adoranza Pro v6.3</title>
+  <title>11.59 Adoranza Pro v6.4</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -658,7 +658,20 @@
       line-height:1.45;
       outline:none;
     }
-        
+
+  .drag-handle{
+    touch-action:none !important;
+  }
+  
+  .is-dragging-sortable .set-item{
+    pointer-events:none;
+  }
+  
+  .is-dragging-sortable .drag-handle{
+    pointer-events:auto;
+  }
+
+    
   </style>
 </head>
 
@@ -2138,73 +2151,85 @@
   }
   
   function initSortable() {
-    const el = document.getElementById("setList");
-    if (!el || !window.Sortable) return;
+  const el = document.getElementById("setList");
+  if (!el || !window.Sortable) return;
 
-    if (el._sortable) {
-      el._sortable.destroy();
-      el._sortable = null;
-    }
-
-    el._sortable = Sortable.create(el, {
-      animation: 150,
-      handle: ".drag-handle",
-      forceFallback: true,
-      fallbackOnBody: true,
-      fallbackTolerance: 8,
-      touchStartThreshold: 8,
-      delayOnTouchOnly: true,
-      delay: 120,
-
-      onStart: () => {
-        document.body.classList.add("is-dragging-sortable");
-      },
-
-      onEnd: (evt) => {
-        document.body.classList.remove("is-dragging-sortable");
-
-        try {
-          const visibleIdxs = state.setlist
-            .map((s, i) => (!isHidden(s) ? i : null))
-            .filter(v => v !== null);
-
-          const fromVisible = evt.oldIndex;
-          const toVisible = evt.newIndex;
-
-          if (fromVisible == null || toVisible == null) return;
-          if (fromVisible === toVisible) return;
-          if (fromVisible < 0 || fromVisible >= visibleIdxs.length) return;
-          if (toVisible < 0) return;
-
-          const fromActual = visibleIdxs[fromVisible];
-          if (fromActual == null) return;
-
-          const item = state.setlist.splice(fromActual, 1)[0];
-          if (!item) return;
-
-          const visibleIdxs2 = state.setlist
-            .map((s, i) => (!isHidden(s) ? i : null))
-            .filter(v => v !== null);
-
-          let insertAt;
-          if (toVisible >= visibleIdxs2.length) {
-            insertAt = state.setlist.length;
-          } else {
-            insertAt = visibleIdxs2[toVisible];
-          }
-
-          state.setlist.splice(insertAt, 0, item);
-
-          saveLocal();
-          renderAll();
-        } catch (e) {
-          console.error("Sortable onEnd error:", e);
-          appAlert("Error al reordenar:\n" + (e?.message || e));
-          renderAll();
-        }
-      }
-    });
+  if (el._sortable) {
+    try { el._sortable.destroy(); } catch(e) {}
+    el._sortable = null;
   }
+
+  el._sortable = Sortable.create(el, {
+    animation: 150,
+    draggable: ".set-item-wrap",
+    handle: ".drag-handle",
+
+    forceFallback: false,
+    fallbackOnBody: true,
+    fallbackTolerance: 12,
+
+    delayOnTouchOnly: true,
+    delay: 220,
+    touchStartThreshold: 10,
+
+    preventOnFilter: false,
+
+    onStart: () => {
+      document.body.classList.add("is-dragging-sortable");
+      stopScroll();
+    },
+
+    onEnd: (evt) => {
+      document.body.classList.remove("is-dragging-sortable");
+
+      try {
+        const oldIndex = evt.oldIndex;
+        const newIndex = evt.newIndex;
+
+        if (oldIndex == null || newIndex == null) return;
+        if (oldIndex === newIndex) return;
+
+        const visibleIdxs = state.setlist
+          .map((s, i) => (!isHidden(s) ? i : null))
+          .filter(i => i !== null);
+
+        const fromActual = visibleIdxs[oldIndex];
+        const toActualVisible = visibleIdxs[newIndex];
+
+        if (fromActual == null) return;
+
+        const moved = state.setlist.splice(fromActual, 1)[0];
+        if (!moved) return;
+
+        const visibleAfterRemove = state.setlist
+          .map((s, i) => (!isHidden(s) ? i : null))
+          .filter(i => i !== null);
+
+        let insertAt;
+
+        if (newIndex >= visibleAfterRemove.length) {
+          insertAt = state.setlist.length;
+        } else {
+          insertAt = visibleAfterRemove[newIndex];
+        }
+
+        state.setlist.splice(insertAt, 0, moved);
+
+        if (state.currentIndex === fromActual) {
+          state.currentIndex = insertAt;
+        }
+
+        saveLocal();
+        renderAll();
+
+      } catch (e) {
+        console.error("Sortable reorder error:", e);
+        appAlert("Error al reordenar:\n" + (e?.message || e));
+        renderAll();
+      }
+    }
+  });
+}
 
 
   function stripChordsAndCompactText(raw) {
