@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0b0d12" />
   <link rel="manifest" href="./manifest.json" />
 
-  <title>1.50 Adoranza Pro v6.4</title>
+  <title>4.07 Adoranza Pro v6.4</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -66,7 +66,7 @@
                   var(--bg);
       color:var(--text);
       overflow-x:hidden;
-      padding-top:188px; /* antes 210px: compactamos un toque */
+      padding-top:150px; /* antes 210px: compactamos un toque */
       transition: padding-top .22s ease;
     }
 
@@ -733,7 +733,38 @@
       0 0 0 1px rgba(255,92,119,.25),
       0 0 18px rgba(255,92,119,.18);
   }
-    
+
+  #songInfoBelowSetlist{
+    grid-column:1 / -1;
+    padding:0 4px;
+    margin-top:-4px;
+    margin-bottom:8px;
+  }
+  
+  #songInfoBelowSetlist #info-display{
+    background:rgba(0,0,0,.28);
+    border:1px solid rgba(255,255,255,.10);
+    border-radius:16px;
+    padding:10px 12px;
+    box-shadow:var(--shadow2);
+  }
+  
+  #songInfoBelowSetlist .now-next-row{
+    margin-top:0;
+  }
+  
+  #songInfoBelowSetlist #current-song-info{
+    font-size:15px;
+  }
+  
+  #songInfoBelowSetlist #next-song-info{
+    font-size:13px;
+  }
+  
+  body.controls-hidden #songInfoBelowSetlist #info-display{
+    opacity:1;
+    pointer-events:auto;
+  }
       
   </style>
 </head>
@@ -836,15 +867,6 @@
     <input type="range" id="volRange" min="0" max="1" step="0.05" value="0.5" style="width:140px; vertical-align:middle;">
   </div>
 
-  <div id="info-display">
-    <div class="now-next-row">
-      <div id="current-song-info">Adoranza Cloud</div>
-      <div id="next-song-info"></div>
-    </div>
-    <div id="metro-dots"></div>
-  </div>
-</div>
-
 <main class="wrap">
   <div class="grid">
     <section class="card">
@@ -881,6 +903,16 @@
       </div>
     </section>
 
+    <section id="songInfoBelowSetlist">
+      <div id="info-display">
+        <div class="now-next-row">
+          <div id="current-song-info">Adoranza Cloud</div>
+          <div id="next-song-info"></div>
+        </div>
+        <div id="metro-dots"></div>
+      </div>
+    </section>
+    
     <section class="card" style="grid-column:1 / -1; border:none; background:none; box-shadow:none;">
       <pre id="viewContent">Selecciona una canción.</pre>
     </section>
@@ -2001,12 +2033,15 @@ function attachLongPressMoveMode(el){
   }
 
   function scrollToReader(){
-    // Queremos que el panel fijo quede visible, y la lectura empiece debajo.
     const panel = document.getElementById("fixedControlPanel");
+    const info = document.getElementById("songInfoBelowSetlist");
     const view = document.getElementById("viewContent");
+  
     if (!panel || !view) return;
   
-    const y = view.getBoundingClientRect().top + window.scrollY - (panel.offsetHeight + 10);
+    const target = info || view;
+    const y = target.getBoundingClientRect().top + window.scrollY - (panel.offsetHeight + 10);
+  
     window.scrollTo({ top: Math.max(0, y), behavior: "smooth" });
   }
   
