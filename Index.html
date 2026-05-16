@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0b0d12" />
   <link rel="manifest" href="./manifest.json" />
 
-  <title>2.56 Adoranza Pro v6.3</title>
+  <title>11.45 Adoranza Pro v6.3</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -620,6 +620,44 @@
     }
     
     .set-item{ touch-action: pan-y; }
+
+    #tabEditModal{
+      display:none;
+      position:fixed;
+      inset:0;
+      z-index:30000;
+      background:rgba(0,0,0,.72);
+      padding:16px;
+    }
+    
+    .tab-edit-box{
+      max-width:900px;
+      height:86vh;
+      margin:5vh auto;
+      background:#101420;
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:18px;
+      padding:14px;
+      box-shadow:var(--shadow);
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    
+    #tabEditText{
+      flex:1;
+      width:100%;
+      resize:none;
+      background:#05070c;
+      color:#fff;
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:14px;
+      padding:14px;
+      font-family:var(--mono);
+      font-size:16px;
+      line-height:1.45;
+      outline:none;
+    }
         
   </style>
 </head>
@@ -779,6 +817,26 @@
   <div class="undoBtn" onclick="undoLastRemove()">DESHACER</div>
 </div>
 
+<div id="tabEditModal">
+  <div class="tab-edit-box">
+    <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+      <div>
+        <div style="font-weight:900; color:var(--accent);">Editar tablatura</div>
+        <div id="tabEditTitle" style="font-size:12px; color:var(--muted); margin-top:3px;"></div>
+      </div>
+      <button class="btn" style="max-width:90px; background:#551111;" onclick="closeTabEditor()">Cerrar</button>
+    </div>
+
+    <textarea id="tabEditText" spellcheck="false"></textarea>
+
+    <div style="display:flex; gap:10px; justify-content:flex-end;">
+      <button class="btn btn-nav" style="max-width:120px;" onclick="closeTabEditor()">Cancelar</button>
+      <button class="btn btn-save" style="max-width:160px;" onclick="saveTabEditor()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+  
 <script>
   const SB_URL = "https://ystlbjvjoqpqoklvjdrj.supabase.co";
   const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlzdGxianZqb3FwcW9rbHZqZHJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5NzY4NDUsImV4cCI6MjA4MzU1Mjg0NX0.AQg9BuuGlbUtuyccvrBJwRGzx4Bgzx58aqGbfMPzKfg";
@@ -2340,6 +2398,158 @@
     return true;
   }
 
+function storagePathFromSong(song){
+  let p = String(song?.path_url || "").trim();
+  if (!p) return "";
+
+  p = p.replace(/^https?:\/\/[^/]+\/storage\/v1\/object\/public\/Cancionero_Adoranza\//i, "");
+  p = p.replace(/^Cancionero_Adoranza\//i, "");
+  p = p.replace(/^\.\//, "");
+
+  try { p = decodeURIComponent(p); } catch(e) {}
+
+  return p;
+}
+
+function openTabEditor(){
+  if (state.userRole !== "musico") {
+    appAlert("La edición de tablatura está disponible en modo PIANO / GUITARRA.");
+    return;
+  }
+
+  const curr = state.setlist[state.currentIndex];
+  if (!curr) return;
+
+  const ok = confirm("¿Querés editar la tablatura de esta canción?");
+  if (!ok) return;
+
+  const modal = document.getElementById("tabEditModal");
+  const txt = document.getElementById("tabEditText");
+  const title = document.getElementById("tabEditTitle");
+
+  if (!modal || !txt) return;
+
+  if (title) {
+    title.textContent = `${curr.titulo || "(Sin título)"}${curr.artista ? " — " + curr.artista : ""}`;
+  }
+
+  txt.value = curr.body_base || curr.body || "";
+  modal.style.display = "block";
+
+  setTimeout(() => txt.focus(), 80);
+}
+
+function closeTabEditor(){
+  const modal = document.getElementById("tabEditModal");
+  if (modal) modal.style.display = "none";
+}
+
+async function saveTabEditor(){
+  if (!db) {
+    appAlert("Supabase no está listo.");
+    return;
+  }
+
+  const curr = state.setlist[state.currentIndex];
+  if (!curr) return;
+
+  const path = storagePathFromSong(curr);
+  if (!path) {
+    appAlert("Esta canción no tiene path_url válido.");
+    return;
+  }
+
+  const txt = document.getElementById("tabEditText");
+  if (!txt) return;
+
+  const newBody = txt.value || "";
+
+  const ok = confirm(
+    "Esto reemplazará la tablatura original en Supabase.\n\n¿Guardar cambios?"
+  );
+  if (!ok) return;
+
+  try {
+    const blob = new Blob([newBody], { type: "text/plain;charset=utf-8" });
+
+    const { error } = await db.storage
+      .from("Cancionero_Adoranza")
+      .upload(path, blob, {
+        upsert: true,
+        contentType: "text/plain;charset=utf-8"
+      });
+
+    if (error) throw error;
+
+    curr.body = newBody;
+    curr.body_base = newBody;
+
+    const favs = getFavorites();
+    const k = songKey(curr);
+    if (favs[k]) {
+      favs[k].body = newBody;
+      favs[k].updatedAt = Date.now();
+      setFavorites(favs);
+    }
+
+    saveLocal();
+    closeTabEditor();
+    renderAll();
+
+    appAlert("Tablatura actualizada correctamente ✅");
+  } catch (e) {
+    console.error("saveTabEditor error:", e);
+    appAlert("No se pudo guardar la tablatura:\n" + (e?.message || e));
+  }
+}
+
+function initReaderLongPressEdit(){
+  const el = document.getElementById("viewContent");
+  if (!el) return;
+  if (el.dataset.longPressEditReady === "1") return;
+  el.dataset.longPressEditReady = "1";
+
+  let timer = null;
+  let startX = 0;
+  let startY = 0;
+  let pointerId = null;
+
+  const cancel = () => {
+    if (timer) clearTimeout(timer);
+    timer = null;
+    pointerId = null;
+  };
+
+  el.addEventListener("pointerdown", (ev) => {
+    if (ev.pointerType === "mouse" && ev.button !== 0) return;
+    if (state.userRole !== "musico") return;
+    if (state.currentIndex < 0) return;
+
+    pointerId = ev.pointerId;
+    startX = ev.clientX;
+    startY = ev.clientY;
+
+    timer = setTimeout(() => {
+      timer = null;
+      pointerId = null;
+      openTabEditor();
+    }, 3000);
+  }, { passive:true });
+
+  el.addEventListener("pointermove", (ev) => {
+    if (pointerId == null || ev.pointerId !== pointerId) return;
+
+    const dx = Math.abs(ev.clientX - startX);
+    const dy = Math.abs(ev.clientY - startY);
+
+    if (dx > 12 || dy > 12) cancel();
+  }, { passive:true });
+
+  el.addEventListener("pointerup", cancel, { passive:true });
+  el.addEventListener("pointercancel", cancel, { passive:true });
+  el.addEventListener("pointerleave", cancel, { passive:true });
+}
+  
   window.onload = async () => {
     ensureLocalUserOrBlock();
     const ud = document.getElementById("uid-display");
@@ -2397,7 +2607,9 @@
     initSortable();
     initReaderSwipe();
     initPinchZoom();
+    initReaderLongPressEdit();
     initAutoHideControls();
+    
     
     let handled = false;
     if (db) handled = await revisarLinkSetlistId();
@@ -2472,6 +2684,9 @@ window.addEventListener("unhandledrejection", (e) => {
   window.undoLastRemove = undoLastRemove;
   window.descargarTexto = descargarTexto;
   window.checkUnsavedChanges = () => state.hasUnsavedChanges;
+  window.openTabEditor = openTabEditor;
+  window.closeTabEditor = closeTabEditor;
+  window.saveTabEditor = saveTabEditor;
 
   // ===== PWA: Service Worker =====
 if ("serviceWorker" in navigator) {
