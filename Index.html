@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0b0d12" />
   <link rel="manifest" href="./manifest.json" />
 
-  <title>12.46 Adoranza Pro v6.4</title>
+  <title>1.30 Adoranza Pro v6.4</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -464,9 +464,8 @@
       flex:0 0 auto;
       font-size:18px;
       touch-action:none !important;
-      user-select:none !important;
-      -ms-touch-action:none !important;
       -webkit-user-select:none;
+      user-select:none !important;
       cursor:grab;
     }
 
@@ -679,11 +678,11 @@
   }
   
   .set-item-wrap{
-    touch-action:none !important;
+    touch-action:pan-y;
   }
   
   .set-item{
-    touch-action:none !important;
+    touch-action:pan-y;
   }
   
   .is-dragging-sortable,
@@ -704,6 +703,28 @@
     opacity:.95 !important;
     transform:scale(1.02);
     z-index:99999 !important;
+  }
+
+  .move-controls{
+    display:flex;
+    gap:6px;
+    align-items:center;
+  }
+  
+  .move-btn{
+    width:34px;
+    height:34px;
+    border-radius:999px;
+    border:1px solid rgba(255,213,74,.45);
+    background:rgba(255,213,74,.12);
+    color:white;
+    font-weight:900;
+    font-size:16px;
+    cursor:pointer;
+  }
+  
+  .move-btn:active{
+    transform:scale(.96);
   }
       
   </style>
@@ -1119,7 +1140,9 @@
 
     // undo
     lastRemoved: null,
-    toastT: null
+    toastT: null,
+    moveModeIndex: -1,
+    moveModeTimer: null
   };
 
   // ===== SUPABASE & USER =====
@@ -1457,6 +1480,93 @@
     }
   }
 
+function activateMoveMode(idx){
+  if (state.moveModeTimer) clearTimeout(state.moveModeTimer);
+
+  state.moveModeIndex = idx;
+  renderAll();
+
+  state.moveModeTimer = setTimeout(() => {
+    state.moveModeIndex = -1;
+    state.moveModeTimer = null;
+    renderAll();
+  }, 7000);
+}
+
+function moveSongByIndex(idx, dir, ev){
+  if (ev) ev.stopPropagation();
+
+  const newIdx = idx + dir;
+  if (newIdx < 0 || newIdx >= state.setlist.length) return;
+
+  const item = state.setlist.splice(idx, 1)[0];
+  state.setlist.splice(newIdx, 0, item);
+
+  if (state.currentIndex === idx) {
+    state.currentIndex = newIdx;
+  } else if (state.currentIndex === newIdx) {
+    state.currentIndex = idx;
+  }
+
+  state.moveModeIndex = newIdx;
+  state.hasUnsavedChanges = true;
+
+  saveLocal();
+  renderAll();
+
+  if (state.moveModeTimer) clearTimeout(state.moveModeTimer);
+  state.moveModeTimer = setTimeout(() => {
+    state.moveModeIndex = -1;
+    state.moveModeTimer = null;
+    renderAll();
+  }, 7000);
+}
+
+function attachLongPressMoveMode(el){
+  if (!el) return;
+
+  let timer = null;
+  let startX = 0;
+  let startY = 0;
+  let pointerId = null;
+
+  const cancel = () => {
+    if (timer) clearTimeout(timer);
+    timer = null;
+    pointerId = null;
+  };
+
+  el.addEventListener("pointerdown", (ev) => {
+    const t = ev.target;
+    if (t && (t.closest(".pill") || t.closest(".move-btn"))) return;
+
+    pointerId = ev.pointerId;
+    startX = ev.clientX;
+    startY = ev.clientY;
+
+    const idx = parseInt(el.dataset.idx || "-1", 10);
+    if (idx < 0) return;
+
+    timer = setTimeout(() => {
+      timer = null;
+      pointerId = null;
+      activateMoveMode(idx);
+    }, 2000);
+  }, { passive:true });
+
+  el.addEventListener("pointermove", (ev) => {
+    if (pointerId == null || ev.pointerId !== pointerId) return;
+
+    const dx = Math.abs(ev.clientX - startX);
+    const dy = Math.abs(ev.clientY - startY);
+
+    if (dx > 12 || dy > 12) cancel();
+  }, { passive:true });
+
+  el.addEventListener("pointerup", cancel, { passive:true });
+  el.addEventListener("pointercancel", cancel, { passive:true });
+  el.addEventListener("pointerleave", cancel, { passive:true });
+}
   
   function renderAll() {
     const sl = document.getElementById("setList");
@@ -1485,7 +1595,14 @@
       if (favOn) row.classList.add("is-fav");
 
       row.innerHTML = `
-        <span class="drag-handle">☰</span>
+        ${
+          state.moveModeIndex === originalIndex
+            ? `<div class="move-controls">
+                 <button class="move-btn" onclick="moveSongByIndex(${originalIndex}, -1, event)">↑</button>
+                 <button class="move-btn" onclick="moveSongByIndex(${originalIndex}, 1, event)">↓</button>
+               </div>`
+            : `<span class="drag-handle">☰</span>`
+        }
         <div class="titlebox">
           <div class="songtitle">${s.titulo || "(Sin título)"}</div>
           <div class="songmeta">${s.artista || ""}${favOn ? " · Offline" : ""}${isSung(s) ? " · Cantada" : ""}</div>
@@ -1499,6 +1616,7 @@
       if (state.userRole !== "musico") {
         attachSwipe(row);
       }
+      attachLongPressMoveMode(row);
     });
 
     renderBadge();
@@ -2202,18 +2320,15 @@
       handle: ".drag-handle",
   
       forceFallback: true,
-      fallbackOnBody: true,
-      fallbackTolerance: 0,
+      fallbackOnBody: false,
+      fallbackTolerance: 3,
   
       delayOnTouchOnly: true,
-      delay: 180,
-      touchStartThreshold: 0,
+      delay: 300,
+      touchStartThreshold: 15,
   
       scroll: true,
       bubbleScroll: true,
-      invertSwap: true,
-      swapThreshold: 0.65,
-      fallbackOffset: { x: 0, y: 0 },
   
       onStart: () => {
         document.body.classList.add("is-dragging-sortable");
@@ -2527,7 +2642,7 @@ async function saveTabEditor(){
   const newBody = txt.value || "";
 
   const ok = confirm(
-    "Esto reemplazará la tablatura original en Supabase.\n\n¿Guardar cambios?"
+    "Esto reemplazará la tablatura original en nuestra base de datos.\n\n¿Guardar cambios?"
   );
   if (!ok) return;
 
@@ -2749,6 +2864,8 @@ window.addEventListener("unhandledrejection", (e) => {
   window.openTabEditor = openTabEditor;
   window.closeTabEditor = closeTabEditor;
   window.saveTabEditor = saveTabEditor;
+  window.moveSongByIndex = moveSongByIndex;
+  window.activateMoveMode = activateMoveMode;
 
   // ===== PWA: Service Worker =====
 if ("serviceWorker" in navigator) {
