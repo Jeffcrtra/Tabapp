@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0b0d12" />
   <link rel="manifest" href="./manifest.json" />
 
-  <title>1.30 Adoranza Pro v6.4</title>
+  <title>1.50 Adoranza Pro v6.4</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -726,6 +726,14 @@
   .move-btn:active{
     transform:scale(.96);
   }
+
+  .set-item.is-move-mode{
+    border-color: rgba(255,92,119,.85) !important;
+    box-shadow:
+      0 0 0 1px rgba(255,92,119,.25),
+      0 0 18px rgba(255,92,119,.18);
+  }
+    
       
   </style>
 </head>
@@ -1593,6 +1601,10 @@ function attachLongPressMoveMode(el){
       if (originalIndex === state.currentIndex) row.classList.add("is-active");
       if (isSung(s)) row.classList.add("is-sung");
       if (favOn) row.classList.add("is-fav");
+      
+      if (state.moveModeIndex === originalIndex) {
+        row.classList.add("is-move-mode");
+      }
 
       row.innerHTML = `
         ${
