@@ -6,13 +6,12 @@
   <meta name="theme-color" content="#0b0d12" />
   <link rel="manifest" href="./manifest.json" />
 
-  <title>4.11 Adoranza Pro v6.4</title>
+  <title>11.25 Adoranza Pro v6.4</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
         <script>
-        /* 👇 PEGÁ ESTO AQUÍ 👇 */
         window.addEventListener("error", function (e) {
           const msg = [
             "JS ERROR:",
@@ -874,6 +873,7 @@
     <small style="color:var(--muted); font-size:10px; font-weight:800; letter-spacing:.08em;">VOL CLICK:</small>
     <input type="range" id="volRange" min="0" max="1" step="0.05" value="0.5" style="width:140px; vertical-align:middle;">
   </div>
+</div>
 
 <main class="wrap">
   <div class="grid">
@@ -1336,13 +1336,18 @@
     if (favs[k]) {
       delete favs[k];
     } else {
+      const bodyBase = song.body_base || song.body || "";
       favs[k] = {
         key: k,
         id: song.id || null,
         titulo: song.titulo || "",
         artista: song.artista || "",
         path_url: song.path_url || "",
-        body: song.body || "",
+        body: bodyBase,
+        body_base: bodyBase,
+        bpm: song.bpm ?? null,
+        time_signature: song.time_signature ?? null,
+        tono_original: song.tono_original || "",
         updatedAt: Date.now()
       };
     }
@@ -1389,12 +1394,19 @@
       closeConfig();
       return;
     }
+    const bodyBase = f.body_base || f.body || "";
     state.setlist.push({
       id: f.id || null,
       titulo: f.titulo || "",
       artista: f.artista || "",
       path_url: f.path_url || "",
-      body: f.body || ""
+      body: bodyBase,
+      body_base: bodyBase,
+      bpm: f.bpm ?? null,
+      time_signature: f.time_signature ?? null,
+      tono_original: f.tono_original || "",
+      transpose_steps: 0,
+      bpm_override: null
     });
     saveLocal();
     renderAll();
@@ -1637,7 +1649,7 @@ function attachLongPressMoveMode(el){
       const row = document.createElement("div");
       row.className = "set-item";
       row.dataset.idx = String(originalIndex);
-      const favOn = isFav(s)
+      const favOn = isFav(s);
       if (originalIndex === state.currentIndex) row.classList.add("is-active");
       if (isSung(s)) row.classList.add("is-sung");
       if (favOn) row.classList.add("is-fav");
@@ -2794,44 +2806,58 @@ function initReaderLongPressEdit(){
 
     const sb = document.getElementById("searchBox");
     if (sb) {
-      sb.oninput = async (e) => {
+      let searchTimer = null;
+
+      sb.oninput = (e) => {
         const val = (e.target.value || "").trim();
         const resDiv = document.getElementById("results");
         if (!resDiv) return;
-    
+
+        if (searchTimer) clearTimeout(searchTimer);
+
         if (!db) { resDiv.innerHTML = ""; return; }
         if (val.length < 2) { resDiv.innerHTML = ""; return; }
-    
-        const { data, error } = await db
-          .from("canciones")
-          .select("*")
-          .or(`titulo.ilike.%${val}%,artista.ilike.%${val}%`)
-          .limit(6);
-    
-        if (error) { console.error(error); resDiv.innerHTML = ""; return; }
-    
-        resDiv.innerHTML = "";
-        (data || []).forEach((s) => {
-          const d = document.createElement("div");
-          d.className = "set-item";
-          d.innerHTML = `
-            <div style="flex:1">
-              <div style="font-weight:600; font-size:13px;">${s.titulo || ""}</div>
-              <div style="font-size:11px; color:var(--muted); margin-top:2px;">${s.artista || ""}</div>
-            </div>
-            <button class="btn btn-add">ADD</button>
-          `;
-    
-          const btn = d.querySelector(".btn-add");
-          if (btn) {
-            btn.onclick = (ev) => {
-              ev.stopPropagation();
-              addToSetlist(s);
-            };
-          }
-    
-          resDiv.appendChild(d);
-        });
+
+        searchTimer = setTimeout(async () => {
+          const currentVal = (sb.value || "").trim();
+          if (currentVal !== val) return;
+
+          const safeVal = val.replace(/[%_,]/g, "");
+          if (safeVal.length < 2) { resDiv.innerHTML = ""; return; }
+
+          const { data, error } = await db
+            .from("canciones")
+            .select("*")
+            .or(`titulo.ilike.%${safeVal}%,artista.ilike.%${safeVal}%`)
+            .limit(6);
+
+          if (error) { console.error(error); resDiv.innerHTML = ""; return; }
+
+          if ((sb.value || "").trim() !== val) return;
+
+          resDiv.innerHTML = "";
+          (data || []).forEach((s) => {
+            const d = document.createElement("div");
+            d.className = "set-item";
+            d.innerHTML = `
+              <div style="flex:1">
+                <div style="font-weight:600; font-size:13px;">${s.titulo || ""}</div>
+                <div style="font-size:11px; color:var(--muted); margin-top:2px;">${s.artista || ""}</div>
+              </div>
+              <button class="btn btn-add">ADD</button>
+            `;
+
+            const btn = d.querySelector(".btn-add");
+            if (btn) {
+              btn.onclick = (ev) => {
+                ev.stopPropagation();
+                addToSetlist(s);
+              };
+            }
+
+            resDiv.appendChild(d);
+          });
+        }, 300);
       };
     }
 
@@ -2864,25 +2890,6 @@ function initReaderLongPressEdit(){
   ok.onclick = () => (box.style.display = "none");
 }
 
-  window.onerror = function (msg, src, line, col, err) {
-  appAlert("JS ERROR: " + msg + "\nLínea: " + (line || 0));
-  return false;
-};
-
-
-  window.addEventListener("error", (e) => {
-  const msg = e?.message || "Unknown error";
-  const src = e?.filename || "";
-  const line = e?.lineno || 0;
-  const col = e?.colno || 0;
-  appAlert(`JS ERROR: ${msg}\n${src ? "Src: " + src + "\n" : ""}Línea: ${line}:${col}`);
-});
-
-window.addEventListener("unhandledrejection", (e) => {
-  const reason = e?.reason;
-  const msg = (reason && (reason.message || String(reason))) || "Unhandled promise rejection";
-  appAlert(`PROMISE ERROR: ${msg}`);
-});
 
   
   // Expose globals
