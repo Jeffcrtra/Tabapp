@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0b0d12" />
   <link rel="manifest" href="./manifest.json" />
 
-  <title>11.35 Adoranza Pro v6.4</title>
+  <title>11.59 Adoranza Pro v6.4</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -853,7 +853,7 @@
       <button class="btn btn-nav" onclick="showHome()">🏠 Inicio</button>
     </div>
 
-    <div class="tool-group" id="font-group">
+    <div class="tool-group" id="font-group" style="display:none;">
       <button class="btn btn-font" onclick="changeFontSize(-2)">A-</button>
       <button class="btn btn-font" onclick="changeFontSize(2)">A+</button>
     </div>
@@ -861,13 +861,9 @@
     <div class="tool-group single" id="download-group" style="display:none;">
       <button class="btn btn-nav" onclick="descargarTexto()">⬇ Descarga</button>
     </div>
-
-    <div class="tool-group triple">
-      <button class="btn btn-scroll" onclick="adjScroll(-0.1)">S-</button>
-      <button class="btn btn-scroll" id="scrollBtn" onclick="toggleScroll()">AUTO</button>
-      <button class="btn btn-scroll" onclick="adjScroll(0.1)">S+</button>
-    </div>
   </div>
+
+  
 
   <div id="volume-container">
     <small style="color:var(--muted); font-size:10px; font-weight:800; letter-spacing:.08em;">VOL CLICK:</small>
@@ -1241,7 +1237,7 @@
     const downloadGroup = document.getElementById("download-group");
 
     if (toneGroup) toneGroup.style.display = (role === "musico") ? "grid" : "none";
-    if (drumsGroup) drumsGroup.style.display = (role === "drums") ? "grid" : "none";
+    if (fontGroup) fontGroup.style.display = "none";
     if (volumeContainer) volumeContainer.style.display = (role === "drums") ? "block" : "none";
     if (fontGroup) fontGroup.style.display = (role === "drums") ? "none" : "grid";
     if (downloadGroup) downloadGroup.style.display = (role === "drums") ? "grid" : "none";
