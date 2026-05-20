@@ -6,2930 +6,872 @@
   <meta name="theme-color" content="#0b0d12" />
   <link rel="manifest" href="./manifest.json" />
 
-  <title>12.09 Adoranza Pro v6.4</title>
+  <title>6.25 Adoranza Pro v6.5</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
-        <script>
-        window.addEventListener("error", function (e) {
-          const msg = [
-            "JS ERROR:",
-            e.message || "Sin mensaje",
-            "Archivo: " + (e.filename || "(desconocido)"),
-            "Línea: " + (e.lineno || 0) + ":" + (e.colno || 0),
-            "Stack: " + (e.error && e.error.stack ? e.error.stack : "sin stack")
-          ].join("\n");
-        
-          console.error(msg, e.error || e);
-          alert(msg);
-        });
-        
-        window.addEventListener("unhandledrejection", function (e) {
-          const reason = e.reason;
-          const msg = [
-            "PROMISE ERROR:",
-            reason && reason.message ? reason.message : String(reason),
-            "Stack: " + (reason && reason.stack ? reason.stack : "sin stack")
-          ].join("\n");
-        
-          console.error(msg, reason);
-          alert(msg);
-        });
-        </script>
-
-  <style>
-    :root{
-      --bg:#0b0d12;
-      --card:#121622;
-      --card2:#0f1320;
-      --muted:#98a2b3;
-      --text:#e6e9ef;
-      --line:#23283a;
-      --accent:#ffd54a;
-      --danger:#ff5c77;
-      --success:#4aff80;
-      --radius:16px;
-      --shadow: 0 10px 30px rgba(0,0,0,.35);
-      --shadow2: 0 6px 16px rgba(0,0,0,.25);
-      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-    }
-
-    *{ box-sizing:border-box; }
-    body{
-      margin:0;
-      font-family:var(--sans);
-      background: radial-gradient(1200px 700px at 10% -10%, rgba(255,213,74,.09), transparent 55%),
-                  radial-gradient(900px 600px at 100% 0%, rgba(74,255,128,.06), transparent 55%),
-                  var(--bg);
-      color:var(--text);
-      overflow-x:hidden;
-      padding-top:80px;
-      transition: padding-top .22s ease;
-    }
-
-    body.controls-hidden{
-      padding-top:6px;
-    }
-
-    /* ===== Pantalla inicial ===== */
-    #roleSelector{
-      position:fixed; inset:0;
-      background: radial-gradient(900px 600px at 10% 10%, rgba(255,213,74,.12), transparent 55%),
-                  radial-gradient(900px 600px at 100% 10%, rgba(90,140,255,.10), transparent 55%),
-                  var(--bg);
-      z-index:10000;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      gap:18px;
-      padding:20px;
-    }
-    .role-grid{
-      display:grid;
-      gap:14px;
-      grid-template-columns:repeat(2,1fr);
-      width:min(95vw,520px);
-    }
-    .role-btn{
-      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.01));
-      border:1px solid rgba(255,255,255,.10);
-      box-shadow: var(--shadow2);
-      padding:16px 10px;
-      border-radius:22px;
-      text-align:center;
-      font-size:28px;
-      cursor:pointer;
-      color:white;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      transition:transform .15s ease, border-color .15s ease, filter .15s ease;
-      user-select:none;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .role-btn:hover{ border-color:rgba(255,213,74,.6); transform:translateY(-2px); }
-    .role-btn:active{ transform:translateY(0px) scale(.99); filter:brightness(1.08); }
-    .role-btn small{
-      font-size:10px;
-      margin-top:8px;
-      color:var(--muted);
-      font-weight:800;
-      letter-spacing:.08em;
-      line-height:1.2;
-      text-transform:uppercase;
-    }
-    .footer-credits{
-      position:absolute; bottom:18px;
-      font-size:12px; color:var(--muted);
-      text-align:center;
-      opacity:.95;
-    }
-    .footer-credits a{ color:var(--accent); text-decoration:none; font-weight:800; }
-
-    /* ===== Panel fijo ===== */
-    #fixedControlPanel{
-      position:fixed; top:0; left:0; right:0; z-index:999;
-      background: rgba(11,13,18,.72);
-      backdrop-filter: blur(14px);
-      border-bottom:1px solid rgba(255,255,255,.08);
-      padding:10px 12px 8px 12px;
-      transition: transform .22s ease, opacity .18s ease;
-    }
-
-    body.controls-hidden #fixedControlPanel{
-      transform: translateY(-100%);
-      opacity: 0;
-      pointer-events: none;
-    }
-    .viewer-tools{
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:10px;
-      max-width:540px;
-      margin:0 auto;
-    }
-    .tool-group{
-      display:grid;
-      grid-template-columns:repeat(2,1fr);
-      gap:6px;
-      justify-content:center;
-      align-items:center;
-      padding:6px;
-      border-radius:14px;
-      border:1px solid rgba(255,255,255,.08);
-      background: rgba(255,255,255,.02);
-      box-shadow: 0 1px 0 rgba(255,255,255,.05) inset;
-    }
-    .tool-group.triple{ grid-template-columns:repeat(3,1fr); grid-column:span 2; }
-    .tool-group.single{ grid-template-columns:1fr; }
-
-    .btn{
-      border:1px solid rgba(255,255,255,.18);
-      color:white;
-      padding:10px 6px;
-      border-radius:10px;
-      cursor:pointer;
-      font-size:12px;
-      font-weight:800;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      transition: transform .12s ease, filter .12s ease, border-color .12s ease, background .12s ease;
-      width:100%;
-      max-width:110px;
-      margin:0 auto;
-      height:36px;
-      user-select:none;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .btn:active{ transform: translateY(1px) scale(.99); filter:brightness(1.08); }
-    .btn-nav{ background: linear-gradient(180deg, rgba(0,65,115,.95), rgba(0,65,115,.78)); }
-    .btn-tone{ background: linear-gradient(180deg, rgba(99,11,87,.95), rgba(99,11,87,.72)); }
-    .btn-font{ background: linear-gradient(180deg, rgba(46,111,64,.95), rgba(46,111,64,.72)); }
-    .btn-scroll{ background: linear-gradient(180deg, rgba(208,147,6,.95), rgba(208,147,6,.72)); color:#0b0d12; border-color: rgba(255,213,74,.55); }
-    .btn-drums{ background: rgba(255,255,255,.02); border-color: rgba(74,255,128,.65); color: var(--success); }
-    .btn-save{ background: rgba(255,255,255,.02); border-color: rgba(74,255,128,.65); color: var(--success); }
-    .btn-wa{ background: linear-gradient(180deg, rgba(7,94,84,.95), rgba(7,94,84,.74)); border-color: rgba(37,211,102,.65); }
-
-    .btn-add{
-      background: var(--accent);
-      color:#0b0d12;
-      border-color: rgba(255,213,74,.9);
-      font-weight:900;
-      font-size:10px;
-      height:28px;
-      padding:0 10px;
-      border-radius:12px;
-      max-width:56px;
-      box-shadow: 0 10px 18px rgba(255,213,74,.10);
-    }
-    .btn-add:hover{ filter:brightness(1.05); }
-
-    #volume-container{ display:none; text-align:center; margin-top:8px; }
-
-    #info-display{ padding-bottom:0; }
-
-    .now-next-row{
-      display:flex;
-      justify-content:space-between;
-      gap:14px;
-      align-items:flex-start;
-      margin-top:8px;
-    }
+    <script>
+    /* ===== ADORANZA PRO HOTFIX v6.5 =====
+       Pegar después del script principal y antes de </body>.
+    */
+    (function () {
+      const APP_VERSION = "ADORANZA PRO v6.5";
     
-    #current-song-info{
-      font-weight:900;
-      color: rgba(255,255,255,.92);
-      font-size:14px;
-      text-align:center;
-      flex:1;
-      text-align:left;
-      margin-top:0px;
-      line-height:1.15;
-      letter-spacing:.01em;
-    }
-    #current-song-info .sub{
-      display:block;
-      margin-top:2px;
-      font-weight:700;
-      font-size:11px;
-      color: rgba(255,213,74,.85);
-    }
-
-    #next-song-info{
-      flex:1;
-      text-align:right;
-      font-weight:900;
-      font-size:12px;
-      color:#7dd3fc; /* celeste */
-      opacity:.95;
-      line-height:1.15;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-    
-    #next-song-info .sub2{
-      display:block;
-      margin-top:2px;
-      font-weight:700;
-      font-size:11px;
-      color:#7dd3fc;
-      opacity:.85;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-
-    #metro-dots{
-      margin-top:8px;
-      display:flex;
-      justify-content:center;
-      gap:14px;
-      height:42px;
-      align-items:center;
-    }
-    #metro-dots.is-hidden{ display:none; height:0; margin-top:0; }
-
-    .beat-dot{ width:32px; height:32px; border-radius:50%; background:#141824; border:2px solid rgba(255,255,255,.10); transition:.12s; }
-    .beat-active-red{ background:var(--danger); box-shadow:0 0 22px rgba(255,92,119,.55); transform:scale(1.12); border-color:#fff; }
-    .beat-active-green{ background:var(--success); box-shadow:0 0 22px rgba(74,255,128,.45); transform:scale(1.12); border-color:#fff; }
-
-    /* ===== Config panel ===== */
-    #configPanel{
-      position:fixed; inset:0;
-      background: radial-gradient(900px 600px at 10% 10%, rgba(255,213,74,.10), transparent 55%),
-                  var(--bg);
-      z-index:10001;
-      display:none;
-      flex-direction:column;
-      align-items:center;
-      padding:40px 20px;
-      overflow:auto;
-    }
-
-    /* ===== Layout ===== */
-    .wrap{ padding:12px; max-width:1200px; margin:0 auto; }
-    .grid{ display:grid; grid-template-columns:1fr; gap:14px; }
-    @media (min-width:768px){ .grid{ grid-template-columns:320px 1fr; } }
-
-    #setlist-container{ width:92%; margin:0 auto; }
-
-    .card{
-      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.01));
-      border:1px solid rgba(255,255,255,.10);
-      border-radius:var(--radius);
-      margin-bottom:10px;
-      box-shadow: var(--shadow2);
-    }
-    .card .hd{
-      padding:12px 12px;
-      border-bottom:1px solid rgba(255,255,255,.08);
-      font-weight:900;
-      font-size:12px;
-      letter-spacing:.08em;
-      color: rgba(255,255,255,.88);
-      text-transform:uppercase;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-    }
-    .card .bd{ padding:12px; }
-
-    .input{
-      width:100%;
-      background: rgba(0,0,0,.35);
-      color:#fff;
-      border:1px solid rgba(255,255,255,.10);
-      padding:12px;
-      border-radius:14px;
-      outline:none;
-      transition: border-color .12s ease, filter .12s ease;
-    }
-    .input:focus{
-      border-color: rgba(255,213,74,.55);
-      filter: brightness(1.05);
-    }
-
-    /* ===== Setlist item: swipe ===== */
-    .set-item-wrap{
-      position:relative;
-      margin-bottom:10px;
-      border-radius:16px;
-      overflow:hidden;
-    }
-
-    .swipe-actions{
-      position:absolute; inset:0;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding:0 14px;
-      background: transparent;
-    
-      /* clave */
-      opacity:0;
-      pointer-events:none;
-      transition: opacity .12s ease;
-    }
-    .set-item-wrap.is-swiping .swipe-actions{
-      opacity:1;
-    }
-    
-    .swipe-action{
-      display:flex;
-      align-items:center;
-      gap:8px;
-      font-weight:900;
-      letter-spacing:.02em;
-      font-size:12px;
-      padding:10px 12px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.12);
-      backdrop-filter: blur(8px);
-    }
-    .swipe-action.left{
-      background: rgba(255,92,119,.14);
-      color: rgba(255,255,255,.92);
-      border-color: rgba(255,92,119,.35);
-    }
-    .swipe-action.right{
-      background: rgba(74,255,128,.12);
-      color: rgba(255,255,255,.92);
-      border-color: rgba(74,255,128,.35);
-    }
-
-  .set-item{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    border-radius:999px;
-    padding:10px 12px;
-    background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
-    border:1px solid rgba(255,255,255,.10);
-  }
-
-  /* Activa (seleccionada) = protagonista */
-  .set-item.is-active{
-    border-color: rgba(255,213,74,.75);
-    box-shadow:
-      0 0 0 1px rgba(255,213,74,.20),
-      0 14px 34px rgba(0,0,0,.35);
-  }
-      
-  /* Cantada = NO glow, solo más discreta */
-  .set-item.is-sung{
-    border-color: rgba(255,255,255,.10);
-    box-shadow: none;
-    opacity: .78;
-  }
-
-    /* Offline (favorito) = borde dorado suave (sin glow exagerado) */
-    .set-item.is-fav{
-      border-color: rgba(255,213,74,.45);
-      box-shadow:
-        0 0 0 1px rgba(255,213,74,.12);
-    }
-    
-    /* Si es activa + favorita, le damos un toque extra sin volverse discoteca */
-    .set-item.is-active.is-fav{
-      border-color: rgba(255,213,74,.85);
-      box-shadow:
-        0 0 0 1px rgba(255,213,74,.22),
-        0 18px 44px rgba(0,0,0,.40);
-    }
-    
-    /* Heart pill */
-    .pill.heart{
-      border-radius: 999px;
-      padding: 10px 18px;
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.25);
-      transition: transform .12s ease, background .18s ease, border-color .18s ease;
-      user-select: none;
-    }
-    .pill.heart:active{ transform: scale(.96); }
-    
-    /* Favorito ON: corazón lleno, borde dorado */
-    .pill.heart.on{
-      border-color: rgba(255,213,74,.55);
-      background: rgba(255,213,74,.10);
-    }
-    
-    /* Texto */
-    .songtitle{
-      font-size: 22px;
-      letter-spacing: .2px;
-    }
-    .songmeta{
-      color: var(--muted);
-      margin-top: 6px;
-      font-size: 15px;
-    }
-    
-    .drag-handle{
-      width:34px;
-      height:34px;
-      border-radius:999px;
-      display:grid;
-      place-items:center;
-      background: rgba(0,0,0,.25);
-      border:1px solid rgba(255,255,255,.10);
-      padding:0;
-      flex:0 0 auto;
-      font-size:18px;
-      touch-action:none !important;
-      -webkit-user-select:none;
-      user-select:none !important;
-      cursor:grab;
-    }
-
-    .is-dragging-sortable,
-    .is-dragging-sortable *{
-      user-select:none !important;
-      -webkit-user-select:none !important;
-    }
-    
-    .titlebox{
-        flex:1 1 auto;
-        min-width:0;
-        display:flex;
-        flex-direction:column;
-        gap:2px;
-      }
-
-    .songtitle{
-      font-weight:900;
-      font-size:14px;
-      line-height:1.15;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-    
-    .songmeta{
-      font-size:11px;
-      color: rgba(152,162,179,.95);
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-
-    .pill{
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      padding:6px 10px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(0,0,0,.18);
-      font-weight:900;
-      font-size:12px;
-      cursor:pointer;
-      transition: transform .12s ease, filter .12s ease, border-color .12s ease;
-      user-select:none;
-    }
-    
-    .pill:active{ transform: translateY(1px) scale(.99); filter:brightness(1.06); }
-
-    .pill.heart{
-      width:40px;
-      height:36px;
-      min-width:40px;
-      border-radius:999px;
-      padding:0;
-      display:grid;
-      place-items:center;
-      background: rgba(0,0,0,.22);
-      border:1px solid rgba(255,255,255,.12);
-    }
-    
-    .pill.heart.on{
-      border-color: rgba(255,213,74,.55);
-      background: rgba(255,213,74,.10);
-    }
-
-    #viewContent{
-      background: rgba(0,0,0,.35);
-      padding:22px;
-      border-radius:18px;
-      white-space:pre-wrap;
-      font-family:var(--mono);
-      line-height:1.6;
-      border:1px solid rgba(255,255,255,.10);
-      min-height:200px;
-      box-shadow: var(--shadow2);
-    }
-    .chord{ color:var(--accent); font-weight:900; }
-
-    #list-name-badge{ font-size:10px; color: rgba(255,213,74,.85); margin-top:4px; display:block; font-weight:700; }
-
-    /* ===== Toast (Undo) ===== */
-    #toastUndo{
-      position:fixed;
-      left:50%;
-      transform:translateX(-50%);
-      bottom:16px;
-      z-index:20000;
-      min-width:min(92vw, 520px);
-      background: rgba(15,19,32,.92);
-      border:1px solid rgba(255,255,255,.12);
-      border-radius:16px;
-      box-shadow: var(--shadow);
-      padding:12px 12px;
-      display:none;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      backdrop-filter: blur(12px);
-    }
-    #toastUndo .msg{
-      font-size:12px;
-      color: rgba(255,255,255,.92);
-      font-weight:800;
-      overflow:hidden;
-      white-space:nowrap;
-      text-overflow:ellipsis;
-    }
-    #toastUndo .undoBtn{
-      background: rgba(255,213,74,.14);
-      border:1px solid rgba(255,213,74,.35);
-      color: rgba(255,255,255,.95);
-      padding:8px 12px;
-      border-radius:999px;
-      font-weight:900;
-      cursor:pointer;
-      user-select:none;
-      transition: transform .12s ease, filter .12s ease;
-    }
-    #toastUndo .undoBtn:active{ transform:translateY(1px) scale(.99); filter:brightness(1.06); } 
-
-    /* ===== Mobile tightening for setlist cards ===== */
-    @media (max-width: 520px){
-      #setlist-container{ width: 96%; }
-    
-      .set-item{
-        padding: 12px 12px;          /* antes 16px 18px */
-        border-radius: 16px;         /* antes 22px */
+      function $(id) {
+        return document.getElementById(id);
       }
     
-      .drag-handle{
-        padding: 0 8px;
-        font-size: 16px;
+      function txt(value) {
+        return document.createTextNode(String(value ?? ""));
       }
     
-      .songtitle{
-        font-size: 13px;             /* más compacto */
+      function el(tag, className, textValue) {
+        const node = document.createElement(tag);
+        if (className) node.className = className;
+        if (textValue != null) node.textContent = String(textValue);
+        return node;
       }
     
-      .songmeta{
-        font-size: 10px;
-        margin-top: 2px;
+      function toNumber(value, fallback = null) {
+        if (value === null || value === undefined || value === "") return fallback;
+        const n = Number(value);
+        return Number.isFinite(n) ? n : fallback;
       }
     
-      /* heart pill más pequeño en mobile */
-      .pill.heart{
-        min-width: 36px;
-        padding: 8px 12px;
-      }
-    }
-    
-    .set-item{ touch-action: pan-y; }
-
-    #tabEditModal{
-      display:none;
-      position:fixed;
-      inset:0;
-      z-index:30000;
-      background:rgba(0,0,0,.72);
-      padding:16px;
-    }
-    
-    .tab-edit-box{
-      max-width:900px;
-      height:86vh;
-      margin:5vh auto;
-      background:#101420;
-      border:1px solid rgba(255,255,255,.14);
-      border-radius:18px;
-      padding:14px;
-      box-shadow:var(--shadow);
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-    }
-    
-    #tabEditText{
-      flex:1;
-      width:100%;
-      resize:none;
-      background:#05070c;
-      color:#fff;
-      border:1px solid rgba(255,255,255,.14);
-      border-radius:14px;
-      padding:14px;
-      font-family:var(--mono);
-      font-size:16px;
-      line-height:1.45;
-      outline:none;
-    }
-
-    .drag-handle{
-      touch-action:none !important;
-    }
-    
-    .is-dragging-sortable .set-item{
-      pointer-events:none;
-    }
-    
-    .is-dragging-sortable .drag-handle{
-      pointer-events:auto;
-    }
-  
-  .drag-handle{
-    touch-action:none !important;
-    -webkit-user-select:none !important;
-    user-select:none !important;
-  }
-  
-  .set-item-wrap{
-    touch-action:pan-y;
-  }
-  
-  .set-item{
-    touch-action:pan-y;
-  }
-  
-  .is-dragging-sortable,
-  .is-dragging-sortable *{
-    user-select:none !important;
-    -webkit-user-select:none !important;
-  }
-
-  .sortable-ghost{
-    opacity:.25 !important;
-  }
-  
-  .sortable-chosen{
-    opacity:.95 !important;
-  }
-  
-  .sortable-drag{
-    opacity:.95 !important;
-    transform:scale(1.02);
-    z-index:99999 !important;
-  }
-
-  .move-controls{
-    display:flex;
-    gap:6px;
-    align-items:center;
-  }
-  
-  .move-btn{
-    width:34px;
-    height:34px;
-    border-radius:999px;
-    border:1px solid rgba(255,213,74,.45);
-    background:rgba(255,213,74,.12);
-    color:white;
-    font-weight:900;
-    font-size:16px;
-    cursor:pointer;
-  }
-  
-  .move-btn:active{
-    transform:scale(.96);
-  }
-
-  .set-item.is-move-mode{
-    border-color: rgba(255,92,119,.85) !important;
-    box-shadow:
-      0 0 0 1px rgba(255,92,119,.25),
-      0 0 18px rgba(255,92,119,.18);
-  }
-
-  #songInfoBelowSetlist{
-    grid-column:1 / -1;
-    width:100%;
-    padding:0;
-    margin:0 0 2px 0;
-    position:relative;
-    z-index:1;
-  }
-
-  #viewContent{
-    overflow-x:auto;
-    overflow-y:visible;
-    touch-action:pan-y;
-  }
-    
-  #songInfoBelowSetlist #info-display{
-    background:rgba(0,0,0,.28);
-    border:1px solid rgba(255,255,255,.10);
-    border-radius:16px;
-    padding:4px 10px;
-    box-shadow:var(--shadow2);
-  }
-  
-  #songInfoBelowSetlist .now-next-row{
-    margin-top:0;
-  }
-  
-  #songInfoBelowSetlist #current-song-info{
-    font-size:15px;
-  }
-  
-  #songInfoBelowSetlist #next-song-info{
-    font-size:13px;
-  }
-  
-  body.controls-hidden #songInfoBelowSetlist #info-display{
-    opacity:1;
-    pointer-events:auto;
-  }
-      
-  </style>
-</head>
-
-<body>
-
-<div id="roleSelector">
-  <h1 style="color:var(--accent); margin:0; font-size:24px; letter-spacing:.02em;">ADORANZA PRO v6.3</h1>
-  <div style="color:rgba(255,255,255,.70); font-size:12px; text-align:center; max-width:520px; line-height:1.4;">
-    Setlists, tabs y letras. Swipe para marcar <b>cantada</b> o quitar de la vista. ❤️ para guardar offline.
-  </div>
-  <div class="role-grid">
-    <div class="role-btn" onclick="setRole('musico')">🎸<small>PIANO<br>GUITARRA</small></div>
-    <div class="role-btn" onclick="setRole('drums')">🥁<small>VOZ +<br>BATERÍA</small></div>
-    <div class="role-btn" onclick="Estadisticas()">📊<small>STATS</small></div>
-    <div class="role-btn" onclick="openConfig()">⚙️<small>CONFIG</small></div>
-  </div>
-  <div class="footer-credits">App creada por <a href="https://www.linkedin.com/in/jeffrey-trigueros-371191123/" target="_blank">Jeffrey Trigueros</a></div>
-</div>
-
-<div id="configPanel">
-  <button class="btn btn-nav" style="margin-bottom:24px; width:140px; max-width:none;" onclick="closeConfig()">🏠 Home</button>
-
-  <div class="card" style="width:100%; max-width:520px;">
-    <div class="hd">Perfil de Usuario</div>
-    <div class="bd" style="text-align:center;">
-      <p style="color:var(--muted); margin:0;">Usuario:</p>
-      <h2 id="uname-display" style="color:var(--accent); margin:8px 0 0 0;"></h2>
-
-      <p style="color:var(--muted); margin:12px 0 0 0;">ID único:</p>
-      <div id="uid-display" style="color:var(--accent); font-family:var(--mono); letter-spacing:2px; font-size:16px; margin-top:6px;"></div>
-    </div>
-  </div>
-
-  <div class="card" style="width:100%; max-width:520px; margin-top:14px;">
-    <div class="hd">Mis Setlists</div>
-    <div class="bd">
-      <div style="display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap;">
-        <button class="btn btn-nav" style="max-width:180px; height:34px;" onclick="listarMisSetlists()">🔄 Actualizar</button>
-        <button class="btn" style="max-width:220px; height:34px; background:rgba(44,82,130,.9); color:white; border-color:rgba(255,255,255,.12);" onclick="copiarMiSetlistActual()">📋 Copiar ID actual</button>
-      </div>
-      <div id="mySetlists" style="display:grid; gap:10px;"></div>
-      <div style="margin-top:10px; font-size:11px; color:var(--muted);">
-        Tip: tocá un setlist para copiar su ID (sirve para Cargar o para compartir).
-      </div>
-    </div>
-  </div>
-
-  <div class="card" style="width:100%; max-width:520px; margin-top:14px;">
-    <div class="hd">Favoritos (Offline) <span id="favCount" style="color:var(--muted); font-weight:600;"></span></div>
-    <div class="bd">
-      <div id="favList" style="display:grid; gap:10px;"></div>
-      <div style="margin-top:10px; font-size:11px; color:var(--muted);">
-        Estos favoritos viven en tu dispositivo (localStorage). Si borrás el navegador o datos, se pierden.
-      </div>
-    </div>
-  </div>
-
-</div>
-
-<div id="fixedControlPanel">
-  <div class="viewer-tools">
-    <div class="tool-group">
-      <button class="btn btn-nav" onclick="prevSong()">⟵</button>
-      <button class="btn btn-nav" onclick="nextSong()">⟶</button>
-    </div>
-
-    <div class="tool-group" id="tone-group">
-      <button class="btn btn-tone" onclick="transpose(-1)">♭</button>
-      <button class="btn btn-tone" onclick="transpose(1)">♯</button>
-    </div>
-
-    <div class="tool-group" id="drums-group" style="display:none;">
-      <button class="btn btn-drums" onclick="toggleMetroManual()" id="btnMetroState">▶</button>
-      <button class="btn btn-drums" onclick="halfTime()">1/2</button>
-    </div>
-
-    <div class="tool-group single">
-      <button class="btn btn-nav" onclick="showHome()">🏠 Inicio</button>
-    </div>
-
-    <div class="tool-group single" id="download-group" style="display:none;">
-      <button class="btn btn-nav" onclick="descargarTexto()">⬇ Descarga</button>
-    </div>
-  </div>
-
-  
-
-  <div id="volume-container">
-    <small style="color:var(--muted); font-size:10px; font-weight:800; letter-spacing:.08em;">VOL CLICK:</small>
-    <input type="range" id="volRange" min="0" max="1" step="0.05" value="0.5" style="width:140px; vertical-align:middle;">
-  </div>
-</div>
-
-<main class="wrap">
-  <div class="grid">
-    <section class="card">
-      <div class="hd">Buscador</div>
-      <div class="bd">
-        <input class="input" id="searchBox" type="search" placeholder="Buscar..." autocomplete="off" />
-        <div id="results" style="margin-top:10px;"></div>
-      </div>
-    </section>
-
-    <section class="card">
-      <div class="hd">
-        <div style="display:flex; justify-content:space-between; align-items:flex-start; width:100%; gap:10px;">
-          <div style="min-width:0;">
-            Setlist <span id="list-name-badge"></span>
-          </div>
-          <div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;">
-            <button class="btn btn-save" style="width:auto; padding:0 10px; height:30px; font-size:11px; max-width:none;" onclick="guardarListaCloud()">Guardar</button>
-            <button class="btn" style="width:auto; padding:0 10px; height:30px; font-size:11px; background:rgba(44,82,130,.9); color:white; border-color:rgba(255,255,255,.12); max-width:none;" onclick="cargarListaCloud()">Cargar</button>
-            <button class="btn" id="btnClearOrClose"
-              style="width:auto; padding:0 6px; height:24px; font-size:10px; background:#551111;"
-              onclick="clearOrCloseSetlist()">
-              Vaciar
-            </button>
-            <button class="btn btn-wa" style="width:auto; padding:0 10px; height:30px; font-size:11px; max-width:none;" onclick="compartirWhatsApp()">Envía</button>
-          </div>
-        </div>
-      </div>
-      <div class="bd" id="setlist-container">
-        <div id="setList"></div>
-        <div style="margin-top:8px; color:rgba(152,162,179,.9); font-size:11px;">
-          Swipe ➜ <span style="color:rgba(74,255,128,.9); font-weight:900;">cantada</span> · Swipe ⇦ <span style="color:rgba(255,92,119,.9); font-weight:900;">quitar</span> · ❤️ guarda offline
-        </div>
-      </div>
-    </section>
-
-    <section id="songInfoBelowSetlist">
-      <div id="info-display">
-        <div class="now-next-row">
-          <div id="current-song-info">Adoranza Cloud</div>
-          <div id="next-song-info"></div>
-        </div>
-        <div id="metro-dots"></div>
-      </div>
-    </section>
-    
-    <section class="card" style="grid-column:1 / -1; border:none; background:none; box-shadow:none;">
-      <pre id="viewContent">Selecciona una canción.</pre>
-    </section>
-  </div>
-</main>
-
-<!-- Toast undo -->
-<div id="toastUndo">
-  <div class="msg" id="toastMsg">Eliminada</div>
-  <div class="undoBtn" onclick="undoLastRemove()">DESHACER</div>
-</div>
-
-<div id="tabEditModal">
-  <div class="tab-edit-box">
-    <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
-      <div>
-        <div style="font-weight:900; color:var(--accent);">Editar tablatura</div>
-        <div id="tabEditTitle" style="font-size:12px; color:var(--muted); margin-top:3px;"></div>
-      </div>
-      <button class="btn" style="max-width:90px; background:#551111;" onclick="closeTabEditor()">Cerrar</button>
-    </div>
-
-    <textarea id="tabEditText" spellcheck="false"></textarea>
-
-    <div style="display:flex; gap:10px; justify-content:flex-end;">
-      <button class="btn btn-nav" style="max-width:120px;" onclick="closeTabEditor()">Cancelar</button>
-      <button class="btn btn-save" style="max-width:160px;" onclick="saveTabEditor()">Guardar</button>
-    </div>
-  </div>
-</div>
-
-  
-<script>
-  const SB_URL = "https://ystlbjvjoqpqoklvjdrj.supabase.co";
-  const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlzdGxianZqb3FwcW9rbHZqZHJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5NzY4NDUsImV4cCI6MjA4MzU1Mjg0NX0.AQg9BuuGlbUtuyccvrBJwRGzx4Bgzx58aqGbfMPzKfg";
-  const BUCKET_URL = `${SB_URL}/storage/v1/object/public/Cancionero_Adoranza/`;
-  const LS_ADOPT = "adoranza_adopted_setlists_v1";
-
-  let db = null;
-
-  // ===== Local Storage Keys =====
-  const LS_FAV = "adoranza_favorites_v1";
-  const LS_SUNG = "adoranza_sung_v1";
-  const LS_HIDDEN = "adoranza_hidden_v1";
-
-  // ===== Helpers =====
-
-  function getAdoptedSetlists(){
-    return safeJSONParse(localStorage.getItem(LS_ADOPT) || "[]", []);
-  }
-  function setAdoptedSetlists(arr){
-    localStorage.setItem(LS_ADOPT, JSON.stringify(arr || []));
-  }
-  function adoptSetlistId(id){
-    const list = getAdoptedSetlists();
-    const u = String(id).trim().toUpperCase();
-    if (!list.includes(u)){
-      list.push(u);
-      setAdoptedSetlists(list);
-    }
-  }
-
-  function genSetlistId8(prefix="") {
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    let out = "";
-    try {
-      if (window.crypto && crypto.getRandomValues) {
-        const arr = new Uint8Array(8);
-        crypto.getRandomValues(arr);
-        for (let i = 0; i < 8; i++) out += chars[arr[i] % chars.length];
-        return prefix + out;
-      }
-    } catch(e) {}
-    for (let i = 0; i < 8; i++) out += chars[Math.floor(Math.random() * chars.length)];
-    return prefix + out;
-  }
-
-  async function resolveSetlistSongs(setlist, supabase) {
-    const ids = Array.isArray(setlist.canciones_ids) ? setlist.canciones_ids : [];
-    const overridesById = normalizeOverrides(setlist.canciones_json);
-  
-    if (!ids.length) return [];
-  
-    const { data: metas, error } = await supabase
-      .from("canciones")
-      .select("id, titulo, artista, album, bpm, time_signature, tono_original, path_url")
-      .in("id", ids);
-  
-    if (error) throw error;
-  
-    const byId = new Map((metas || []).map(m => [m.id, m]));
-    const ordered = ids.map(id => byId.get(id)).filter(Boolean);
-  
-    const resolved = await Promise.all(
-      ordered.map(async (meta) => {
-        const ov = overridesById.get(meta.id) || {};
-  
-        let body = "";
-        try {
-          body = await fetchSongBodyFromBucket(meta);
-        } catch (e) {
-          console.warn("No se pudo cargar body de canción:", meta.path_url, e);
-          body = "";
-        }
-  
-        return {
-          ...meta,
-          body,
-          transpose_steps: ov.transpose_steps ?? 0,
-          bpm_effective: ov.bpm_override ?? meta.bpm ?? null,
-          tono_effective: ov.tono_override ?? meta.tono_original ?? null,
-          tono_override: ov.tono_override ?? null,
-          bpm_override: ov.bpm_override ?? null,
-        };
-      })
-    );
-  
-    return resolved;
-  }
-
-  async function loadSetlistByCode(code, supabase) {
-    const { data: setlist, error } = await supabase
-      .from("setlists_guardados")
-      .select("id, id_unico, nombre_lista, owner_id, canciones_ids, canciones_json, updated_at")
-      .eq("id_unico", code)
-      .single();
-  
-    if (error) throw error;
-    return setlist;
-  }
-
-  function normalizeOverrides(canciones_json) {
-    const arr = Array.isArray(canciones_json) ? canciones_json : [];
-    const map = new Map();
-  
-    for (const x of arr) {
-      const key = x?.id || x?.song_id;
-      if (!key) continue;
-  
-      map.set(key, {
-        bpm_override: Number.isFinite(x.bpm_override) ? x.bpm_override : null,
-        tono_override: (typeof x.tono_override === "string" && x.tono_override.trim())
-          ? x.tono_override.trim()
-          : null,
-        transpose_steps: Number.isFinite(x.transpose_steps) ? x.transpose_steps : 0
-      });
-    }
-  
-    return map;
-  }
-
-  async function copyToClipboard(text) {
-    try {
-      if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(text);
-        return true;
-      }
-    } catch(e) {}
-    const ta = document.createElement("textarea");
-    ta.value = text;
-    ta.style.position = "fixed";
-    ta.style.left = "-9999px";
-    document.body.appendChild(ta);
-    ta.focus();
-    ta.select();
-    try {
-      document.execCommand("copy");
-      document.body.removeChild(ta);
-      return true;
-    } catch (e) {
-      document.body.removeChild(ta);
-      return false;
-    }
-  }
-
-  function safeJSONParse(txt, fallback){
-    try { return JSON.parse(txt); } catch(e){ return fallback; }
-  }
-
-  function normKey(s){
-    return String(s||"")
-      .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
-      .toLowerCase().trim()
-      .replace(/[^a-z0-9]+/g,"-")
-      .replace(/^-+|-+$/g,"");
-  }
-  
-  function songKey(song){
-    if (song && song.id) return String(song.id);
-    const t = normKey(song?.titulo || "");
-    const a = normKey(song?.artista || "");
-    const p = normKey(song?.path_url || "");
-    return (t || a || p) ? `${a}|${t}|${p}` : genSetlistId8("S");
-  }
-
-  function listKey(){
-    return (state.listIdUnico && state.listIdUnico.trim()) ? state.listIdUnico.trim().toUpperCase() : "LOCAL";
-  }
-
-  function escapeQuotes(s){
-    return String(s||"").replace(/\\/g,"\\\\").replace(/'/g,"\\'");
-  }
-
-  function transposeBody(raw, steps, preferFlats=false){
-    if (!steps) return raw || "";
-  
-    const scale = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
-  
-    // Para convertir salida con # a su equivalente en b
-    const sharpToFlat = { "C#":"Db", "D#":"Eb", "F#":"Gb", "G#":"Ab", "A#":"Bb" };
-  
-    return String(raw||"").replace(/\[([^\]]+)\]/g, (m, chord) => {
-      const out = chord.replace(/[A-G](?:#|b)?/g, (note) => {
-        // normaliza bemol a su equivalente sharp (para transponer)
-        const n = note.toUpperCase();
-        const flatsToSharps = { "DB":"C#", "EB":"D#", "GB":"F#", "AB":"G#", "BB":"A#" };
-        const nn = flatsToSharps[n] || n;
-  
-        const idx = scale.indexOf(nn);
-        if (idx === -1) return note;
-  
-        let res = scale[(idx + steps + 1200) % 12];
-  
-        // si queremos bemoles, convertimos la salida (A# -> Bb, etc.)
-        if (preferFlats && sharpToFlat[res]) res = sharpToFlat[res];
-  
-        return res;
-      });
-  
-      return "[" + out + "]";
-    });
-  }
-
-  
-  function buildCloudSetlistPayload(){
-    const ids = state.setlist.map(s => s.id).filter(Boolean);
-    const overrides = state.setlist.map(s => ({
-      id: s.id,
-      // override por setlist:
-      transpose_steps: Number.isFinite(s.transpose_steps) ? s.transpose_steps : 0,
-      bpm_override: Number.isFinite(s.bpm_override) ? s.bpm_override : null
-    }));
-    return { canciones_ids: ids, canciones_json: overrides };
-  }
-
-  // ===== STATE =====
-  const state = {
-    setlist: [],
-    currentIndex: -1,
-    currentFontSize: parseInt(localStorage.getItem("adoranza_font_size") || "18", 10),
-    hasUnsavedChanges: false, // Nueva bandera de control
-    userRole: "musico",
-    listName: "",
-    listIdUnico: "",
-    metroInt: null,
-    metroActive: false,
-    currentBPM: 120,
-    half: false,
-    scrollInt: null,
-    scrollSpeed: 1.0,
-
-    // user
-    userId: localStorage.getItem("adoranza_user_id") || "",
-    username: localStorage.getItem("adoranza_username") || "",
-
-    // undo
-    lastRemoved: null,
-    toastT: null,
-    moveModeIndex: -1,
-    moveModeTimer: null
-  };
-
-  // ===== SUPABASE & USER =====
-  function initSupabaseOrWarn() {
-    if (!window.supabase || !supabase.createClient) {
-      appAlert("No cargó Supabase (CDN). Revisa internet o bloqueo de CDN.");
-      return null;
-    }
-    try {
-      return supabase.createClient(SB_URL, SB_KEY);
-    } catch (e) {
-      console.error(e);
-      return null;
-    }
-  }
-
-  function ensureLocalUserOrBlock() {
-    if (!state.userId) {
-      state.userId = genSetlistId8("ID");
-      localStorage.setItem("adoranza_user_id", state.userId);
-    }
-    while (!state.username || !state.username.trim()) {
-      const u = prompt("Elegí tu nombre de usuario (obligatorio):", "");
-      if (u == null) continue;
-      if (!u.trim()) continue;
-      state.username = u.trim();
-      localStorage.setItem("adoranza_username", state.username);
-    }
-  }
-
-  async function upsertUserToCloudNonBlocking() {
-    if (!db) return;
-    try {
-      const payload = { user_id: state.userId, username: state.username };
-      const { error } = await db.from("adoranza_users").upsert(payload, { onConflict: "user_id" });
-    } catch (e) {}
-  }
-
-  // ===== UI CORE =====
-  function setRole(role) {
-    state.userRole = role;
-    document.getElementById("roleSelector").style.display = "none";
-
-    const toneGroup = document.getElementById("tone-group");
-    const drumsGroup = document.getElementById("drums-group");
-    const volumeContainer = document.getElementById("volume-container");
-    const fontGroup = document.getElementById("font-group");
-    const downloadGroup = document.getElementById("download-group");
-
-    if (toneGroup) toneGroup.style.display = (role === "musico") ? "grid" : "none";
-    if (fontGroup) fontGroup.style.display = "none";
-    if (volumeContainer) volumeContainer.style.display = (role === "drums") ? "block" : "none";
-    if (fontGroup) fontGroup.style.display = (role === "drums") ? "none" : "grid";
-    if (downloadGroup) downloadGroup.style.display = (role === "drums") ? "grid" : "none";
-
-    renderAll();
-  }
-
-  function openConfig() {
-    document.getElementById("configPanel").style.display = "flex";
-    const ud = document.getElementById("uid-display");
-    const un = document.getElementById("uname-display");
-    if (ud) ud.innerText = state.userId;
-    if (un) un.innerText = state.username || "(sin username)";
-    if (db) listarMisSetlists();
-    renderFavoritesInConfig();
-  }
-  
-  function closeConfig() { document.getElementById("configPanel").style.display = "none"; }
-  
-  function showHome() {
-    document.getElementById("roleSelector").style.display = "flex";
-    stopMetro();
-    stopScroll();
-  }
-
-  function renderBadge() {
-    const badge = document.getElementById("list-name-badge");
-    if (!badge) return;
-    if (!state.listName && !state.listIdUnico) { badge.innerText = ""; return; }
-    let txt = `» ${state.listName || state.listIdUnico}`;
-    if(state.listName && state.listIdUnico) txt += ` (${state.listIdUnico})`;
-    if(state.hasUnsavedChanges) txt += " ⚠️"; // Indicador visual
-    badge.innerText = txt;
-    updateClearCloseBtn();
-  }
-
-  function hasLoadedNamedList(){
-    return !!(state.listIdUnico || (state.listName && state.listName.trim()));
-  }
-
-  function updateClearCloseBtn(){
-    const b = document.getElementById("btnClearOrClose");
-    if (!b) return;
-    if (hasLoadedNamedList()) {
-      b.textContent = "Cerrar";
-      b.title = "Cerrar setlist (limpia la vista)";
-    } else {
-      b.textContent = "Vaciar";
-      b.title = "Vaciar lista temporal";
-    }
-  }
-
-  function clearOrCloseSetlist(){
-    // NUEVO: Protección de cambios sin guardar
-    if (state.listIdUnico && state.hasUnsavedChanges) {
-      if (!confirm("⚠️ Tienes cambios de tono o letra sin guardar en la nube.\n\nSi cierras ahora, volverán a su estado original.\n¿Cerrar de todos modos?")) {
-        return;
-      }
-    }
-
-    if (hasLoadedNamedList()) {
-      const ok = confirm("¿Cerrar este setlist? (No se borra en la nube)");
-      if (!ok) return;
-      clearSetlist();
-    } else {
-      const ok = confirm("¿Vaciar la lista temporal?");
-      if (!ok) return;
-      clearSetlist();
-    }
-  }
-
-  // ===== FAVORITOS & CANTADAS =====
-  function getFavorites(){
-    const raw = localStorage.getItem(LS_FAV) || "{}";
-    const obj = safeJSONParse(raw, {});
-    return (obj && typeof obj === "object") ? obj : {};
-  }
-  function setFavorites(obj){ localStorage.setItem(LS_FAV, JSON.stringify(obj || {})); }
-
-  function isFav(song){
-    const favs = getFavorites();
-    const k = songKey(song);
-    return !!favs[k];
-  }
-
-  function toggleFavByIndex(idx, ev){
-    if (ev) ev.stopPropagation();
-    const song = state.setlist[idx];
-    if (!song) return;
-    const favs = getFavorites();
-    const k = songKey(song);
-    if (favs[k]) {
-      delete favs[k];
-    } else {
-      const bodyBase = song.body_base || song.body || "";
-      favs[k] = {
-        key: k,
-        id: song.id || null,
-        titulo: song.titulo || "",
-        artista: song.artista || "",
-        path_url: song.path_url || "",
-        body: bodyBase,
-        body_base: bodyBase,
-        bpm: song.bpm ?? null,
-        time_signature: song.time_signature ?? null,
-        tono_original: song.tono_original || "",
-        updatedAt: Date.now()
-      };
-    }
-    setFavorites(favs);
-    renderAll();
-    renderFavoritesInConfig();
-  }
-
-  function renderFavoritesInConfig(){
-    const box = document.getElementById("favList");
-    if (!box) return;
-    const favs = getFavorites();
-    const arr = Object.values(favs || {}).sort((a,b)=> (b.updatedAt||0) - (a.updatedAt||0));
-    const c = document.getElementById("favCount");
-    if (c) c.textContent = `(${arr.length})`;
-    box.innerHTML = "";
-    if (!arr.length) {
-      box.innerHTML = `<div style="color:var(--muted); font-size:12px;">No hay favoritos offline.</div>`;
-      return;
-    }
-    arr.forEach(f => {
-      const el = document.createElement("div");
-      el.className = "item";
-      el.style.cssText = "display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,.05); padding:8px; border-radius:8px;";
-      el.innerHTML = `
-        <div style="flex:1; cursor:pointer;" onclick="openFavorite('${escapeQuotes(f.key)}')">
-          <div style="font-weight:700; font-size:13px;">${f.titulo || "(Sin título)"}</div>
-          <div style="font-size:11px; color:var(--muted);">${f.artista || ""}</div>
-        </div>
-        <button class="btn danger-x" style="max-width:30px; height:30px; padding:0;" onclick="removeFavorite('${escapeQuotes(f.key)}', event)">✕</button>
-      `;
-      box.appendChild(el);
-    });
-  }
-
-  function openFavorite(key, ev){
-    if (ev) ev.stopPropagation();
-    const favs = getFavorites();
-    const f = favs[key];
-    if (!f) return;
-    const idx = state.setlist.findIndex(x => songKey(x) === key || String(x.id||"") === String(f.id||""));
-    if (idx >= 0) {
-      seleccionar(idx);
-      closeConfig();
-      return;
-    }
-    const bodyBase = f.body_base || f.body || "";
-    state.setlist.push({
-      id: f.id || null,
-      titulo: f.titulo || "",
-      artista: f.artista || "",
-      path_url: f.path_url || "",
-      body: bodyBase,
-      body_base: bodyBase,
-      bpm: f.bpm ?? null,
-      time_signature: f.time_signature ?? null,
-      tono_original: f.tono_original || "",
-      transpose_steps: 0,
-      bpm_override: null
-    });
-    saveLocal();
-    renderAll();
-    seleccionar(state.setlist.length - 1);
-    closeConfig();
-  }
-
-  function removeFavorite(key, ev){
-    if (ev) ev.stopPropagation();
-    const favs = getFavorites();
-    if (!favs[key]) return;
-    if (!confirm("¿Quitar este favorito offline?")) return;
-    delete favs[key];
-    setFavorites(favs);
-    renderFavoritesInConfig();
-    renderAll();
-  }
-
-  function getSungMap(){
-    const raw = localStorage.getItem(LS_SUNG) || "{}";
-    return safeJSONParse(raw, {});
-  }
-  function setSungMap(obj){ localStorage.setItem(LS_SUNG, JSON.stringify(obj || {})); }
-  function isSung(song){
-    const sm = getSungMap();
-    const lk = listKey();
-    const k = songKey(song);
-    return !!(sm[lk] && sm[lk][k]);
-  }
-  function markSung(song, val){
-    const sm = getSungMap();
-    const lk = listKey();
-    const k = songKey(song);
-    if (!sm[lk]) sm[lk] = {};
-    if (val) sm[lk][k] = true;
-    else delete sm[lk][k];
-    setSungMap(sm);
-  }
-
-  function getHiddenMap(){
-    const raw = localStorage.getItem(LS_HIDDEN) || "{}";
-    return safeJSONParse(raw, {});
-  }
-  function setHiddenMap(obj){ localStorage.setItem(LS_HIDDEN, JSON.stringify(obj || {})); }
-  function isHidden(song){
-    const hm = getHiddenMap();
-    const lk = listKey();
-    const k = songKey(song);
-    return !!(hm[lk] && hm[lk][k]);
-  }
-  function setHidden(song, val){
-    const hm = getHiddenMap();
-    const lk = listKey();
-    const k = songKey(song);
-    if (!hm[lk]) hm[lk] = {};
-    if (val) hm[lk][k] = true;
-    else delete hm[lk][k];
-    setHiddenMap(hm);
-  }
-
-  // ===== CORE LOGIC =====
-  async function fetchSongBodyFromBucket(song) {
-    let rawUrl = (song.path_url || "").trim();
-    if (!rawUrl) throw new Error("path_url vacío");
-  
-    rawUrl = rawUrl.replace(/^\.\//, "");
-    const fullUrl = /^https?:\/\//i.test(rawUrl) ? rawUrl : (BUCKET_URL + rawUrl);
-    const safeUrl = encodeURI(fullUrl);
-  
-    const resp = await fetch(safeUrl, { cache: "no-store" });
-    if (!resp.ok) throw new Error("Fetch " + resp.status + " " + fullUrl);
-  
-    const text = await resp.text();
-    return text.replace(/\{(\w+):\s*([^}]+)\}/g, "").trim();
-  }
-
-  async function addToSetlist(song) {
-    try {
-      const favs = getFavorites();
-      const k = songKey(song);
-      const bodyBase = (favs[k] && favs[k].body)
-        ? favs[k].body
-        : await fetchSongBodyFromBucket(song);
-  
-      state.setlist.push({
-        ...song,
-        body: bodyBase,
-        body_base: bodyBase,
-        transpose_steps: 0,
-        bpm_override: null
-      });
-  
-      saveLocal();
-      renderAll();
-    } catch (e) {
-      console.error(e);
-      appAlert("No se pudo cargar el archivo:\n" + (song?.path_url || ""));
-    }
-  }
-  
-  function getNextVisibleIndex(fromIdx){
-    if (!state.setlist.length) return -1;
-    for (let i = fromIdx + 1; i < state.setlist.length; i++){
-      const s = state.setlist[i];
-      if (s && !isHidden(s)) return i;
-    }
-    return -1;
-  }
-  
-  function updateNowNextInfo(){
-    const info = document.getElementById("current-song-info");
-    const next = document.getElementById("next-song-info");
-    const curr = state.setlist[state.currentIndex];
-  
-    if (!next) return;
-  
-    if (!curr){
-      if (info) info.innerHTML = "Adoranza Cloud";
-      next.innerHTML = "";
-      return;
-    }
-  
-    const nextIdx = getNextVisibleIndex(state.currentIndex);
-    const nextSong = nextIdx >= 0 ? state.setlist[nextIdx] : null;
-  
-    // Texto para “Siguiente”
-    if (nextSong){
-      next.innerHTML = `${nextSong.titulo || "(Sin título)"}<span class="sub2">Siguiente</span>`;
-    } else {
-      next.innerHTML = `(no hay más)<span class="sub2">Siguiente</span>`;
-    }
-  }
-
-function activateMoveMode(idx){
-  if (state.moveModeTimer) clearTimeout(state.moveModeTimer);
-
-  state.moveModeIndex = idx;
-  renderAll();
-
-  state.moveModeTimer = setTimeout(() => {
-    state.moveModeIndex = -1;
-    state.moveModeTimer = null;
-    renderAll();
-  }, 7000);
-}
-
-function moveSongByIndex(idx, dir, ev){
-  if (ev) ev.stopPropagation();
-
-  const newIdx = idx + dir;
-  if (newIdx < 0 || newIdx >= state.setlist.length) return;
-
-  const item = state.setlist.splice(idx, 1)[0];
-  state.setlist.splice(newIdx, 0, item);
-
-  if (state.currentIndex === idx) {
-    state.currentIndex = newIdx;
-  } else if (state.currentIndex === newIdx) {
-    state.currentIndex = idx;
-  }
-
-  state.moveModeIndex = newIdx;
-  state.hasUnsavedChanges = true;
-
-  saveLocal();
-  renderAll();
-
-  if (state.moveModeTimer) clearTimeout(state.moveModeTimer);
-  state.moveModeTimer = setTimeout(() => {
-    state.moveModeIndex = -1;
-    state.moveModeTimer = null;
-    renderAll();
-  }, 7000);
-}
-
-function attachLongPressMoveMode(el){
-  if (!el) return;
-
-  let timer = null;
-  let startX = 0;
-  let startY = 0;
-  let pointerId = null;
-
-  const cancel = () => {
-    if (timer) clearTimeout(timer);
-    timer = null;
-    pointerId = null;
-  };
-
-  el.addEventListener("pointerdown", (ev) => {
-    const t = ev.target;
-    if (t && (t.closest(".pill") || t.closest(".move-btn"))) return;
-
-    pointerId = ev.pointerId;
-    startX = ev.clientX;
-    startY = ev.clientY;
-
-    const idx = parseInt(el.dataset.idx || "-1", 10);
-    if (idx < 0) return;
-
-    timer = setTimeout(() => {
-      timer = null;
-      pointerId = null;
-      activateMoveMode(idx);
-    }, 2000);
-  }, { passive:true });
-
-  el.addEventListener("pointermove", (ev) => {
-    if (pointerId == null || ev.pointerId !== pointerId) return;
-
-    const dx = Math.abs(ev.clientX - startX);
-    const dy = Math.abs(ev.clientY - startY);
-
-    if (dx > 12 || dy > 12) cancel();
-  }, { passive:true });
-
-  el.addEventListener("pointerup", cancel, { passive:true });
-  el.addEventListener("pointercancel", cancel, { passive:true });
-  el.addEventListener("pointerleave", cancel, { passive:true });
-}
-  
-  function renderAll() {
-    const sl = document.getElementById("setList");
-    if (!sl) return;
-    sl.innerHTML = "";
-
-    const visible = state.setlist
-      .map((s, originalIndex) => ({ s, originalIndex }))
-      .filter(x => !isHidden(x.s));
-
-    visible.forEach(({ s, originalIndex }) => {
-      const wrap = document.createElement("div");
-      wrap.className = "set-item-wrap";
-      const actions = document.createElement("div");
-      actions.className = "swipe-actions";
-      actions.innerHTML = `
-        <div class="swipe-action left">🗑️ Quitar</div>
-        <div class="swipe-action right">✅ Cantada</div>
-      `;
-      const row = document.createElement("div");
-      row.className = "set-item";
-      row.dataset.idx = String(originalIndex);
-      const favOn = isFav(s);
-      if (originalIndex === state.currentIndex) row.classList.add("is-active");
-      if (isSung(s)) row.classList.add("is-sung");
-      if (favOn) row.classList.add("is-fav");
-      
-      if (state.moveModeIndex === originalIndex) {
-        row.classList.add("is-move-mode");
-      }
-
-      row.innerHTML = `
-        ${
-          state.moveModeIndex === originalIndex
-            ? `<div class="move-controls">
-                 <button class="move-btn" onclick="moveSongByIndex(${originalIndex}, -1, event)">↑</button>
-                 <button class="move-btn" onclick="moveSongByIndex(${originalIndex}, 1, event)">↓</button>
-               </div>`
-            : `<span class="drag-handle">☰</span>`
-        }
-        <div class="titlebox">
-          <div class="songtitle">${s.titulo || "(Sin título)"}</div>
-          <div class="songmeta">${s.artista || ""}${favOn ? " · Offline" : ""}${isSung(s) ? " · Cantada" : ""}</div>
-        </div>
-        <div class="pill heart ${favOn ? "on" : ""}" onclick="toggleFavByIndex(${originalIndex}, event)">${favOn ? "♥" : "♡"}</div>
-      `;
-      row.onclick = () => seleccionar(originalIndex);
-      wrap.appendChild(actions);
-      wrap.appendChild(row);
-      sl.appendChild(wrap);
-      if (state.userRole !== "musico") {
-        attachSwipe(row);
-      }
-      attachLongPressMoveMode(row);
-    });
-
-    renderBadge();
-
-    const currHidden = (state.currentIndex >= 0 && state.setlist[state.currentIndex] && isHidden(state.setlist[state.currentIndex]));
-    if (currHidden) state.currentIndex = -1;
-
-    const curr = state.setlist[state.currentIndex];
-    const view = document.getElementById("viewContent");
-    const info = document.getElementById("current-song-info");
-    const dots = document.getElementById("metro-dots");
-
-    if (curr && view) {
-      if (info) {
-        if (state.userRole === "drums") {
-            const bpmShown = Number.isFinite(curr.bpm_override)
-            ? curr.bpm_override
-            : (Number.isFinite(curr.bpm) ? curr.bpm : null);
-            info.innerHTML = `${curr.titulo || ""}<span class="sub">BPM: ${state.half && bpmShown ? bpmShown / 2 : (bpmShown ?? "-")}</span>`;
-        } else {
-            info.innerHTML = `${curr.titulo || ""}<span class="sub">${curr.artista || ""}</span>`;
+      function markDirty() {
+        if (typeof state !== "undefined" && state.listIdUnico) {
+          state.hasUnsavedChanges = true;
         }
       }
     
-      updateNowNextInfo();
-      
-      if (dots) {
-        if (state.userRole === "musico") dots.classList.add("is-hidden");
-        else dots.classList.remove("is-hidden");
+      function setChildren(parent, children) {
+        parent.textContent = "";
+        children.forEach(child => parent.appendChild(child));
       }
-      
-        let bodyBase = curr.body_base || curr.body || "";
-        const currentKeyRaw = String(
-          curr.tono_effective || curr.tono_override || curr.tono_original || curr.key || ""
-        ).trim();
-        
-        let keyNorm = currentKeyRaw.replace(/\s+/g, "");
-        const mm = keyNorm.match(/^([A-G])([#b]?)(m)?/i);
-        keyNorm = mm ? (mm[1].toUpperCase() + (mm[2] || "") + (mm[3] ? "m" : "")) : "";
-        
-        // 2) Prefer bemoles por tonalidad (si existe)
-        const hasFlatKey = /^[A-G]b/i.test(keyNorm);
-        const flatMinorKeys = ["Dm","Gm","Cm","Fm","Bbm","Ebm","Abm"];
-        let preferFlats =
-          hasFlatKey ||
-          ["F","Bb","Eb","Ab","Db","Gb","Cb"].includes(keyNorm) ||
-          flatMinorKeys.includes(keyNorm);
-        
-        // 3) Fallback: si NO hay tonalidad, inferir por el texto
-        if (!keyNorm) {
-          // si el cuerpo ya contiene Bb/Eb/Ab/Db/Gb/Cb, usamos bemoles
-          preferFlats = /\b[A-G]b\b/.test(bodyBase);
-        }
-        
-        let body = transposeBody(
-          bodyBase,
-          curr.transpose_steps || 0,
-          preferFlats
-        );
-
-      
-      if (state.userRole !== "musico") {
-        body = body.replace(/\[([^\]]+)\]/g, "");
-
-        const lines = body.split(/\r?\n/);
-        const cleaned = [];
-
-        for (let l of lines) {
-          const t = l.trim();
-          if (!t) continue;
-          if (!t.replace(/\s+/g, "")) continue;
-          cleaned.push(t);
-        }
-
-        body = cleaned.join("\n\n");
-      } else {
-        body = body.replace(/\[([^\]]+)\]/g, '<span class="chord">[$1]</span>');
-      }
-      view.innerHTML = body;
-      view.style.fontSize = state.currentFontSize + "px";
-      const effectiveBpm = Number.isFinite(curr.bpm_override)
-      ? curr.bpm_override
-      : (Number.isFinite(curr.bpm) ? curr.bpm : 120);
-      state.currentBPM = state.half ? effectiveBpm / 2 : effectiveBpm;
-      if (state.userRole === "drums" && state.metroActive) startMetro();
-    } else {
-      if (dots) {
-         if (state.userRole === "musico") dots.classList.add("is-hidden");
-         else dots.classList.remove("is-hidden");
-      }
-      if (info) info.innerHTML = `Adoranza Cloud`;
-      if (view) view.textContent = "Selecciona una canción.";
-      updateNowNextInfo();
-    }
-  setTimeout(initSortable, 0);
-  }
-
-  function softRemoveSong(idx) {
-    const song = state.setlist[idx];
-    if (!song) return;
-    state.lastRemoved = { song, index: idx };
-    state.setlist.splice(idx, 1);
-    if (state.currentIndex === idx) state.currentIndex = -1;
-    else if (state.currentIndex > idx) state.currentIndex--;
-    saveLocal();
-    renderAll();
-    showUndoToast(`Quitada: ${song.titulo || "Canción"}`);
-  }
-  
-  function removeSong(idx, e) { if (e) e.stopPropagation(); softRemoveSong(idx); }
-  function saveLocal() { localStorage.setItem("adoranza_v4_setlist", JSON.stringify(state.setlist)); }
-
-  function loadLocalSetlist() {
-    const raw = localStorage.getItem("adoranza_v4_setlist");
-    const parsed = safeJSONParse(raw, []);
-    if (Array.isArray(parsed)) {
-      state.setlist = parsed;
-    } else {
-      state.setlist = [];
-    }
-  }
-
-  function clearSetlist() {
-    state.setlist = [];
-    state.currentIndex = -1;
-    state.listName = "";
-    state.listIdUnico = "";
-    state.hasUnsavedChanges = false;
-  
-    localStorage.removeItem(LS_HIDDEN);
-  
-    saveLocal();
-    renderAll();
-  }
-
-  function showUndoToast(label){
-    const t = document.getElementById("toastUndo");
-    const m = document.getElementById("toastMsg");
-    if (!t || !m) return;
-    m.innerText = label || "Quitada";
-    t.style.display = "flex";
-    if (state.toastT) clearTimeout(state.toastT);
-    state.toastT = setTimeout(() => {
-      t.style.display = "none";
-      state.toastT = null;
-      state.lastRemoved = null;
-    }, 4500);
-  }
-  function undoLastRemove(){
-    if (!state.lastRemoved) return;
-    const { song, index } = state.lastRemoved;
-    const idx = Math.max(0, Math.min(index, state.setlist.length));
-    state.setlist.splice(idx, 0, song);
-    saveLocal();
-    state.lastRemoved = null;
-    const t = document.getElementById("toastUndo");
-    if(t) t.style.display = "none";
-    renderAll();
-  }
-
-  // ===== NEW CLOUD LOGIC =====
-  async function guardarListaCloud() {
-    if (!db) { appAlert("EL Data base no está listo."); return; }
-    if (!state.setlist.length) { appAlert("El setlist está vacío."); return; }
-  
-    const { canciones_ids, canciones_json } = buildCloudSetlistPayload();
-  
-    if (state.listIdUnico) {
-      const target = state.listIdUnico.trim().toUpperCase();
-      const payload = {
-        canciones_ids,
-        canciones_json,            // ✅ SOLO overrides
-        owner_id: state.userId,
-        owner_name: state.username,
-        updated_at: new Date().toISOString()
-      };
-  
-      const { error } = await db.from("setlists_guardados").update(payload).eq("id_unico", target);
-      if (error) { appAlert("Error al actualizar: " + error.message); return; }
-  
-      state.hasUnsavedChanges = false;
-      appAlert("Cambios guardados correctamente ✅");
-      if (document.getElementById("configPanel").style.display === "flex") listarMisSetlists();
-      renderAll();
-      return;
-    }
-  
-    const n = prompt("Nombre del setlist:");
-    if (!n) return;
-  
-    let idUnico = "";
-    let lastErr = null;
-  
-    for (let i = 0; i < 6; i++) {
-      idUnico = genSetlistId8("");
-      const { error } = await db.from("setlists_guardados").insert({
-        nombre_lista: n,
-        canciones_ids,
-        canciones_json,          // ✅ SOLO overrides
-        id_unico: idUnico,
-        owner_id: state.userId,
-        owner_name: state.username
-      });
-  
-      if (!error) { lastErr = null; break; }
-      lastErr = error;
-    }
-  
-    if (lastErr) { appAlert("Error al crear setlist: " + lastErr.message); return; }
-  
-    state.listName = n;
-    state.listIdUnico = idUnico;
-    state.hasUnsavedChanges = false;
-    appAlert("Guardado con éxito ✅\nCódigo: " + idUnico);
-  
-    if (document.getElementById("configPanel").style.display === "flex") listarMisSetlists();
-    renderAll();
-  }
-
-  async function cargarListaCloud() {
-    if (!db) { appAlert("Supabase no está listo."); return; }
-    if (state.hasUnsavedChanges) {
-      if (!confirm("Tienes cambios sin guardar en la lista actual. Si cargas otra, se perderán. ¿Deseas continuar?")) return;
-    }
-  
-    const uid = prompt("Ingresa el ID del Setlist (ej: ENSAYO01):");
-    if (!uid) return;
-    const want = uid.trim().toUpperCase();
-  
-    const setlist = await loadSetlistByCode(want, db).catch(e => null);
-    if (!setlist) { appAlert("No se encontró: " + want); return; }
-  
-    state.listName = setlist.nombre_lista || "";
-    state.listIdUnico = String(setlist.id_unico || want).trim().toUpperCase();
-
-    if (setlist.owner_id && setlist.owner_id !== state.userId) {
-      const wantAdopt = confirm("¿Deseas adoptar este setlist y que aparezca en 'Mis Setlists'?");
-      if (wantAdopt) {
-        adoptSetlistId(want);
-        if (document.getElementById("configPanel").style.display === "flex") {
-          listarMisSetlists();
+    
+      function renderChordText(container, raw) {
+        container.textContent = "";
+    
+        const parts = String(raw || "").split(/(\[[^\]]+\])/g);
+    
+        for (const part of parts) {
+          if (!part) continue;
+    
+          if (/^\[[^\]]+\]$/.test(part)) {
+            const span = document.createElement("span");
+            span.className = "chord";
+            span.textContent = part;
+            container.appendChild(span);
+          } else {
+            container.appendChild(document.createTextNode(part));
+          }
         }
       }
-    }
-  
-    // ✅ resuelve siempre por IDs, baja el txt actual, aplica overrides
-    const resolved = await resolveSetlistSongs(setlist, db);
-  
-    // adaptar al formato interno de tu app
-    state.setlist = resolved.map(s => ({
-      ...s,
-      body_base: s.body,
-      transpose_steps: Number.isFinite(s.transpose_steps) ? s.transpose_steps : 0,
-      bpm_override: s.bpm_override ?? null,
-    }));
-  
-    state.hasUnsavedChanges = false;
-    localStorage.removeItem(LS_HIDDEN);
-    renderAll();
-  }
-
-
-    async function listarMisSetlists() {
-    if (!db) return;
-  
-    const box = document.getElementById("mySetlists");
-    if (box) {
-      box.innerHTML = `<div style="color:var(--muted); font-size:12px;">Cargando…</div>`;
-    }
-  
-    try {
-      const adoptedIds = getAdoptedSetlists();
-  
-      // 1) setlists del usuario
-      const { data: mine, error: mineError } = await db
-        .from("setlists_guardados")
-        .select("*")
-        .eq("owner_id", state.userId)
-        .order("updated_at", { ascending: false });
-  
-      if (mineError) throw mineError;
-  
-      let all = Array.isArray(mine) ? [...mine] : [];
-  
-      // 2) setlists adoptados
-      if (adoptedIds.length) {
-        const { data: adopted, error: adoptedError } = await db
-          .from("setlists_guardados")
-          .select("*")
-          .in("id_unico", adoptedIds)
-          .order("updated_at", { ascending: false });
-  
-        if (adoptedError) throw adoptedError;
-  
-        if (Array.isArray(adopted)) {
-          const seen = new Set(all.map(x => String(x.id_unico || "").trim().toUpperCase()));
-          adopted.forEach(row => {
-            const code = String(row.id_unico || "").trim().toUpperCase();
-            if (!seen.has(code)) {
-              all.push(row);
-              seen.add(code);
-            }
+    
+      function normalizeTransposeSteps(value) {
+        const n = toNumber(value, 0);
+        if (!Number.isFinite(n)) return 0;
+        return n;
+      }
+    
+      function getEffectiveBpm(song, fallback = 120) {
+        return toNumber(song?.bpm_override, toNumber(song?.bpm, fallback));
+      }
+    
+      function getVisibleIndexes() {
+        return state.setlist
+          .map((song, index) => ({ song, index }))
+          .filter(x => x.song && !isHidden(x.song))
+          .map(x => x.index);
+      }
+    
+      function getPrevVisibleIndex(fromIdx) {
+        const visible = getVisibleIndexes();
+        for (let i = visible.length - 1; i >= 0; i--) {
+          if (visible[i] < fromIdx) return visible[i];
+        }
+        return -1;
+      }
+    
+      function getNextVisibleIndexFixed(fromIdx) {
+        const visible = getVisibleIndexes();
+        for (const idx of visible) {
+          if (idx > fromIdx) return idx;
+        }
+        return -1;
+      }
+    
+      function updateVersionLabels() {
+        document.title = "Adoranza Pro v6.5";
+        const roleTitle = document.querySelector("#roleSelector h1");
+        if (roleTitle) roleTitle.textContent = APP_VERSION;
+      }
+    
+      /* Corrige overrides de Supabase aunque vengan como string */
+      normalizeOverrides = function normalizeOverridesFixed(canciones_json) {
+        const arr = Array.isArray(canciones_json) ? canciones_json : [];
+        const map = new Map();
+    
+        for (const x of arr) {
+          const key = x?.id || x?.song_id;
+          if (!key) continue;
+    
+          map.set(key, {
+            bpm_override: toNumber(x.bpm_override, null),
+            tono_override:
+              typeof x.tono_override === "string" && x.tono_override.trim()
+                ? x.tono_override.trim()
+                : null,
+            transpose_steps: toNumber(x.transpose_steps, 0)
           });
         }
-      }
-  
-      if (!box) return;
-      box.innerHTML = "";
-  
-      if (!all.length) {
-        box.innerHTML = `<div style="color:var(--muted); font-size:12px;">Sin setlists.</div>`;
-        return;
-      }
-  
-      all.forEach(row => {
-        const id = String(row.id_unico || "").trim().toUpperCase();
-        const name = row.nombre_lista || "(Sin nombre)";
-        const ownerTag = row.owner_id === state.userId ? "Mío" : "Adoptado";
-  
-        const el = document.createElement("div");
-        el.className = "set-item";
-        el.style.cursor = "pointer";
-        el.innerHTML = `
-          <div class="titlebox" style="padding-left:6px;">
-            <div class="songtitle">${name}</div>
-            <div class="songmeta">
-              ID: <span style="font-family:var(--mono); color:var(--accent);">${id}</span> · ${ownerTag}
-            </div>
-          </div>
-          <button class="btn btn-add" style="max-width:56px;" onclick="copiarSetlistId('${id}', event)">COP</button>
-        `;
-        el.onclick = () => { copiarSetlistId(id); };
-        box.appendChild(el);
-      });
-  
-    } catch (err) {
-      console.error("listarMisSetlists error:", err);
-      if (box) {
-        box.innerHTML = `<div style="color:var(--danger); font-size:12px;">Error cargando setlists.</div>`;
-      }
-    }
-  }
-
-  async function copiarSetlistId(id, ev) {
-    if (ev) ev.stopPropagation();
-    const ok = await copyToClipboard(id);
-    appAlert(ok ? `Copiado ✅\n${id}` : `No copiado\n${id}`);
-  }
-  async function copiarMiSetlistActual() {
-    if (!state.listIdUnico) { appAlert("No hay setlist cargado."); return; }
-    await copiarSetlistId(state.listIdUnico.trim().toUpperCase());
-  }
-
-  // ===== CONTROLS =====
-  function changeFontSize(d) {
-    state.currentFontSize = Math.max(12, Math.min(42, state.currentFontSize + d));
-    localStorage.setItem("adoranza_font_size", String(state.currentFontSize));
-    renderAll();
-  }
-  
-  function transpose(delta) {
-    const curr = state.setlist[state.currentIndex];
-    if (!curr) return;
-  
-    curr.transpose_steps = (Number.isFinite(curr.transpose_steps) ? curr.transpose_steps : 0) + delta;
-  
-    // esto sí es “cambio sin guardar” (override de setlist)
-    state.hasUnsavedChanges = true;
-    renderAll();
-  }
-
-  function scrollToReader(){
-    const panel = document.getElementById("fixedControlPanel");
-    const info = document.getElementById("songInfoBelowSetlist");
-    const view = document.getElementById("viewContent");
-  
-    if (!panel || !view) return;
-  
-    const target = info || view;
-    const y = target.getBoundingClientRect().top + window.scrollY - (panel.offsetHeight + 10);
-  
-    window.scrollTo({ top: Math.max(0, y), behavior: "smooth" });
-  }
-  
-  function seleccionar(idx) {
-    state.currentIndex = idx;
-    state.half = false;
-    renderAll();
-    scrollToReader();
-  }
-  
-  function prevSong() {
-    if (state.setlist.length === 0) return;
-    if (state.currentIndex <= 0) state.currentIndex = 0;
-    else state.currentIndex--;
-    state.half = false;
-    renderAll();
-    scrollToReader();
-  }
-  
-  function nextSong() {
-    if (state.setlist.length === 0) return;
-    if (state.currentIndex < 0) state.currentIndex = 0;
-    else if (state.currentIndex < state.setlist.length - 1) state.currentIndex++;
-    state.half = false;
-    renderAll();
-    scrollToReader();
-  }
-
-  function stopScroll() {
-    if (state.scrollInt) clearInterval(state.scrollInt);
-    state.scrollInt = null;
-    const sb = document.getElementById("scrollBtn");
-    if (sb) sb.innerText = "AUTO";
-  }
-
-  function toggleScroll() {
-    if (state.scrollInt) {
-      clearInterval(state.scrollInt);
-      state.scrollInt = null;
-      document.getElementById("scrollBtn").innerText = "AUTO";
-    } else {
-      const intervalMs = Math.max(10, 50 / state.scrollSpeed);
-      state.scrollInt = setInterval(() => window.scrollBy(0, 1), intervalMs);
-      document.getElementById("scrollBtn").innerText = "PAUSA";
-    }
-  }
-  
-  function adjScroll(d) {
-    state.scrollSpeed = Math.max(0.1, Math.min(5, state.scrollSpeed + d));
-    if (state.scrollInt) {
-      clearInterval(state.scrollInt);
-      const intervalMs = Math.max(10, 50 / state.scrollSpeed);
-      state.scrollInt = setInterval(() => window.scrollBy(0, 1), intervalMs);
-    }
-  }
-
-  function toggleMetroManual() {
-    state.metroActive = !state.metroActive;
-    const b = document.getElementById("btnMetroState");
-    if (b) b.innerText = state.metroActive ? "⏹" : "▶";
-    state.metroActive ? startMetro() : stopMetro();
-  }
-  
-  function halfTime() { state.half = !state.half; renderAll(); }
-  function startMetro() {
-    stopMetro();
-    const curr = state.setlist[state.currentIndex];
-    if (!curr) return;
-    const dots = document.getElementById("metro-dots");
-    if (!dots) return;
-    dots.innerHTML = "";
-    const beats = parseInt(curr.time_signature) || 4;
-    for (let i = 0; i < beats; i++) dots.innerHTML += `<div class="beat-dot" id="dot-${i}"></div>`;
-    let step = 0;
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    state.metroInt = setInterval(() => {
-      const vr = document.getElementById("volRange");
-      const vol = vr ? parseFloat(vr.value) : 0.5;
-      document.querySelectorAll(".beat-dot").forEach(d => d.className = "beat-dot");
-      const dot = document.getElementById(`dot-${step}`);
-      if (dot) dot.classList.add(step === 0 ? "beat-active-red" : "beat-active-green");
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(step === 0 ? 880 : 440, audioCtx.currentTime);
-      gain.gain.setValueAtTime(vol * 0.3, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
-      osc.connect(gain); gain.connect(audioCtx.destination);
-      osc.start(); osc.stop(audioCtx.currentTime + 0.1);
-      step = (step + 1) % beats;
-    }, (60 / state.currentBPM) * 1000);
-  }
-  function stopMetro() {
-    if (state.metroInt) clearInterval(state.metroInt);
-    state.metroInt = null;
-    const md = document.getElementById("metro-dots");
-    if (md) md.innerHTML = "";
-  }
-
-  function compartirWhatsApp() {
-    if (!state.listIdUnico) { appAlert("Guarda el setlist primero."); return; }
-    if (state.hasUnsavedChanges) { appAlert("⚠️ Tienes cambios pendientes. Guarda antes de compartir."); return; }
-    const sid = state.listIdUnico.trim().toUpperCase();
-    const n = state.listName || "Setlist";
-    const url = `${window.location.origin}${window.location.pathname}?sid=${encodeURIComponent(sid)}`;
-    const msg = `🎶 *Setlist:* ${n}\n🔑 *Código:* ${sid}\n🔗 Abrir: ${url}`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");
-  }
-
-  async function Estadisticas() {
-    if (!db) return;
-    const { data } = await db.from("canciones").select("titulo, veces_tocada").gt("veces_tocada", 0).order("veces_tocada", { ascending:false }).limit(5);
-    appAlert("TOP 5:\n" + (data || []).map(s => `- ${s.titulo} (${s.veces_tocada})`).join("\n"));
-  }
-
-  function attachSwipe(el){
-    // el.style.touchAction = "pan-y"; //
-    let startX = 0, startY = 0, dx = 0, dy = 0;
-    let dragging = false;
-    let pointerId = null;
-    const wrap = el.closest(".set-item-wrap");
-    const reset = () => {
-      el.style.transition = "transform .16s ease";
-      el.style.transform = "translateX(0px)";
-      if (wrap) wrap.classList.remove("is-swiping");
-      setTimeout(()=>{ el.style.transition = ""; }, 180);
-      dragging = false; dx = dy = 0; pointerId = null;
-    };
-    const onDown = (ev) => {
-      const t = ev.target;
-      if (t && (t.closest(".pill") || t.closest(".drag-handle"))) return;
-      pointerId = ev.pointerId; startX = ev.clientX; startY = ev.clientY; dx = dy = 0; dragging = false;
-    };
-    const onMove = (ev) => {
-      if (pointerId == null || ev.pointerId !== pointerId) return;
-      dx = ev.clientX - startX; dy = ev.clientY - startY;
-      if (!dragging) {
-        if (Math.abs(dy) > 12 && Math.abs(dy) > Math.abs(dx)) { pointerId = null; return; }
-        if (Math.abs(dx) > 10) { dragging = true; try { el.setPointerCapture(ev.pointerId); } catch(e) {} if (wrap) wrap.classList.add("is-swiping"); }
-      }
-      if (!dragging) return;
-      el.style.transform = `translateX(${dx}px)`;
-    };
-    const onUp = (ev) => {
-      const idx = parseInt(el.dataset.idx || "-1", 10);
-      if (!dragging) {
-        if (Math.abs(dx) <= 8 && Math.abs(dy) <= 8) { if (idx >= 0) seleccionar(idx); }
-        reset(); return;
-      }
-      const width = el.getBoundingClientRect().width || 1;
-      const thr = width * 0.28;
-      if (dx <= -thr) { reset(); if (idx >= 0) softRemoveSong(idx); return; }
-      if (dx >= thr) { reset(); const song = state.setlist[idx]; if (song) { markSung(song, true); setHidden(song, true); saveLocal(); renderAll(); } return; }
-      reset();
-    };
-    el.addEventListener("pointerdown", onDown, { passive:true });
-    el.addEventListener("pointermove", onMove, { passive:true });
-    el.addEventListener("pointerup", onUp, { passive:true });
-    el.addEventListener("pointercancel", reset, { passive:true });
-  }
-
-  function initReaderSwipe() {
-    const el = document.getElementById("viewContent");
-    if (!el) return;
-  
-    // Evita doble registro si renderizas o reinicias algo después
-    if (el.dataset.swipeReady === "1") return;
-    el.dataset.swipeReady = "1";
-  
-    el.style.touchAction = "pan-y";
-  
-    let startX = 0;
-    let startY = 0;
-    let dx = 0;
-    let dy = 0;
-    let dragging = false;
-    let pointerId = null;
-  
-    const SWIPE_THRESHOLD = 70; // mínimo horizontal para cambiar canción
-    const MAX_VERTICAL_DRIFT = 60; // si sube/baja mucho, no cuenta como swipe lateral
-  
-    const reset = () => {
-      dragging = false;
-      pointerId = null;
-      dx = 0;
-      dy = 0;
-    };
-  
-    const onDown = (ev) => {
-      pointerId = ev.pointerId;
-      startX = ev.clientX;
-      startY = ev.clientY;
-      dx = 0;
-      dy = 0;
-      dragging = false;
-    };
-  
-    const onMove = (ev) => {
-      if (pointerId == null || ev.pointerId !== pointerId) return;
-  
-      dx = ev.clientX - startX;
-      dy = ev.clientY - startY;
-  
-      if (!dragging) {
-        // si parece scroll vertical, abandonamos
-        if (Math.abs(dy) > 12 && Math.abs(dy) > Math.abs(dx)) {
-          pointerId = null;
+    
+        return map;
+      };
+    
+      /* Guarda también tono_override y normaliza números */
+      buildCloudSetlistPayload = function buildCloudSetlistPayloadFixed() {
+        const ids = state.setlist.map(s => s.id).filter(Boolean);
+    
+        const overrides = state.setlist
+          .filter(s => s && s.id)
+          .map(s => ({
+            id: s.id,
+            transpose_steps: normalizeTransposeSteps(s.transpose_steps),
+            bpm_override: toNumber(s.bpm_override, null),
+            tono_override:
+              typeof s.tono_override === "string" && s.tono_override.trim()
+                ? s.tono_override.trim()
+                : null
+          }));
+    
+        return { canciones_ids: ids, canciones_json: overrides };
+      };
+    
+      /* Evita que localStorage rompa la app si se llena */
+      saveLocal = function saveLocalFixed() {
+        try {
+          localStorage.setItem("adoranza_v4_setlist", JSON.stringify(state.setlist));
+        } catch (e) {
+          console.warn("No se pudo guardar localmente:", e);
+          appAlert(
+            "No se pudo guardar localmente. Es posible que el almacenamiento del navegador esté lleno."
+          );
+        }
+      };
+    
+      updateNowNextInfo = function updateNowNextInfoFixed() {
+        const info = $("current-song-info");
+        const next = $("next-song-info");
+        const curr = state.setlist[state.currentIndex];
+    
+        if (!next) return;
+    
+        if (!curr) {
+          if (info) info.textContent = "Adoranza Cloud";
+          next.textContent = "";
           return;
         }
-  
-        if (Math.abs(dx) > 10) {
-          dragging = true;
-          try { el.setPointerCapture(ev.pointerId); } catch (e) {}
-        }
-      }
-    };
-  
-    const onUp = (ev) => {
-      if (pointerId == null || ev.pointerId !== pointerId) {
-        reset();
-        return;
-      }
-  
-      // si hubo mucho movimiento vertical, no cambiar canción
-      if (Math.abs(dy) > MAX_VERTICAL_DRIFT) {
-        reset();
-        return;
-      }
-  
-      if (Math.abs(dx) >= SWIPE_THRESHOLD) {
-        if (dx < 0) {
-          nextSong();   // swipe a la izquierda = siguiente
-        } else {
-          prevSong();   // swipe a la derecha = anterior
-        }
-      }
-  
-      reset();
-    };
-  
-    el.addEventListener("pointerdown", onDown, { passive: true });
-    el.addEventListener("pointermove", onMove, { passive: true });
-    el.addEventListener("pointerup", onUp, { passive: true });
-    el.addEventListener("pointercancel", reset, { passive: true });
-  }
-
-  function initPinchZoom() {
-    const el = document.getElementById("viewContent");
-    if (!el) return;
-  
-    if (el.dataset.pinchReady === "1") return;
-    el.dataset.pinchReady = "1";
-  
-    let pointers = new Map();
-    let initialDistance = null;
-    let initialFontSize = state.currentFontSize;
-  
-    const MIN_FONT = 12;
-    const MAX_FONT = 42;
-  
-    function getDistance(p1, p2) {
-      const dx = p1.clientX - p2.clientX;
-      const dy = p1.clientY - p2.clientY;
-      return Math.sqrt(dx * dx + dy * dy);
-    }
-  
-    el.addEventListener("pointerdown", (e) => {
-      pointers.set(e.pointerId, e);
-  
-      if (pointers.size === 2) {
-        const pts = Array.from(pointers.values());
-        initialDistance = getDistance(pts[0], pts[1]);
-        initialFontSize = state.currentFontSize;
-      }
-    });
-  
-    el.addEventListener("pointermove", (e) => {
-      if (!pointers.has(e.pointerId)) return;
-  
-      pointers.set(e.pointerId, e);
-  
-      if (pointers.size === 2) {
-        const pts = Array.from(pointers.values());
-        const currentDistance = getDistance(pts[0], pts[1]);
-  
-        if (!initialDistance) return;
-  
-        const scale = currentDistance / initialDistance;
-  
-        let newSize = initialFontSize * scale;
-        newSize = Math.max(MIN_FONT, Math.min(MAX_FONT, newSize));
-  
-        state.currentFontSize = Math.round(newSize);
-        localStorage.setItem("adoranza_font_size", String(state.currentFontSize));
-        renderAll();
-      }
-    });
-  
-    const cleanup = (e) => {
-      pointers.delete(e.pointerId);
-      if (pointers.size < 2) {
-        initialDistance = null;
-      }
-    };
-  
-    el.addEventListener("pointerup", cleanup);
-    el.addEventListener("pointercancel", cleanup);
-    el.addEventListener("pointerleave", cleanup);
-  }
-  
-  function initSortable() {
-    const el = document.getElementById("setList");
-    if (!el || !window.Sortable) return;
-  
-    if (el._sortable) {
-      try { el._sortable.destroy(); } catch(e) {}
-      el._sortable = null;
-    }
-  
-    el._sortable = Sortable.create(el, {
-      animation: 150,
-      draggable: ".set-item-wrap",
-      handle: ".drag-handle",
-  
-      forceFallback: true,
-      fallbackOnBody: false,
-      fallbackTolerance: 3,
-  
-      delayOnTouchOnly: true,
-      delay: 300,
-      touchStartThreshold: 15,
-  
-      scroll: true,
-      bubbleScroll: true,
-  
-      onStart: () => {
-        document.body.classList.add("is-dragging-sortable");
-        stopScroll();
-      },
-  
-      onEnd: (evt) => {
-        document.body.classList.remove("is-dragging-sortable");
-  
-        try {
-          const oldIndex = evt.oldIndex;
-          const newIndex = evt.newIndex;
-  
-          if (oldIndex == null || newIndex == null) return;
-          if (oldIndex === newIndex) return;
-  
-          const visibleIdxs = state.setlist
-            .map((s, i) => (!isHidden(s) ? i : null))
-            .filter(i => i !== null);
-  
-          const fromActual = visibleIdxs[oldIndex];
-          if (fromActual == null) return;
-  
-          const moved = state.setlist.splice(fromActual, 1)[0];
-          if (!moved) return;
-  
-          const visibleAfterRemove = state.setlist
-            .map((s, i) => (!isHidden(s) ? i : null))
-            .filter(i => i !== null);
-  
-          let insertAt;
-  
-          if (newIndex >= visibleAfterRemove.length) {
-            insertAt = state.setlist.length;
-          } else {
-            insertAt = visibleAfterRemove[newIndex];
-          }
-  
-          state.setlist.splice(insertAt, 0, moved);
-  
-          state.currentIndex = state.setlist.findIndex(s => s === moved);
-  
-          saveLocal();
-          renderAll();
-  
-        } catch (e) {
-          console.error("Sortable reorder error:", e);
-          appAlert("Error al reordenar:\n" + (e?.message || e));
-          renderAll();
-        }
-      }
-    });
-  }
-
-
-  function stripChordsAndCompactText(raw) {
-    let body = String(raw || "");
-    body = body.replace(/\[([^\]]+)\]/g, "");
-
-    const lines = body.split(/\r?\n/);
-    const cleaned = [];
-
-    for (let l of lines) {
-      const t = l.trim();
-      if (!t) continue;
-      if (!t.replace(/\s+/g, "")) continue;
-      cleaned.push(t);
-    }
-
-    return cleaned.join("\n\n");
-  }
-
-  function buildCurrentSongText() {
-    const curr = state.setlist[state.currentIndex];
-    if (!curr) return "";
-
-    const title = curr.titulo || "Sin título";
-    const artist = curr.artista || "";
-    const bodyBase = curr.body_base || curr.body || "";
-    const lyric = stripChordsAndCompactText(bodyBase);
-
-    let out = title;
-    if (artist) out += "\n" + artist;
-    out += "\n\n" + lyric;
-
-    return out.trim();
-  }
-
-  function buildFullSetlistText() {
-    if (!Array.isArray(state.setlist) || !state.setlist.length) return "";
-
-    const parts = [];
-    const listTitle = state.listName || state.listIdUnico || "Setlist";
-
-    parts.push(listTitle);
-    parts.push("=".repeat(listTitle.length));
-    parts.push("");
-
-    state.setlist.forEach((song, i) => {
-      const title = song?.titulo || `Canción ${i + 1}`;
-      const artist = song?.artista || "";
-      const bodyBase = song?.body_base || song?.body || "";
-      const lyric = stripChordsAndCompactText(bodyBase);
-
-      parts.push(`${i + 1}. ${title}`);
-      if (artist) parts.push(artist);
-      parts.push("");
-      parts.push(lyric);
-      parts.push("");
-      parts.push("-".repeat(32));
-      parts.push("");
-    });
-
-    return parts.join("\n").trim();
-  }
-
-  function downloadTxt(filename, content) {
-    const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-  }
-
-  function safeFileName(s) {
-    return String(s || "archivo")
-      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^\w\- ]+/g, "")
-      .trim()
-      .replace(/\s+/g, "_");
-  }
-
-  function descargarTexto() {
-    if (state.userRole !== "drums") return;
-
-    const choice = prompt(
-      "¿Qué deseas descargar?\n\n1 = Canción actual\n2 = Todo el setlist",
-      "1"
-    );
-
-    if (choice == null) return;
-
-    const val = String(choice).trim();
-
-    if (val === "1") {
-      const curr = state.setlist[state.currentIndex];
-      if (!curr) {
-        appAlert("No hay una canción seleccionada.");
-        return;
-      }
-
-      const content = buildCurrentSongText();
-      if (!content) {
-        appAlert("No se pudo generar el texto de la canción.");
-        return;
-      }
-
-      const filename = safeFileName(curr.titulo || "cancion") + ".txt";
-      downloadTxt(filename, content);
-      return;
-    }
-
-    if (val === "2") {
-      if (!state.setlist.length) {
-        appAlert("El setlist está vacío.");
-        return;
-      }
-
-      const content = buildFullSetlistText();
-      if (!content) {
-        appAlert("No se pudo generar el texto del setlist.");
-        return;
-      }
-
-      const filename = safeFileName(state.listName || state.listIdUnico || "setlist") + ".txt";
-      downloadTxt(filename, content);
-      return;
-    }
-
-    appAlert("Opción inválida. Usa 1 o 2.");
-  }
-
-  function initAutoHideControls() {
-    let ticking = false;
-
-    const onScroll = () => {
-      if (ticking) return;
-      ticking = true;
-
-      requestAnimationFrame(() => {
-        const y = window.scrollY || window.pageYOffset || 0;
-
-        if (y < 40) {
-          document.body.classList.remove("controls-hidden");
-        } else {
-          document.body.classList.add("controls-hidden");
-        }
-
-        ticking = false;
-      });
-    };
-
-    window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
-  }
-
-  async function revisarLinkSetlistId() {
-    const p = new URLSearchParams(window.location.search);
-    const sid = p.get("sid");
-    if (!sid || !db) return false;
-  
-    const want = sid.trim().toUpperCase();
-  
-    try {
-      const setlist = await loadSetlistByCode(want, db);
-      if (!setlist) return true;
-  
-      state.listName = setlist.nombre_lista || "";
-      state.listIdUnico = String(setlist.id_unico || want).trim().toUpperCase();
-  
-      const resolved = await resolveSetlistSongs(setlist, db);
-  
-      state.setlist = resolved.map(s => ({
-        ...s,
-        body_base: s.body,
-        transpose_steps: Number.isFinite(s.transpose_steps) ? s.transpose_steps : 0,
-        bpm_override: s.bpm_override ?? null,
-      }));
-  
-      state.hasUnsavedChanges = false;
-      localStorage.removeItem(LS_HIDDEN);
-      renderAll();
-    } catch (e) {
-      console.error("revisarLinkSetlistId error:", e);
-    }
-  
-    window.history.replaceState({}, "", window.location.pathname);
-    return true;
-  }
-
-function storagePathFromSong(song){
-  let p = String(song?.path_url || "").trim();
-  if (!p) return "";
-
-  p = p.replace(/^https?:\/\/[^/]+\/storage\/v1\/object\/public\/Cancionero_Adoranza\//i, "");
-  p = p.replace(/^Cancionero_Adoranza\//i, "");
-  p = p.replace(/^\.\//, "");
-
-  try { p = decodeURIComponent(p); } catch(e) {}
-
-  return p;
-}
-
-function openTabEditor(){
-  if (state.userRole !== "musico") {
-    appAlert("La edición de tablatura está disponible en modo PIANO / GUITARRA.");
-    return;
-  }
-
-  const curr = state.setlist[state.currentIndex];
-  if (!curr) return;
-
-  const ok = confirm("¿Querés editar la tablatura de esta canción?");
-  if (!ok) return;
-
-  const modal = document.getElementById("tabEditModal");
-  const txt = document.getElementById("tabEditText");
-  const title = document.getElementById("tabEditTitle");
-
-  if (!modal || !txt) return;
-
-  if (title) {
-    title.textContent = `${curr.titulo || "(Sin título)"}${curr.artista ? " — " + curr.artista : ""}`;
-  }
-
-  txt.value = curr.body_base || curr.body || "";
-  modal.style.display = "block";
-
-  setTimeout(() => txt.focus(), 80);
-}
-
-function closeTabEditor(){
-  const modal = document.getElementById("tabEditModal");
-  if (modal) modal.style.display = "none";
-}
-
-async function saveTabEditor(){
-  if (!db) {
-    appAlert("Supabase no está listo.");
-    return;
-  }
-
-  const curr = state.setlist[state.currentIndex];
-  if (!curr) return;
-
-  const path = storagePathFromSong(curr);
-  if (!path) {
-    appAlert("Esta canción no tiene path_url válido.");
-    return;
-  }
-
-  const txt = document.getElementById("tabEditText");
-  if (!txt) return;
-
-  const newBody = txt.value || "";
-
-  const ok = confirm(
-    "Esto reemplazará la tablatura original en nuestra base de datos.\n\n¿Guardar cambios?"
-  );
-  if (!ok) return;
-
-  try {
-    const blob = new Blob([newBody], { type: "text/plain;charset=utf-8" });
-
-    const { error } = await db.storage
-      .from("Cancionero_Adoranza")
-      .upload(path, blob, {
-        upsert: true,
-        contentType: "text/plain;charset=utf-8"
-      });
-
-    if (error) throw error;
-
-    curr.body = newBody;
-    curr.body_base = newBody;
-
-    const favs = getFavorites();
-    const k = songKey(curr);
-    if (favs[k]) {
-      favs[k].body = newBody;
-      favs[k].updatedAt = Date.now();
-      setFavorites(favs);
-    }
-
-    saveLocal();
-    closeTabEditor();
-    renderAll();
-
-    appAlert("Tablatura actualizada correctamente ✅");
-  } catch (e) {
-    console.error("saveTabEditor error:", e);
-    appAlert("No se pudo guardar la tablatura:\n" + (e?.message || e));
-  }
-}
-
-function initReaderLongPressEdit(){
-  const el = document.getElementById("viewContent");
-  if (!el) return;
-  if (el.dataset.longPressEditReady === "1") return;
-  el.dataset.longPressEditReady = "1";
-
-  let timer = null;
-  let startX = 0;
-  let startY = 0;
-  let pointerId = null;
-
-  const cancel = () => {
-    if (timer) clearTimeout(timer);
-    timer = null;
-    pointerId = null;
-  };
-
-  el.addEventListener("pointerdown", (ev) => {
-    if (ev.pointerType === "mouse" && ev.button !== 0) return;
-    if (state.userRole !== "musico") return;
-    if (state.currentIndex < 0) return;
-
-    pointerId = ev.pointerId;
-    startX = ev.clientX;
-    startY = ev.clientY;
-
-    timer = setTimeout(() => {
-      timer = null;
-      pointerId = null;
-      openTabEditor();
-    }, 3000);
-  }, { passive:true });
-
-  el.addEventListener("pointermove", (ev) => {
-    if (pointerId == null || ev.pointerId !== pointerId) return;
-
-    const dx = Math.abs(ev.clientX - startX);
-    const dy = Math.abs(ev.clientY - startY);
-
-    if (dx > 18 || dy > 28) cancel();
-  }, { passive:true });
-
-  el.addEventListener("pointerup", cancel, { passive:true });
-  el.addEventListener("pointercancel", cancel, { passive:true });
-  el.addEventListener("pointerleave", cancel, { passive:true });
-}
-  
-  window.onload = async () => {
-    ensureLocalUserOrBlock();
-    const ud = document.getElementById("uid-display");
-    const un = document.getElementById("uname-display");
-    if (ud) ud.innerText = state.userId;
-    if (un) un.innerText = state.username;
-
-    db = initSupabaseOrWarn();
-    await upsertUserToCloudNonBlocking();
-
-    const sb = document.getElementById("searchBox");
-    if (sb) {
-      let searchTimer = null;
-
-      sb.oninput = (e) => {
-        const val = (e.target.value || "").trim();
-        const resDiv = document.getElementById("results");
-        if (!resDiv) return;
-
-        if (searchTimer) clearTimeout(searchTimer);
-
-        if (!db) { resDiv.innerHTML = ""; return; }
-        if (val.length < 2) { resDiv.innerHTML = ""; return; }
-
-        searchTimer = setTimeout(async () => {
-          const currentVal = (sb.value || "").trim();
-          if (currentVal !== val) return;
-
-          const safeVal = val.replace(/[%_,]/g, "");
-          if (safeVal.length < 2) { resDiv.innerHTML = ""; return; }
-
-          const { data, error } = await db
-            .from("canciones")
-            .select("*")
-            .or(`titulo.ilike.%${safeVal}%,artista.ilike.%${safeVal}%`)
-            .limit(6);
-
-          if (error) { console.error(error); resDiv.innerHTML = ""; return; }
-
-          if ((sb.value || "").trim() !== val) return;
-
-          resDiv.innerHTML = "";
-          (data || []).forEach((s) => {
-            const d = document.createElement("div");
-            d.className = "set-item";
-            d.innerHTML = `
-              <div style="flex:1">
-                <div style="font-weight:600; font-size:13px;">${s.titulo || ""}</div>
-                <div style="font-size:11px; color:var(--muted); margin-top:2px;">${s.artista || ""}</div>
-              </div>
-              <button class="btn btn-add">ADD</button>
-            `;
-
-            const btn = d.querySelector(".btn-add");
-            if (btn) {
-              btn.onclick = (ev) => {
-                ev.stopPropagation();
-                addToSetlist(s);
-              };
-            }
-
-            resDiv.appendChild(d);
-          });
-        }, 300);
+    
+        const nextIdx = getNextVisibleIndexFixed(state.currentIndex);
+        const nextSong = nextIdx >= 0 ? state.setlist[nextIdx] : null;
+    
+        next.textContent = "";
+    
+        const main = document.createTextNode(nextSong ? nextSong.titulo || "(Sin título)" : "(no hay más)");
+        const sub = el("span", "sub2", "Siguiente");
+    
+        next.appendChild(main);
+        next.appendChild(sub);
       };
-    }
-
-
-    initSortable();
-    initReaderSwipe();
-    initPinchZoom();
-    initReaderLongPressEdit();
-    initAutoHideControls();
     
+      renderFavoritesInConfig = function renderFavoritesInConfigFixed() {
+        const box = $("favList");
+        if (!box) return;
     
-    let handled = false;
-    if (db) handled = await revisarLinkSetlistId();
+        const favs = getFavorites();
+        const arr = Object.values(favs || {}).sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+        const count = $("favCount");
     
-    if (!handled) {
-      loadLocalSetlist();
-    }
+        if (count) count.textContent = `(${arr.length})`;
+        box.textContent = "";
     
-    renderAll();
-  };
-  
-  function appAlert(message) {
-  const box = document.getElementById("appAlert");
-  const msg = document.getElementById("appAlertMsg");
-  const ok = document.getElementById("appAlertOk");
-  if (!box || !msg || !ok) return alert(message); // fallback
-
-  msg.textContent = message;
-  box.style.display = "block";
-  ok.onclick = () => (box.style.display = "none");
-}
-
-
-  
-  // Expose globals
-  window.toggleFavByIndex = toggleFavByIndex;
-  window.renderFavoritesInConfig = renderFavoritesInConfig;
-  window.openFavorite = openFavorite;
-  window.removeFavorite = removeFavorite;
-  window.setRole = setRole;
-  window.openConfig = openConfig;
-  window.closeConfig = closeConfig;
-  window.showHome = showHome;
-  window.listarMisSetlists = listarMisSetlists;
-  window.copiarSetlistId = copiarSetlistId;
-  window.copiarMiSetlistActual = copiarMiSetlistActual;
-  window.Estadisticas = Estadisticas;
-  window.guardarListaCloud = guardarListaCloud;
-  window.cargarListaCloud = cargarListaCloud;
-  window.clearOrCloseSetlist = clearOrCloseSetlist;
-  window.compartirWhatsApp = compartirWhatsApp;
-  window.prevSong = prevSong;
-  window.nextSong = nextSong;
-  window.transpose = transpose;
-  window.changeFontSize = changeFontSize;
-  window.toggleScroll = toggleScroll;
-  window.adjScroll = adjScroll;
-  window.toggleMetroManual = toggleMetroManual;
-  window.halfTime = halfTime;
-  window.addToSetlist = addToSetlist;
-  window.seleccionar = seleccionar;
-  window.removeSong = removeSong;
-  window.undoLastRemove = undoLastRemove;
-  window.descargarTexto = descargarTexto;
-  window.checkUnsavedChanges = () => state.hasUnsavedChanges;
-  window.openTabEditor = openTabEditor;
-  window.closeTabEditor = closeTabEditor;
-  window.saveTabEditor = saveTabEditor;
-  window.moveSongByIndex = moveSongByIndex;
-  window.activateMoveMode = activateMoveMode;
-
-  // ===== PWA: Service Worker =====
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker
-      .register("./sw.js")
-      .then(() => console.log("SW registrado"))
-      .catch(err => console.warn("SW error", err));
-  });
-}
-</script>
+        if (!arr.length) {
+          const empty = el("div", "", "No hay favoritos offline.");
+          empty.style.cssText = "color:var(--muted); font-size:12px;";
+          box.appendChild(empty);
+          return;
+        }
+    
+        arr.forEach(f => {
+          const item = el("div", "item");
+          item.style.cssText =
+            "display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,.05); padding:8px; border-radius:8px;";
+    
+          const info = el("div");
+          info.style.cssText = "flex:1; cursor:pointer;";
+          info.onclick = ev => openFavorite(f.key, ev);
+    
+          const title = el("div", "", f.titulo || "(Sin título)");
+          title.style.cssText = "font-weight:700; font-size:13px;";
+    
+          const artist = el("div", "", f.artista || "");
+          artist.style.cssText = "font-size:11px; color:var(--muted);";
+    
+          const btn = el("button", "btn danger-x", "✕");
+          btn.style.cssText = "max-width:30px; height:30px; padding:0;";
+          btn.onclick = ev => removeFavorite(f.key, ev);
+    
+          info.appendChild(title);
+          info.appendChild(artist);
+          item.appendChild(info);
+          item.appendChild(btn);
+          box.appendChild(item);
+        });
+      };
+    
+      renderAll = function renderAllFixed() {
+        const sl = $("setList");
+        if (!sl) return;
+    
+        sl.textContent = "";
+    
+        const visible = state.setlist
+          .map((s, originalIndex) => ({ s, originalIndex }))
+          .filter(x => !isHidden(x.s));
+    
+        visible.forEach(({ s, originalIndex }) => {
+          const wrap = el("div", "set-item-wrap");
+    
+          const actions = el("div", "swipe-actions");
+          const left = el("div", "swipe-action left", "Quitar");
+          const right = el("div", "swipe-action right", "Cantada");
+          actions.appendChild(left);
+          actions.appendChild(right);
+    
+          const row = el("div", "set-item");
+          row.dataset.idx = String(originalIndex);
+    
+          const favOn = isFav(s);
+    
+          if (originalIndex === state.currentIndex) row.classList.add("is-active");
+          if (isSung(s)) row.classList.add("is-sung");
+          if (favOn) row.classList.add("is-fav");
+          if (state.moveModeIndex === originalIndex) row.classList.add("is-move-mode");
+    
+          if (state.moveModeIndex === originalIndex) {
+            const controls = el("div", "move-controls");
+    
+            const up = el("button", "move-btn", "↑");
+            up.onclick = ev => moveSongByIndex(originalIndex, -1, ev);
+    
+            const down = el("button", "move-btn", "↓");
+            down.onclick = ev => moveSongByIndex(originalIndex, 1, ev);
+    
+            controls.appendChild(up);
+            controls.appendChild(down);
+            row.appendChild(controls);
+          } else {
+            row.appendChild(el("span", "drag-handle", "☰"));
+          }
+    
+          const titlebox = el("div", "titlebox");
+    
+          const title = el("div", "songtitle", s.titulo || "(Sin título)");
+          const metaParts = [];
+          if (s.artista) metaParts.push(s.artista);
+          if (favOn) metaParts.push("Offline");
+          if (isSung(s)) metaParts.push("Cantada");
+    
+          const meta = el("div", "songmeta", metaParts.join(" · "));
+    
+          titlebox.appendChild(title);
+          titlebox.appendChild(meta);
+    
+          const heart = el("div", `pill heart ${favOn ? "on" : ""}`, favOn ? "♥" : "♡");
+          heart.onclick = ev => toggleFavByIndex(originalIndex, ev);
+    
+          row.appendChild(titlebox);
+          row.appendChild(heart);
+    
+          row.onclick = () => seleccionar(originalIndex);
+    
+          wrap.appendChild(actions);
+          wrap.appendChild(row);
+          sl.appendChild(wrap);
+    
+          if (state.userRole !== "musico") attachSwipe(row);
+          attachLongPressMoveMode(row);
+        });
+    
+        renderBadge();
+    
+        const currHidden =
+          state.currentIndex >= 0 &&
+          state.setlist[state.currentIndex] &&
+          isHidden(state.setlist[state.currentIndex]);
+    
+        if (currHidden) {
+          const nextVisible = getNextVisibleIndexFixed(state.currentIndex);
+          state.currentIndex = nextVisible >= 0 ? nextVisible : getPrevVisibleIndex(state.currentIndex);
+        }
+    
+        const curr = state.setlist[state.currentIndex];
+        const view = $("viewContent");
+        const info = $("current-song-info");
+        const dots = $("metro-dots");
+    
+        if (curr && view) {
+          if (info) {
+            info.textContent = "";
+    
+            const titleNode = document.createTextNode(curr.titulo || "");
+            const sub = el("span", "sub");
+    
+            if (state.userRole === "drums") {
+              const bpmShown = getEffectiveBpm(curr, null);
+              const shown = state.half && bpmShown ? bpmShown / 2 : bpmShown ?? "-";
+              sub.textContent = `BPM: ${shown}`;
+            } else {
+              const step = normalizeTransposeSteps(curr.transpose_steps);
+              const artist = curr.artista || "";
+              sub.textContent = step ? `${artist} · ${step > 0 ? "+" : ""}${step}` : artist;
+            }
+    
+            info.appendChild(titleNode);
+            info.appendChild(sub);
+          }
+    
+          updateNowNextInfo();
+    
+          if (dots) {
+            dots.classList.toggle("is-hidden", state.userRole === "musico");
+          }
+    
+          let bodyBase = curr.body_base || curr.body || "";
+          const currentKeyRaw = String(
+            curr.tono_effective || curr.tono_override || curr.tono_original || curr.key || ""
+          ).trim();
+    
+          let keyNorm = currentKeyRaw.replace(/\s+/g, "");
+          const mm = keyNorm.match(/^([A-G])([#b]?)(m)?/i);
+          keyNorm = mm ? mm[1].toUpperCase() + (mm[2] || "") + (mm[3] ? "m" : "") : "";
+    
+          const hasFlatKey = /^[A-G]b/i.test(keyNorm);
+          const flatMinorKeys = ["Dm", "Gm", "Cm", "Fm", "Bbm", "Ebm", "Abm"];
+    
+          let preferFlats =
+            hasFlatKey ||
+            ["F", "Bb", "Eb", "Ab", "Db", "Gb", "Cb"].includes(keyNorm) ||
+            flatMinorKeys.includes(keyNorm);
+    
+          if (!keyNorm) preferFlats = /\b[A-G]b\b/.test(bodyBase);
+    
+          let body = transposeBody(bodyBase, normalizeTransposeSteps(curr.transpose_steps), preferFlats);
+    
+          if (state.userRole !== "musico") {
+            body = stripChordsAndCompactText(body);
+            view.textContent = body;
+          } else {
+            renderChordText(view, body);
+          }
+    
+          view.style.fontSize = state.currentFontSize + "px";
+    
+          const effectiveBpm = getEffectiveBpm(curr, 120);
+          state.currentBPM = state.half ? effectiveBpm / 2 : effectiveBpm;
+    
+          if (state.userRole === "drums" && state.metroActive) startMetro();
+        } else {
+          if (dots) dots.classList.toggle("is-hidden", state.userRole === "musico");
+          if (info) info.textContent = "Adoranza Cloud";
+          if (view) view.textContent = "Selecciona una canción.";
+          updateNowNextInfo();
+        }
+    
+        setTimeout(initSortable, 0);
+      };
+    
+      softRemoveSong = function softRemoveSongFixed(idx) {
+        const song = state.setlist[idx];
+        if (!song) return;
+    
+        state.lastRemoved = { song, index: idx };
+        state.setlist.splice(idx, 1);
+    
+        if (state.currentIndex === idx) state.currentIndex = -1;
+        else if (state.currentIndex > idx) state.currentIndex--;
+    
+        markDirty();
+        saveLocal();
+        renderAll();
+        showUndoToast(`Quitada: ${song.titulo || "Canción"}`);
+      };
+    
+      undoLastRemove = function undoLastRemoveFixed() {
+        if (!state.lastRemoved) return;
+    
+        const { song, index } = state.lastRemoved;
+        const idx = Math.max(0, Math.min(index, state.setlist.length));
+    
+        state.setlist.splice(idx, 0, song);
+        state.lastRemoved = null;
+    
+        const toast = $("toastUndo");
+        if (toast) toast.style.display = "none";
+    
+        markDirty();
+        saveLocal();
+        renderAll();
+      };
+    
+      clearSetlist = function clearSetlistFixed() {
+        const oldListKey = listKey();
+    
+        state.setlist = [];
+        state.currentIndex = -1;
+        state.listName = "";
+        state.listIdUnico = "";
+        state.hasUnsavedChanges = false;
+    
+        try {
+          const hm = getHiddenMap();
+          delete hm[oldListKey];
+          setHiddenMap(hm);
+        } catch (e) {
+          console.warn("No se pudo limpiar hidden map:", e);
+        }
+    
+        saveLocal();
+        renderAll();
+      };
+    
+      nextSong = function nextSongFixed() {
+        if (!state.setlist.length) return;
+    
+        let idx;
+        if (state.currentIndex < 0) {
+          const visible = getVisibleIndexes();
+          idx = visible.length ? visible[0] : -1;
+        } else {
+          idx = getNextVisibleIndexFixed(state.currentIndex);
+        }
+    
+        if (idx < 0) return;
+    
+        state.currentIndex = idx;
+        state.half = false;
+        renderAll();
+        scrollToReader();
+      };
+    
+      prevSong = function prevSongFixed() {
+        if (!state.setlist.length) return;
+    
+        let idx;
+        if (state.currentIndex < 0) {
+          const visible = getVisibleIndexes();
+          idx = visible.length ? visible[0] : -1;
+        } else {
+          idx = getPrevVisibleIndex(state.currentIndex);
+        }
+    
+        if (idx < 0) return;
+    
+        state.currentIndex = idx;
+        state.half = false;
+        renderAll();
+        scrollToReader();
+      };
+    
+      transpose = function transposeFixed(delta) {
+        const curr = state.setlist[state.currentIndex];
+        if (!curr) return;
+    
+        curr.transpose_steps = normalizeTransposeSteps(curr.transpose_steps) + delta;
+    
+        markDirty();
+        saveLocal();
+        renderAll();
+      };
+    
+      moveSongByIndex = function moveSongByIndexFixed(idx, dir, ev) {
+        if (ev) ev.stopPropagation();
+    
+        const newIdx = idx + dir;
+        if (newIdx < 0 || newIdx >= state.setlist.length) return;
+    
+        const item = state.setlist.splice(idx, 1)[0];
+        state.setlist.splice(newIdx, 0, item);
+    
+        if (state.currentIndex === idx) state.currentIndex = newIdx;
+        else if (state.currentIndex === newIdx) state.currentIndex = idx;
+    
+        state.moveModeIndex = newIdx;
+        markDirty();
+    
+        saveLocal();
+        renderAll();
+    
+        if (state.moveModeTimer) clearTimeout(state.moveModeTimer);
+        state.moveModeTimer = setTimeout(() => {
+          state.moveModeIndex = -1;
+          state.moveModeTimer = null;
+          renderAll();
+        }, 7000);
+      };
+    
+      initSortable = function initSortableFixed() {
+        const list = $("setList");
+        if (!list || !window.Sortable) return;
+    
+        if (list._sortable) {
+          try { list._sortable.destroy(); } catch (e) {}
+          list._sortable = null;
+        }
+    
+        list._sortable = Sortable.create(list, {
+          animation: 150,
+          draggable: ".set-item-wrap",
+          handle: ".drag-handle",
+          forceFallback: true,
+          fallbackOnBody: false,
+          fallbackTolerance: 3,
+          delayOnTouchOnly: true,
+          delay: 300,
+          touchStartThreshold: 15,
+          scroll: true,
+          bubbleScroll: true,
+    
+          onStart: () => {
+            document.body.classList.add("is-dragging-sortable");
+            stopScroll();
+          },
+    
+          onEnd: evt => {
+            document.body.classList.remove("is-dragging-sortable");
+    
+            try {
+              const oldIndex = evt.oldIndex;
+              const newIndex = evt.newIndex;
+    
+              if (oldIndex == null || newIndex == null || oldIndex === newIndex) return;
+    
+              const visibleIdxs = state.setlist
+                .map((song, i) => (!isHidden(song) ? i : null))
+                .filter(i => i !== null);
+    
+              const fromActual = visibleIdxs[oldIndex];
+              if (fromActual == null) return;
+    
+              const moved = state.setlist.splice(fromActual, 1)[0];
+              if (!moved) return;
+    
+              const visibleAfterRemove = state.setlist
+                .map((song, i) => (!isHidden(song) ? i : null))
+                .filter(i => i !== null);
+    
+              const insertAt =
+                newIndex >= visibleAfterRemove.length
+                  ? state.setlist.length
+                  : visibleAfterRemove[newIndex];
+    
+              state.setlist.splice(insertAt, 0, moved);
+              state.currentIndex = state.setlist.findIndex(song => song === moved);
+    
+              markDirty();
+              saveLocal();
+              renderAll();
+            } catch (e) {
+              console.error("Sortable reorder error:", e);
+              appAlert("Error al reordenar:\n" + (e?.message || e));
+              renderAll();
+            }
+          }
+        });
+      };
+    
+      startMetro = function startMetroFixed() {
+        stopMetro();
+    
+        const curr = state.setlist[state.currentIndex];
+        if (!curr) return;
+    
+        const dots = $("metro-dots");
+        if (!dots) return;
+    
+        const rawBeats = parseInt(curr.time_signature, 10);
+        const beats = Math.max(1, Math.min(12, Number.isFinite(rawBeats) ? rawBeats : 4));
+    
+        const bpm = toNumber(state.currentBPM, 120);
+        const safeBpm = Math.max(30, Math.min(260, bpm));
+    
+        dots.textContent = "";
+        for (let i = 0; i < beats; i++) {
+          const dot = el("div", "beat-dot");
+          dot.id = `dot-${i}`;
+          dots.appendChild(dot);
+        }
+    
+        if (!state.audioCtx) {
+          try {
+            state.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          } catch (e) {
+            appAlert("No se pudo iniciar el audio del metrónomo.");
+            return;
+          }
+        }
+    
+        if (state.audioCtx.state === "suspended") {
+          state.audioCtx.resume().catch(() => {});
+        }
+    
+        let step = 0;
+    
+        state.metroInt = setInterval(() => {
+          const audioCtx = state.audioCtx;
+          if (!audioCtx) return;
+    
+          const vr = $("volRange");
+          const vol = vr ? toNumber(vr.value, 0.5) : 0.5;
+    
+          document.querySelectorAll(".beat-dot").forEach(d => {
+            d.className = "beat-dot";
+          });
+    
+          const dot = $(`dot-${step}`);
+          if (dot) dot.classList.add(step === 0 ? "beat-active-red" : "beat-active-green");
+    
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+    
+          osc.type = "sine";
+          osc.frequency.setValueAtTime(step === 0 ? 880 : 440, audioCtx.currentTime);
+    
+          gain.gain.setValueAtTime(Math.max(0, Math.min(1, vol)) * 0.3, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+    
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+    
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.1);
+    
+          step = (step + 1) % beats;
+        }, (60 / safeBpm) * 1000);
+      };
+    
+      stopMetro = function stopMetroFixed() {
+        if (state.metroInt) clearInterval(state.metroInt);
+        state.metroInt = null;
+    
+        const md = $("metro-dots");
+        if (md) md.textContent = "";
+      };
+    
+      listarMisSetlists = async function listarMisSetlistsFixed() {
+        if (!db) return;
+    
+        const box = $("mySetlists");
+        if (box) {
+          box.textContent = "";
+          const loading = el("div", "", "Cargando...");
+          loading.style.cssText = "color:var(--muted); font-size:12px;";
+          box.appendChild(loading);
+        }
+    
+        try {
+          const adoptedIds = getAdoptedSetlists();
+    
+          const { data: mine, error: mineError } = await db
+            .from("setlists_guardados")
+            .select("*")
+            .eq("owner_id", state.userId)
+            .order("updated_at", { ascending: false });
+    
+          if (mineError) throw mineError;
+    
+          let all = Array.isArray(mine) ? [...mine] : [];
+    
+          if (adoptedIds.length) {
+            const { data: adopted, error: adoptedError } = await db
+              .from("setlists_guardados")
+              .select("*")
+              .in("id_unico", adoptedIds)
+              .order("updated_at", { ascending: false });
+    
+            if (adoptedError) throw adoptedError;
+    
+            if (Array.isArray(adopted)) {
+              const seen = new Set(all.map(x => String(x.id_unico || "").trim().toUpperCase()));
+    
+              adopted.forEach(row => {
+                const code = String(row.id_unico || "").trim().toUpperCase();
+                if (!seen.has(code)) {
+                  all.push(row);
+                  seen.add(code);
+                }
+              });
+            }
+          }
+    
+          if (!box) return;
+          box.textContent = "";
+    
+          if (!all.length) {
+            const empty = el("div", "", "Sin setlists.");
+            empty.style.cssText = "color:var(--muted); font-size:12px;";
+            box.appendChild(empty);
+            return;
+          }
+    
+          all.forEach(row => {
+            const id = String(row.id_unico || "").trim().toUpperCase();
+            const name = row.nombre_lista || "(Sin nombre)";
+            const ownerTag = row.owner_id === state.userId ? "Mío" : "Adoptado";
+    
+            const item = el("div", "set-item");
+            item.style.cursor = "pointer";
+            item.onclick = () => copiarSetlistId(id);
+    
+            const titlebox = el("div", "titlebox");
+            titlebox.style.paddingLeft = "6px";
+    
+            const title = el("div", "songtitle", name);
+            const meta = el("div", "songmeta");
+            meta.appendChild(txt("ID: "));
+    
+            const code = el("span", "", id);
+            code.style.cssText = "font-family:var(--mono); color:var(--accent);";
+            meta.appendChild(code);
+            meta.appendChild(txt(` · ${ownerTag}`));
+    
+            const btn = el("button", "btn btn-add", "COP");
+            btn.style.maxWidth = "56px";
+            btn.onclick = ev => copiarSetlistId(id, ev);
+    
+            titlebox.appendChild(title);
+            titlebox.appendChild(meta);
+            item.appendChild(titlebox);
+            item.appendChild(btn);
+            box.appendChild(item);
+          });
+        } catch (err) {
+          console.error("listarMisSetlists error:", err);
+    
+          if (box) {
+            box.textContent = "";
+            const errorBox = el("div", "", "Error cargando setlists.");
+            errorBox.style.cssText = "color:var(--danger); font-size:12px;";
+            box.appendChild(errorBox);
+          }
+        }
+      };
+    
+      function installSafeSearch() {
+        const sb = $("searchBox");
+        if (!sb) return;
+    
+        let searchTimer = null;
+    
+        sb.oninput = e => {
+          const val = (e.target.value || "").trim();
+          const resDiv = $("results");
+          if (!resDiv) return;
+    
+          if (searchTimer) clearTimeout(searchTimer);
+    
+          if (!db || val.length < 2) {
+            resDiv.textContent = "";
+            return;
+          }
+    
+          searchTimer = setTimeout(async () => {
+            const currentVal = (sb.value || "").trim();
+            if (currentVal !== val) return;
+    
+            const safeVal = val.replace(/[%_,()]/g, "").trim();
+    
+            if (safeVal.length < 2) {
+              resDiv.textContent = "";
+              return;
+            }
+    
+            const { data, error } = await db
+              .from("canciones")
+              .select("*")
+              .or(`titulo.ilike.%${safeVal}%,artista.ilike.%${safeVal}%`)
+              .limit(6);
+    
+            if (error) {
+              console.error(error);
+              resDiv.textContent = "";
+              return;
+            }
+    
+            if ((sb.value || "").trim() !== val) return;
+    
+            resDiv.textContent = "";
+    
+            (data || []).forEach(song => {
+              const item = el("div", "set-item");
+    
+              const info = el("div");
+              info.style.flex = "1";
+    
+              const title = el("div", "", song.titulo || "");
+              title.style.cssText = "font-weight:600; font-size:13px;";
+    
+              const artist = el("div", "", song.artista || "");
+              artist.style.cssText = "font-size:11px; color:var(--muted); margin-top:2px;";
+    
+              const btn = el("button", "btn btn-add", "ADD");
+              btn.onclick = ev => {
+                ev.stopPropagation();
+                addToSetlist(song);
+              };
+    
+              info.appendChild(title);
+              info.appendChild(artist);
+              item.appendChild(info);
+              item.appendChild(btn);
+              resDiv.appendChild(item);
+            });
+          }, 300);
+        };
+      }
+    
+      const originalOnload = window.onload;
+    
+      window.onload = async function adoranzaHotfixOnload(ev) {
+        if (typeof originalOnload === "function") {
+          await originalOnload.call(this, ev);
+        }
+    
+        updateVersionLabels();
+        installSafeSearch();
+    
+        window.normalizeOverrides = normalizeOverrides;
+        window.buildCloudSetlistPayload = buildCloudSetlistPayload;
+        window.renderAll = renderAll;
+        window.renderFavoritesInConfig = renderFavoritesInConfig;
+        window.listarMisSetlists = listarMisSetlists;
+        window.softRemoveSong = softRemoveSong;
+        window.undoLastRemove = undoLastRemove;
+        window.clearSetlist = clearSetlist;
+        window.nextSong = nextSong;
+        window.prevSong = prevSong;
+        window.transpose = transpose;
+        window.moveSongByIndex = moveSongByIndex;
+        window.initSortable = initSortable;
+        window.startMetro = startMetro;
+        window.stopMetro = stopMetro;
+    
+        renderAll();
+      };
+    })();
+    </script>
   
   <div id="appAlert" style="display:none; position:fixed; inset:0; z-index:99999; background:rgba(0,0,0,.55);">
   <div style="max-width:520px; margin:14vh auto; background:#111; color:#fff; border-radius:16px; padding:18px; box-shadow:0 12px 40px rgba(0,0,0,.55);">
