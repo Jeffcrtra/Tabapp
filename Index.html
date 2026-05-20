@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#090b10" />
-  <title>Adoranza Pro v7</title>
+  <title>9.18 Adoranza Pro v7</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -1275,6 +1275,17 @@
     function stripChordsAndCompactText(raw){
       return String(raw || "").replace(/\[([^\]]+)\]/g, "").split(/\r?\n/).map(l => l.trim()).filter(Boolean).join("\n\n");
     }
+    function fixMojibake(text){
+      const value = String(text || "");
+      if (!/[ÃÂ][\u0080-\u00ff]|â[€\u0080-\u00ff]/.test(value)) return value;
+      try {
+        const bytes = new Uint8Array([...value].map(ch => ch.charCodeAt(0) & 255));
+        const fixed = new TextDecoder("utf-8", { fatal:false }).decode(bytes);
+        return fixed.replace(/\uFFFD/g, "").trim() ? fixed : value;
+      } catch {
+        return value;
+      }
+    }
     function getVisibleIndexes(){
       return state.setlist.map((song,index) => ({song,index})).filter(x => x.song && !isHidden(x.song)).map(x => x.index);
     }
@@ -1403,7 +1414,7 @@
       const flatMinorKeys = ["Dm","Gm","Cm","Fm","Bbm","Ebm","Abm"];
       let preferFlats = /^[A-G]b/i.test(keyNorm) || ["F","Bb","Eb","Ab","Db","Gb","Cb"].includes(keyNorm) || flatMinorKeys.includes(keyNorm);
       if (!keyNorm) preferFlats = /\b[A-G]b\b/.test(bodyBase);
-      const body = transposeBody(bodyBase, toNumber(curr.transpose_steps, 0), preferFlats);
+      const body = fixMojibake(transposeBody(bodyBase, toNumber(curr.transpose_steps, 0), preferFlats));
       if (view) {
         if (state.userRole === "musico") renderChordText(view, body);
         else view.textContent = stripChordsAndCompactText(body);
@@ -2034,17 +2045,17 @@
     function buildCurrentSongText(){
       const curr = state.setlist[state.currentIndex];
       if (!curr) return "";
-      const lyric = stripChordsAndCompactText(curr.body_base || curr.body || "");
-      return [curr.titulo || "Sin título", curr.artista || "", "", lyric].filter((x,i) => i === 2 || x).join("\n").trim();
+      const lyric = fixMojibake(stripChordsAndCompactText(curr.body_base || curr.body || ""));
+      return fixMojibake([curr.titulo || "Sin título", curr.artista || "", "", lyric].filter((x,i) => i === 2 || x).join("\n").trim());
     }
     function buildFullSetlistText(){
       const parts = [state.listName || state.listIdUnico || "Setlist", ""];
       state.setlist.forEach((song,i) => {
         parts.push(`${i + 1}. ${song?.titulo || `Canción ${i + 1}`}`);
         if (song?.artista) parts.push(song.artista);
-        parts.push("", stripChordsAndCompactText(song?.body_base || song?.body || ""), "", "--------------------------------", "");
+        parts.push("", fixMojibake(stripChordsAndCompactText(song?.body_base || song?.body || "")), "", "--------------------------------", "");
       });
-      return parts.join("\n").trim();
+      return fixMojibake(parts.join("\n").trim());
     }
     function safeFileName(s){
       return String(s || "archivo").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^\w\- ]+/g,"").trim().replace(/\s+/g,"_");
