@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#090b10" />
-  <title>8.55 Adoranza Pro v7</title>
+  <title>Adoranza Pro v7</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -740,8 +740,49 @@
       .mode-tools{grid-template-columns:repeat(3,1fr)}
       .btn{padding:8px 8px}
       .role-grid{grid-template-columns:1fr}
-      .now-next-row{grid-template-columns:1fr}
-      #current-song-info{font-size:18px}
+      #songInfoBelowSetlist{margin-top:-4px}
+      #info-display{
+        padding:7px 9px;
+        border-radius:12px;
+      }
+      .now-next-row{
+        grid-template-columns:1.15fr .85fr;
+        gap:7px;
+      }
+      .now-card,.next-card{
+        padding:7px 8px;
+        border-radius:10px;
+      }
+      .now-label,.next-label{
+        margin-bottom:3px;
+        font-size:8px;
+        letter-spacing:.08em;
+      }
+      #current-song-info{
+        font-size:14px;
+        line-height:1.1;
+      }
+      #current-song-info .sub{
+        margin-top:2px;
+        font-size:10px;
+      }
+      #next-song-info{
+        font-size:12px;
+        line-height:1.1;
+      }
+      #next-song-info .sub2{
+        margin-top:2px;
+        font-size:9px;
+      }
+      #metro-dots{
+        min-height:28px;
+        margin-top:5px;
+        gap:8px;
+      }
+      .beat-dot{
+        width:20px;
+        height:20px;
+      }
       #viewContent{padding:18px;font-size:18px}
       .choice-grid{grid-template-columns:1fr}
       .setlist-card{grid-template-columns:1fr}
