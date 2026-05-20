@@ -92,3 +92,1918 @@
       color:var(--accent);
       font-size:28px;
       letter-spacing:.01em;
+      font-weight:950;
+    }
+    .brand-mark p{
+      max-width:560px;
+      margin:8px auto 0;
+      color:rgba(238,242,247,.72);
+      font-size:13px;
+      line-height:1.45;
+    }
+    .role-grid{
+      width:min(94vw,560px);
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:12px;
+    }
+    .role-btn{
+      min-height:112px;
+      border:1px solid rgba(255,255,255,.11);
+      border-radius:16px;
+      background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));
+      color:var(--text);
+      cursor:pointer;
+      box-shadow:var(--shadow2);
+      display:flex;
+      flex-direction:column;
+      align-items:flex-start;
+      justify-content:flex-end;
+      padding:16px;
+      text-align:left;
+    }
+    .role-btn:hover{border-color:rgba(244,197,66,.44)}
+    .role-icon{
+      width:36px;
+      height:36px;
+      border-radius:12px;
+      display:grid;
+      place-items:center;
+      margin-bottom:12px;
+      background:rgba(244,197,66,.12);
+      color:var(--accent2);
+      font-weight:950;
+    }
+    .role-btn strong{font-size:15px}
+    .role-btn span{margin-top:4px;color:var(--muted);font-size:11px;line-height:1.25}
+    .footer-credits{
+      position:absolute;
+      bottom:18px;
+      color:var(--muted);
+      font-size:12px;
+      text-align:center;
+    }
+    .footer-credits a{color:var(--accent);font-weight:850;text-decoration:none}
+    #fixedControlPanel{
+      position:fixed;
+      inset:0 0 auto 0;
+      z-index:999;
+      padding:10px 12px 9px;
+      background:rgba(9,11,16,.76);
+      border-bottom:1px solid rgba(255,255,255,.08);
+      backdrop-filter:blur(16px);
+      transition:transform .2s ease,opacity .18s ease;
+    }
+    body.controls-hidden #fixedControlPanel{
+      transform:translateY(-100%);
+      opacity:0;
+      pointer-events:none;
+    }
+    .topbar{
+      max-width:780px;
+      margin:0 auto;
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:8px;
+      align-items:center;
+    }
+    .transport{
+      display:flex;
+      gap:8px;
+      min-width:0;
+    }
+    .mode-tools{
+      display:flex;
+      gap:8px;
+      justify-content:flex-end;
+      flex-wrap:wrap;
+    }
+    #volume-container{
+      display:none;
+      margin-top:8px;
+      text-align:center;
+      color:var(--muted);
+      font-size:10px;
+      font-weight:850;
+      letter-spacing:.08em;
+    }
+    .wrap{max-width:1220px;margin:0 auto;padding:12px}
+    .grid{display:grid;grid-template-columns:1fr;gap:14px}
+    @media (min-width:860px){.grid{grid-template-columns:330px 1fr}}
+    .card{
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.018));
+      box-shadow:var(--shadow2);
+      overflow:hidden;
+    }
+    .card.flat{
+      border:none;
+      background:none;
+      box-shadow:none;
+      overflow:visible;
+    }
+    .hd{
+      min-height:46px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      padding:12px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      font-size:12px;
+      font-weight:950;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+    }
+    .bd{padding:12px}
+    .input{
+      width:100%;
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:12px;
+      background:rgba(0,0,0,.30);
+      color:var(--text);
+      outline:none;
+      padding:12px;
+      font-size:14px;
+    }
+    .input:focus{border-color:rgba(244,197,66,.55)}
+    .input::placeholder{color:rgba(154,166,178,.74)}
+    #setlist-container{width:100%;margin:0 auto}
+    .setlist-actions{
+      display:flex;
+      gap:7px;
+      justify-content:flex-end;
+      flex-wrap:wrap;
+    }
+    .set-item-wrap{
+      position:relative;
+      margin-bottom:9px;
+      border-radius:12px;
+      overflow:hidden;
+      touch-action:pan-y;
+    }
+    .swipe-actions{
+      position:absolute;
+      inset:0;
+      opacity:0;
+      pointer-events:none;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 14px;
+      transition:opacity .12s ease;
+    }
+    .set-item-wrap.is-swiping .swipe-actions{opacity:1}
+    .swipe-action{
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:999px;
+      padding:9px 12px;
+      font-size:12px;
+      font-weight:900;
+      backdrop-filter:blur(8px);
+    }
+    .swipe-action.left{background:rgba(240,96,114,.14);border-color:rgba(240,96,114,.35)}
+    .swipe-action.right{background:rgba(82,210,115,.12);border-color:rgba(82,210,115,.35)}
+    .set-item{
+      position:relative;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-height:58px;
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:12px;
+      padding:9px 10px;
+      background:linear-gradient(180deg,rgba(255,255,255,.052),rgba(255,255,255,.018));
+      touch-action:pan-y;
+    }
+    .set-item.is-active{
+      border-color:rgba(244,197,66,.78);
+      box-shadow:0 0 0 1px rgba(244,197,66,.18),0 10px 30px rgba(0,0,0,.28);
+      background:linear-gradient(180deg,rgba(244,197,66,.075),rgba(255,255,255,.018));
+    }
+    .set-item.is-sung{opacity:.68}
+    .set-item.is-fav{border-color:rgba(244,197,66,.42)}
+    .set-item.is-move-mode{
+      border-color:rgba(240,96,114,.78);
+      box-shadow:0 0 0 1px rgba(240,96,114,.20),0 0 18px rgba(240,96,114,.14);
+    }
+    .drag-handle{
+      width:34px;
+      height:34px;
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:10px;
+      background:rgba(0,0,0,.22);
+      display:grid;
+      place-items:center;
+      flex:0 0 auto;
+      cursor:grab;
+      user-select:none;
+      touch-action:none;
+      color:rgba(238,242,247,.82);
+    }
+    .titlebox{
+      min-width:0;
+      flex:1 1 auto;
+      display:flex;
+      flex-direction:column;
+      gap:3px;
+    }
+    .songtitle{
+      font-size:14px;
+      line-height:1.15;
+      font-weight:950;
+      overflow:hidden;
+      white-space:nowrap;
+      text-overflow:ellipsis;
+    }
+    .songmeta{
+      color:var(--muted);
+      font-size:11px;
+      overflow:hidden;
+      white-space:nowrap;
+      text-overflow:ellipsis;
+    }
+    .pill.heart{
+      width:39px;
+      height:36px;
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:10px;
+      background:rgba(0,0,0,.22);
+      color:rgba(238,242,247,.88);
+      display:grid;
+      place-items:center;
+      flex:0 0 39px;
+      cursor:pointer;
+    }
+    .pill.heart.on{
+      color:#111827;
+      background:var(--accent);
+      border-color:rgba(244,197,66,.9);
+    }
+    .move-controls{display:flex;gap:6px}
+    .move-btn{
+      width:34px;
+      height:34px;
+      border:1px solid rgba(244,197,66,.45);
+      border-radius:10px;
+      background:rgba(244,197,66,.12);
+      color:var(--text);
+      font-weight:950;
+      cursor:pointer;
+    }
+    #songInfoBelowSetlist{grid-column:1/-1}
+    #info-display{
+      border:1px solid rgba(255,255,255,.11);
+      border-radius:16px;
+      padding:14px;
+      background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.018));
+      box-shadow:var(--shadow2);
+    }
+    .now-next-row{
+      display:grid;
+      grid-template-columns:1.4fr .9fr;
+      gap:14px;
+      align-items:stretch;
+    }
+    .now-card,.next-card{
+      min-width:0;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:13px;
+      padding:11px 12px;
+      background:rgba(0,0,0,.18);
+    }
+    .now-label,.next-label{
+      color:var(--muted);
+      font-size:10px;
+      font-weight:950;
+      letter-spacing:.10em;
+      text-transform:uppercase;
+      margin-bottom:6px;
+    }
+    #current-song-info{
+      font-size:20px;
+      line-height:1.12;
+      font-weight:950;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+    #current-song-info .sub{
+      display:block;
+      margin-top:4px;
+      color:rgba(244,197,66,.9);
+      font-size:12px;
+      line-height:1.25;
+      font-weight:760;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+    #next-song-info{
+      color:var(--blue);
+      font-size:15px;
+      line-height:1.16;
+      font-weight:950;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+    #next-song-info .sub2{
+      display:block;
+      margin-top:4px;
+      color:rgba(124,199,232,.78);
+      font-size:11px;
+      font-weight:760;
+    }
+    #metro-dots{
+      min-height:40px;
+      margin-top:10px;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      gap:12px;
+    }
+    #metro-dots.is-hidden{display:none}
+    .beat-dot{
+      width:30px;
+      height:30px;
+      border:2px solid rgba(255,255,255,.10);
+      border-radius:999px;
+      background:#141824;
+      transition:.12s;
+    }
+    .beat-active-red{
+      background:var(--red);
+      border-color:#fff;
+      transform:scale(1.12);
+      box-shadow:0 0 22px rgba(240,96,114,.48);
+    }
+    .beat-active-green{
+      background:var(--green);
+      border-color:#fff;
+      transform:scale(1.12);
+      box-shadow:0 0 22px rgba(82,210,115,.42);
+    }
+    #viewContent{
+      width:100%;
+      min-height:260px;
+      margin:0;
+      padding:24px;
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:16px;
+      background:rgba(0,0,0,.28);
+      color:var(--text);
+      box-shadow:var(--shadow2);
+      font-family:var(--mono);
+      font-size:18px;
+      line-height:1.62;
+      white-space:pre-wrap;
+      overflow-x:auto;
+      touch-action:pan-y;
+    }
+    .chord{color:var(--accent);font-weight:950}
+    #list-name-badge{
+      display:block;
+      margin-top:4px;
+      color:rgba(244,197,66,.90);
+      font-size:10px;
+      font-weight:760;
+      letter-spacing:0;
+      text-transform:none;
+    }
+    .hint{
+      margin-top:9px;
+      color:rgba(154,166,178,.90);
+      font-size:11px;
+      line-height:1.35;
+    }
+    .dirty-chip{
+      display:none;
+      margin-top:8px;
+      width:max-content;
+      max-width:100%;
+      padding:6px 9px;
+      border:1px solid rgba(244,197,66,.32);
+      border-radius:999px;
+      background:rgba(244,197,66,.10);
+      color:var(--accent2);
+      font-size:11px;
+      font-weight:850;
+    }
+    .dirty-chip.show{display:block}
+    #configPanel{
+      position:fixed;
+      inset:0;
+      z-index:10001;
+      display:none;
+      flex-direction:column;
+      align-items:stretch;
+      gap:14px;
+      padding:28px 18px;
+      overflow:auto;
+      background:
+        radial-gradient(900px 600px at 10% 10%,rgba(244,197,66,.10),transparent 55%),
+        var(--bg);
+    }
+    #configPanel>.card{
+      width:min(100%,620px);
+      margin-left:auto;
+      margin-right:auto;
+      overflow:visible;
+      flex:0 0 auto;
+    }
+    .config-tabs{
+      width:min(100%,620px);
+      margin:0 auto;
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:8px;
+    }
+    .tab-btn{
+      border:1px solid rgba(255,255,255,.11);
+      border-radius:12px;
+      padding:10px 8px;
+      color:var(--muted);
+      background:rgba(255,255,255,.035);
+      font-size:12px;
+      font-weight:850;
+      cursor:pointer;
+    }
+    .tab-btn.active{
+      color:#111827;
+      background:var(--accent);
+      border-color:rgba(244,197,66,.88);
+    }
+    .config-section{display:none}
+    .config-section.active{display:block}
+    #mySetlists,#favList{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      max-height:52vh;
+      overflow-y:auto;
+      padding:2px 2px 12px;
+      -webkit-overflow-scrolling:touch;
+    }
+    .setlist-card{
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:12px;
+      padding:12px;
+      background:linear-gradient(180deg,rgba(255,255,255,.052),rgba(255,255,255,.018));
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:10px;
+      align-items:center;
+    }
+    .setlist-card strong{
+      display:block;
+      min-width:0;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      font-size:14px;
+    }
+    .setlist-card small{
+      display:block;
+      margin-top:4px;
+      color:var(--muted);
+      font-size:11px;
+    }
+    .setlist-card-actions{display:flex;gap:7px}
+    #toastUndo{
+      position:fixed;
+      left:50%;
+      bottom:16px;
+      z-index:20000;
+      transform:translateX(-50%);
+      width:min(92vw,520px);
+      display:none;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:12px;
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:16px;
+      background:rgba(15,19,32,.94);
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(12px);
+    }
+    #toastMsg{
+      min-width:0;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      font-size:12px;
+      font-weight:850;
+    }
+    #tabEditModal,.modal-shell{
+      display:none;
+      position:fixed;
+      inset:0;
+      z-index:30000;
+      padding:18px;
+      background:rgba(0,0,0,.68);
+      backdrop-filter:blur(8px);
+    }
+    .modal-box,.tab-edit-box{
+      width:min(94vw,520px);
+      margin:11vh auto;
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:18px;
+      background:#111827;
+      color:var(--text);
+      box-shadow:var(--shadow);
+      padding:16px;
+    }
+    .modal-title{
+      color:var(--accent);
+      font-size:18px;
+      font-weight:950;
+      margin-bottom:6px;
+    }
+    .modal-body{
+      color:rgba(238,242,247,.88);
+      font-size:14px;
+      line-height:1.45;
+      white-space:pre-wrap;
+    }
+    .modal-actions{
+      margin-top:16px;
+      display:flex;
+      justify-content:flex-end;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .choice-grid{
+      margin-top:14px;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+    .choice-card{
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:14px;
+      background:rgba(255,255,255,.04);
+      color:var(--text);
+      padding:14px;
+      min-height:102px;
+      text-align:left;
+      cursor:pointer;
+    }
+    .choice-card strong{display:block;font-size:15px;margin-bottom:5px}
+    .choice-card span{display:block;color:var(--muted);font-size:12px;line-height:1.3}
+    .choice-card:hover{border-color:rgba(244,197,66,.46)}
+    .modal-input{
+      margin-top:12px;
+      width:100%;
+      border:1px solid rgba(255,255,255,.13);
+      border-radius:12px;
+      background:rgba(0,0,0,.25);
+      color:#fff;
+      outline:none;
+      padding:12px;
+    }
+    .tab-edit-box{
+      width:min(96vw,900px);
+      height:86vh;
+      margin:5vh auto;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    #tabEditText{
+      flex:1;
+      width:100%;
+      resize:none;
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:14px;
+      background:#05070c;
+      color:#fff;
+      outline:none;
+      padding:14px;
+      font-family:var(--mono);
+      font-size:16px;
+      line-height:1.45;
+    }
+    body.live-mode{
+      padding-top:72px;
+      background:
+        radial-gradient(920px 620px at 50% -18%,rgba(244,197,66,.11),transparent 58%),
+        var(--bg);
+    }
+    body.live-mode .search-card,
+    body.live-mode .setlist-card-main .hd,
+    body.live-mode .hint,
+    body.live-mode #setlist-container{
+      display:none;
+    }
+    body.live-mode .grid{grid-template-columns:1fr}
+    body.live-mode #songInfoBelowSetlist{order:1}
+    body.live-mode .reader-card{order:2}
+    body.live-mode #info-display{padding:16px}
+    body.live-mode #viewContent{
+      min-height:calc(100vh - 250px);
+      font-size:22px;
+      line-height:1.72;
+      border-color:rgba(244,197,66,.20);
+    }
+    body.live-mode #current-song-info{font-size:24px}
+    .sortable-ghost{opacity:.25!important}
+    .sortable-chosen{opacity:.95!important}
+    .sortable-drag{opacity:.95!important;transform:scale(1.02);z-index:99999!important}
+    .is-dragging-sortable,.is-dragging-sortable *{
+      user-select:none!important;
+      -webkit-user-select:none!important;
+    }
+    @media (max-width:720px){
+      body{padding-top:132px}
+      .topbar{grid-template-columns:1fr}
+      .transport,.mode-tools{display:grid;grid-template-columns:repeat(4,1fr)}
+      .mode-tools{grid-template-columns:repeat(3,1fr)}
+      .btn{padding:8px 8px}
+      .role-grid{grid-template-columns:1fr}
+      .now-next-row{grid-template-columns:1fr}
+      #current-song-info{font-size:18px}
+      #viewContent{padding:18px;font-size:18px}
+      .choice-grid{grid-template-columns:1fr}
+      .setlist-card{grid-template-columns:1fr}
+      .setlist-card-actions{justify-content:flex-end}
+      .config-tabs{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <div id="roleSelector">
+    <div class="brand-mark">
+      <h1>Adoranza Pro</h1>
+      <p>Setlists, letras y tablaturas para ensayo y escenario. Escoge tu vista para empezar.</p>
+    </div>
+    <div class="role-grid">
+      <button class="role-btn" onclick="setRole('musico')">
+        <span class="role-icon">♬</span>
+        <strong>Piano / Guitarra</strong>
+        <span>Acordes, transposición y edición de tablatura.</span>
+      </button>
+      <button class="role-btn" onclick="setRole('drums')">
+        <span class="role-icon">◉</span>
+        <strong>Voz / Batería</strong>
+        <span>Letra limpia, metrónomo y descarga de texto.</span>
+      </button>
+      <button class="role-btn" onclick="Estadisticas()">
+        <span class="role-icon">▥</span>
+        <strong>Estadísticas</strong>
+        <span>Canciones más usadas del repertorio.</span>
+      </button>
+      <button class="role-btn" onclick="openConfig()">
+        <span class="role-icon">⚙</span>
+        <strong>Configuración</strong>
+        <span>Mis setlists, favoritos y perfil local.</span>
+      </button>
+    </div>
+    <div class="footer-credits">App creada por <a href="https://www.linkedin.com/in/jeffrey-trigueros-371191123/" target="_blank" rel="noopener">Jeffrey Trigueros</a></div>
+  </div>
+  <div id="fixedControlPanel">
+    <div class="topbar">
+      <div class="transport">
+        <button class="btn btn-blue" onclick="prevSong()" title="Anterior">Anterior</button>
+        <button class="btn btn-blue" onclick="nextSong()" title="Siguiente">Siguiente</button>
+        <button class="btn btn-ghost" onclick="showHome()">Inicio</button>
+        <button class="btn btn-primary" id="liveModeBtn" onclick="toggleLiveMode()">En vivo</button>
+      </div>
+      <div class="mode-tools">
+        <button class="btn btn-ghost" id="toneDownBtn" onclick="transpose(-1)" title="Bajar tono">♭</button>
+        <button class="btn btn-ghost" id="toneUpBtn" onclick="transpose(1)" title="Subir tono">♯</button>
+        <button class="btn btn-green" id="btnMetroState" style="display:none" onclick="toggleMetroManual()">▶</button>
+        <button class="btn btn-green" id="halfBtn" style="display:none" onclick="halfTime()">1/2</button>
+        <button class="btn btn-ghost" id="downloadBtn" style="display:none" onclick="descargarTexto()">Descargar</button>
+      </div>
+    </div>
+    <div id="volume-container">
+      VOL CLICK:
+      <input type="range" id="volRange" min="0" max="1" step="0.05" value="0.5" style="width:140px;vertical-align:middle">
+    </div>
+  </div>
+  <div id="configPanel">
+    <button class="btn btn-blue" style="width:140px;margin:0 auto" onclick="closeConfig()">Volver</button>
+    <div class="config-tabs">
+      <button class="tab-btn active" data-tab="setlists" onclick="showConfigTab('setlists')">Mis Setlists</button>
+      <button class="tab-btn" data-tab="favorites" onclick="showConfigTab('favorites')">Favoritos</button>
+      <button class="tab-btn" data-tab="profile" onclick="showConfigTab('profile')">Perfil</button>
+    </div>
+    <section class="card config-section active" data-section="setlists">
+      <div class="hd">
+        <span>Mis Setlists</span>
+        <button class="btn btn-blue" onclick="listarMisSetlists()">Actualizar</button>
+      </div>
+      <div class="bd">
+        <div id="mySetlists"></div>
+        <div class="hint">Toca “Abrir” para cargar directamente. “Copiar” mantiene el flujo anterior.</div>
+      </div>
+    </section>
+    <section class="card config-section" data-section="favorites">
+      <div class="hd">Favoritos Offline <span id="favCount" style="color:var(--muted);font-weight:700"></span></div>
+      <div class="bd">
+        <div id="favList"></div>
+        <div class="hint">Estos favoritos viven en este dispositivo.</div>
+      </div>
+    </section>
+    <section class="card config-section" data-section="profile">
+      <div class="hd">Perfil Local</div>
+      <div class="bd" style="display:grid;gap:12px">
+        <div>
+          <div class="songmeta">Usuario</div>
+          <div id="uname-display" style="color:var(--accent);font-size:20px;font-weight:950"></div>
+        </div>
+        <div>
+          <div class="songmeta">ID único</div>
+          <div id="uid-display" style="color:var(--accent);font-family:var(--mono);letter-spacing:1px;font-size:15px"></div>
+        </div>
+        <button class="btn btn-blue" onclick="copiarMiSetlistActual()" style="width:max-content">Copiar ID del setlist actual</button>
+      </div>
+    </section>
+  </div>
+  <main class="wrap">
+    <div class="grid">
+      <section class="card search-card">
+        <div class="hd">Buscador</div>
+        <div class="bd">
+          <input class="input" id="searchBox" type="search" placeholder="Buscar canción o artista..." autocomplete="off" />
+          <div id="results" style="margin-top:10px"></div>
+        </div>
+      </section>
+      <section class="card setlist-card-main">
+        <div class="hd">
+          <div style="min-width:0">Setlist <span id="list-name-badge"></span></div>
+          <div class="setlist-actions">
+            <button class="btn btn-green" onclick="guardarListaCloud()">Guardar</button>
+            <button class="btn btn-blue" onclick="cargarListaCloud()">Cargar</button>
+            <button class="btn btn-red" id="btnClearOrClose" onclick="clearOrCloseSetlist()">Vaciar</button>
+            <button class="btn btn-ghost" onclick="compartirWhatsApp()">Compartir</button>
+          </div>
+        </div>
+        <div class="bd" id="setlist-container">
+          <div id="setList"></div>
+          <div class="hint">Swipe derecha: cantada · Swipe izquierda: quitar · Corazón: offline · Mantener presionado: mover</div>
+          <div id="dirtyChip" class="dirty-chip">Cambios sin guardar</div>
+        </div>
+      </section>
+      <section id="songInfoBelowSetlist">
+        <div id="info-display">
+          <div class="now-next-row">
+            <div class="now-card">
+              <div class="now-label">Actual</div>
+              <div id="current-song-info">Adoranza Cloud</div>
+            </div>
+            <div class="next-card">
+              <div class="next-label">Siguiente</div>
+              <div id="next-song-info"></div>
+            </div>
+          </div>
+          <div id="metro-dots"></div>
+        </div>
+      </section>
+      <section class="card flat reader-card" style="grid-column:1/-1">
+        <pre id="viewContent">Selecciona una canción.</pre>
+      </section>
+    </div>
+  </main>
+  <div id="toastUndo">
+    <div id="toastMsg">Quitada</div>
+    <button class="btn btn-primary" onclick="undoLastRemove()">Deshacer</button>
+  </div>
+  <div id="tabEditModal">
+    <div class="tab-edit-box">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+        <div>
+          <div style="font-weight:950;color:var(--accent)">Editar tablatura</div>
+          <div id="tabEditTitle" style="font-size:12px;color:var(--muted);margin-top:3px"></div>
+        </div>
+        <button class="btn btn-red" onclick="closeTabEditor()">Cerrar</button>
+      </div>
+      <textarea id="tabEditText" spellcheck="false"></textarea>
+      <div style="display:flex;gap:10px;justify-content:flex-end">
+        <button class="btn btn-ghost" onclick="closeTabEditor()">Cancelar</button>
+        <button class="btn btn-green" onclick="saveTabEditor()">Guardar</button>
+      </div>
+    </div>
+  </div>
+  <div id="appModal" class="modal-shell">
+    <div class="modal-box">
+      <div class="modal-title" id="modalTitle">Adoranza</div>
+      <div class="modal-body" id="modalBody"></div>
+      <input class="modal-input" id="modalInput" style="display:none" />
+      <div class="choice-grid" id="modalChoices" style="display:none"></div>
+      <div class="modal-actions" id="modalActions"></div>
+    </div>
+  </div>
+  <script>
+    const SB_URL = "https://ystlbjvjoqpqoklvjdrj.supabase.co";
+    const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXAiLCJyZWYiOiJ5c3RsYmp2am9xcHFva2x2amRyaiIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzY3OTc2ODQ1LCJleHAiOjIwODM1NTI4NDV9.AQg9BuuGlbUtuyccvrBJwRGzx4Bgzx58aqGbfMPzKfg".replace('"iss":"sup"', '"iss":"supabase"');
+    const BUCKET = "Cancionero_Adoranza";
+    const BUCKET_URL = `${SB_URL}/storage/v1/object/public/${BUCKET}/`;
+    const LS_SETLIST = "adoranza_v4_setlist";
+    const LS_FAV = "adoranza_favorites_v1";
+    const LS_SUNG = "adoranza_sung_v1";
+    const LS_HIDDEN = "adoranza_hidden_v1";
+    const LS_ADOPT = "adoranza_adopted_setlists_v1";
+    let db = null;
+    const state = {
+      setlist: [],
+      currentIndex: -1,
+      currentFontSize: parseInt(localStorage.getItem("adoranza_font_size") || "18", 10),
+      hasUnsavedChanges: false,
+      userRole: "musico",
+      listName: "",
+      listIdUnico: "",
+      metroInt: null,
+      audioCtx: null,
+      metroActive: false,
+      currentBPM: 120,
+      half: false,
+      userId: localStorage.getItem("adoranza_user_id") || "",
+      username: localStorage.getItem("adoranza_username") || "",
+      lastRemoved: null,
+      toastT: null,
+      moveModeIndex: -1,
+      moveModeTimer: null,
+      liveMode: false
+    };
+    const $ = id => document.getElementById(id);
+    function make(tag, className, text){
+      const node = document.createElement(tag);
+      if (className) node.className = className;
+      if (text !== undefined && text !== null) node.textContent = String(text);
+      return node;
+    }
+    function toNumber(value, fallback=null){
+      if (value === null || value === undefined || value === "") return fallback;
+      const n = Number(value);
+      return Number.isFinite(n) ? n : fallback;
+    }
+    function safeJSONParse(txt, fallback){ try { return JSON.parse(txt); } catch { return fallback; } }
+    function showModal({title="Adoranza", body="", input=false, inputValue="", choices=null, okText="OK", cancelText=null}){
+      return new Promise(resolve => {
+        const shell = $("appModal");
+        const titleEl = $("modalTitle");
+        const bodyEl = $("modalBody");
+        const inputEl = $("modalInput");
+        const choicesEl = $("modalChoices");
+        const actions = $("modalActions");
+        titleEl.textContent = title;
+        bodyEl.textContent = body;
+        actions.textContent = "";
+        choicesEl.textContent = "";
+        inputEl.style.display = input ? "block" : "none";
+        choicesEl.style.display = choices ? "grid" : "none";
+        inputEl.value = inputValue || "";
+        const close = value => {
+          shell.style.display = "none";
+          resolve(value);
+        };
+        if (choices) {
+          choices.forEach(choice => {
+            const btn = make("button", "choice-card");
+            const strong = make("strong", "", choice.label);
+            const span = make("span", "", choice.description || "");
+            btn.append(strong, span);
+            btn.onclick = () => close(choice.value);
+            choicesEl.appendChild(btn);
+          });
+        } else {
+          if (cancelText) {
+            const cancel = make("button", "btn btn-ghost", cancelText);
+            cancel.onclick = () => close(null);
+            actions.appendChild(cancel);
+          }
+          const ok = make("button", "btn btn-primary", okText);
+          ok.onclick = () => close(input ? inputEl.value : true);
+          actions.appendChild(ok);
+        }
+        shell.style.display = "block";
+        setTimeout(() => input ? inputEl.focus() : actions.querySelector("button")?.focus(), 50);
+      });
+    }
+    const appAlert = message => showModal({body:String(message || "")});
+    const appConfirm = message => showModal({body:String(message || ""), okText:"Continuar", cancelText:"Cancelar"});
+    const appPrompt = (message, value="") => showModal({body:String(message || ""), input:true, inputValue:value, okText:"Aceptar", cancelText:"Cancelar"});
+    function markDirty(){
+      if (state.listIdUnico) state.hasUnsavedChanges = true;
+      renderBadge();
+    }
+    function genSetlistId8(prefix=""){
+      const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+      let out = "";
+      try {
+        const arr = new Uint8Array(8);
+        crypto.getRandomValues(arr);
+        for (let i=0;i<8;i++) out += chars[arr[i] % chars.length];
+      } catch {
+        for (let i=0;i<8;i++) out += chars[Math.floor(Math.random() * chars.length)];
+      }
+      return prefix + out;
+    }
+    function normKey(s){
+      return String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
+    }
+    function songKey(song){
+      if (song?.id) return `db:${String(song.id)}`;
+      if (!song._localKey) {
+        const t = normKey(song?.titulo || "");
+        const a = normKey(song?.artista || "");
+        const p = normKey(song?.path_url || "");
+        song._localKey = t || a || p ? `local:${a}|${t}|${p}` : genSetlistId8("local:");
+      }
+      return song._localKey;
+    }
+    const listKey = () => state.listIdUnico ? state.listIdUnico.trim().toUpperCase() : "LOCAL";
+    async function copyToClipboard(text){
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(text);
+          return true;
+        }
+      } catch {}
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.left = "-9999px";
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      let ok = false;
+      try { ok = document.execCommand("copy"); } catch {}
+      ta.remove();
+      return ok;
+    }
+    function initSupabaseOrWarn(){
+      if (!window.supabase?.createClient) {
+        appAlert("No cargó Supabase. Revisa internet o bloqueo del CDN.");
+        return null;
+      }
+      try { return window.supabase.createClient(SB_URL, SB_KEY); }
+      catch(e){ console.error(e); appAlert("No se pudo iniciar Supabase."); return null; }
+    }
+    async function ensureLocalUserOrBlock(){
+      if (!state.userId) {
+        state.userId = genSetlistId8("ID");
+        localStorage.setItem("adoranza_user_id", state.userId);
+      }
+      if (!state.username?.trim()) {
+        const u = await appPrompt("Elegí tu nombre de usuario:", "");
+        state.username = u?.trim() || "Invitado";
+        localStorage.setItem("adoranza_username", state.username);
+      }
+    }
+    async function upsertUserToCloudNonBlocking(){
+      if (!db) return;
+      try {
+        const { error } = await db.from("adoranza_users").upsert({user_id:state.userId, username:state.username}, {onConflict:"user_id"});
+        if (error) console.warn("upsert user:", error);
+      } catch(e){ console.warn("upsert user:", e); }
+    }
+    function getFavorites(){ const obj = safeJSONParse(localStorage.getItem(LS_FAV) || "{}", {}); return obj && typeof obj === "object" ? obj : {}; }
+    function setFavorites(obj){ localStorage.setItem(LS_FAV, JSON.stringify(obj || {})); }
+    const isFav = song => !!getFavorites()[songKey(song)];
+    function getSungMap(){ return safeJSONParse(localStorage.getItem(LS_SUNG) || "{}", {}); }
+    function setSungMap(obj){ localStorage.setItem(LS_SUNG, JSON.stringify(obj || {})); }
+    function isSung(song){ const sm = getSungMap(); return !!(sm[listKey()] && sm[listKey()][songKey(song)]); }
+    function markSung(song, val){
+      const sm = getSungMap(), lk = listKey(), k = songKey(song);
+      if (!sm[lk]) sm[lk] = {};
+      if (val) sm[lk][k] = true; else delete sm[lk][k];
+      setSungMap(sm);
+    }
+    function getHiddenMap(){ return safeJSONParse(localStorage.getItem(LS_HIDDEN) || "{}", {}); }
+    function setHiddenMap(obj){ localStorage.setItem(LS_HIDDEN, JSON.stringify(obj || {})); }
+    function isHidden(song){ const hm = getHiddenMap(); return !!(hm[listKey()] && hm[listKey()][songKey(song)]); }
+    function setHidden(song, val){
+      const hm = getHiddenMap(), lk = listKey(), k = songKey(song);
+      if (!hm[lk]) hm[lk] = {};
+      if (val) hm[lk][k] = true; else delete hm[lk][k];
+      setHiddenMap(hm);
+    }
+    function getAdoptedSetlists(){ return safeJSONParse(localStorage.getItem(LS_ADOPT) || "[]", []); }
+    function setAdoptedSetlists(arr){ localStorage.setItem(LS_ADOPT, JSON.stringify(arr || [])); }
+    function adoptSetlistId(id){
+      const list = getAdoptedSetlists();
+      const u = String(id || "").trim().toUpperCase();
+      if (u && !list.includes(u)) { list.push(u); setAdoptedSetlists(list); }
+    }
+    function saveLocal(){
+      try { localStorage.setItem(LS_SETLIST, JSON.stringify(state.setlist)); }
+      catch(e){ console.warn(e); appAlert("No se pudo guardar localmente. Puede que el almacenamiento esté lleno."); }
+    }
+    function loadLocalSetlist(){
+      const parsed = safeJSONParse(localStorage.getItem(LS_SETLIST), []);
+      state.setlist = Array.isArray(parsed) ? parsed : [];
+    }
+    async function fetchSongBodyFromBucket(song){
+      let rawUrl = String(song?.path_url || "").trim();
+      if (!rawUrl) throw new Error("path_url vacío");
+      rawUrl = rawUrl.replace(/^\.\//, "");
+      const fullUrl = /^https?:\/\//i.test(rawUrl) ? rawUrl : BUCKET_URL + rawUrl;
+      const resp = await fetch(encodeURI(fullUrl), {cache:"no-store"});
+      if (!resp.ok) throw new Error(`Fetch ${resp.status}: ${fullUrl}`);
+      const text = await resp.text();
+      return text.replace(/\{(\w+):\s*([^}]+)\}/g, "").trim();
+    }
+    function normalizeOverrides(canciones_json){
+      const map = new Map();
+      (Array.isArray(canciones_json) ? canciones_json : []).forEach(x => {
+        const key = x?.id || x?.song_id;
+        if (!key) return;
+        map.set(key, {
+          bpm_override: toNumber(x.bpm_override, null),
+          tono_override: typeof x.tono_override === "string" && x.tono_override.trim() ? x.tono_override.trim() : null,
+          transpose_steps: toNumber(x.transpose_steps, 0)
+        });
+      });
+      return map;
+    }
+    async function resolveSetlistSongs(setlist, supabaseClient){
+      const ids = Array.isArray(setlist.canciones_ids) ? setlist.canciones_ids : [];
+      const overridesById = normalizeOverrides(setlist.canciones_json);
+      if (!ids.length) return [];
+      const { data: metas, error } = await supabaseClient.from("canciones").select("id, titulo, artista, album, bpm, time_signature, tono_original, path_url").in("id", ids);
+      if (error) throw error;
+      const byId = new Map((metas || []).map(m => [m.id, m]));
+      const ordered = ids.map(id => byId.get(id)).filter(Boolean);
+      return Promise.all(ordered.map(async meta => {
+        const ov = overridesById.get(meta.id) || {};
+        let body = "";
+        try { body = await fetchSongBodyFromBucket(meta); }
+        catch(e){ console.warn("No se pudo cargar canción:", meta.path_url, e); }
+        return {
+          ...meta,
+          body,
+          body_base: body,
+          transpose_steps: toNumber(ov.transpose_steps, 0),
+          bpm_override: toNumber(ov.bpm_override, null),
+          tono_override: ov.tono_override || null,
+          tono_effective: ov.tono_override || meta.tono_original || null
+        };
+      }));
+    }
+    async function loadSetlistByCode(code, supabaseClient){
+      const { data, error } = await supabaseClient.from("setlists_guardados").select("id, id_unico, nombre_lista, owner_id, canciones_ids, canciones_json, updated_at").eq("id_unico", code).single();
+      if (error) throw error;
+      return data;
+    }
+    function buildCloudSetlistPayload(){
+      return {
+        canciones_ids: state.setlist.map(s => s.id).filter(Boolean),
+        canciones_json: state.setlist.filter(s => s?.id).map(s => ({
+          id: s.id,
+          transpose_steps: toNumber(s.transpose_steps, 0),
+          bpm_override: toNumber(s.bpm_override, null),
+          tono_override: typeof s.tono_override === "string" && s.tono_override.trim() ? s.tono_override.trim() : null
+        }))
+      };
+    }
+    function transposeBody(raw, steps, preferFlats=false){
+      const nSteps = toNumber(steps, 0);
+      if (!nSteps) return raw || "";
+      const scale = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+      const sharpToFlat = {"C#":"Db","D#":"Eb","F#":"Gb","G#":"Ab","A#":"Bb"};
+      const flatsToSharps = {"DB":"C#","EB":"D#","GB":"F#","AB":"G#","BB":"A#"};
+      return String(raw || "").replace(/\[([^\]]+)\]/g, (match, chord) => {
+        const out = chord.replace(/[A-G](?:#|b)?/g, note => {
+          const nn = flatsToSharps[note.toUpperCase()] || note.toUpperCase();
+          const idx = scale.indexOf(nn);
+          if (idx === -1) return note;
+          let res = scale[(idx + nSteps + 1200) % 12];
+          if (preferFlats && sharpToFlat[res]) res = sharpToFlat[res];
+          return res;
+        });
+        return `[${out}]`;
+      });
+    }
+    function renderChordText(container, raw){
+      container.textContent = "";
+      String(raw || "").split(/(\[[^\]]+\])/g).forEach(part => {
+        if (!part) return;
+        if (/^\[[^\]]+\]$/.test(part)) container.appendChild(make("span", "chord", part));
+        else container.appendChild(document.createTextNode(part));
+      });
+    }
+    function stripChordsAndCompactText(raw){
+      return String(raw || "").replace(/\[([^\]]+)\]/g, "").split(/\r?\n/).map(l => l.trim()).filter(Boolean).join("\n\n");
+    }
+    function getVisibleIndexes(){
+      return state.setlist.map((song,index) => ({song,index})).filter(x => x.song && !isHidden(x.song)).map(x => x.index);
+    }
+    function getNextVisibleIndex(fromIdx){ return getVisibleIndexes().find(idx => idx > fromIdx) ?? -1; }
+    function getPrevVisibleIndex(fromIdx){
+      const visible = getVisibleIndexes();
+      for (let i=visible.length-1;i>=0;i--) if (visible[i] < fromIdx) return visible[i];
+      return -1;
+    }
+    function renderBadge(){
+      const badge = $("list-name-badge");
+      if (!badge) return;
+      if (!state.listName && !state.listIdUnico) badge.textContent = "";
+      else {
+        let txt = `» ${state.listName || state.listIdUnico}`;
+        if (state.listName && state.listIdUnico) txt += ` (${state.listIdUnico})`;
+        if (state.hasUnsavedChanges) txt += " · sin guardar";
+        badge.textContent = txt;
+      }
+      const chip = $("dirtyChip");
+      if (chip) chip.classList.toggle("show", !!state.hasUnsavedChanges);
+      updateClearCloseBtn();
+    }
+    function hasLoadedNamedList(){ return !!(state.listIdUnico || state.listName.trim()); }
+    function updateClearCloseBtn(){
+      const b = $("btnClearOrClose");
+      if (!b) return;
+      b.textContent = hasLoadedNamedList() ? "Cerrar" : "Vaciar";
+    }
+    function updateNowNextInfo(){
+      const info = $("current-song-info"), next = $("next-song-info"), curr = state.setlist[state.currentIndex];
+      if (!next) return;
+      next.textContent = "";
+      if (!curr) { if (info) info.textContent = "Adoranza Cloud"; return; }
+      const nextIdx = getNextVisibleIndex(state.currentIndex);
+      const nextSong = nextIdx >= 0 ? state.setlist[nextIdx] : null;
+      next.appendChild(document.createTextNode(nextSong ? nextSong.titulo || "(Sin título)" : "(no hay más)"));
+      next.appendChild(make("span", "sub2", "Siguiente"));
+    }
+    function renderAll(){
+      renderSetlist();
+      renderReader();
+      renderBadge();
+      setTimeout(initSortable, 0);
+    }
+    function renderSetlist(){
+      const sl = $("setList");
+      if (!sl) return;
+      sl.textContent = "";
+      state.setlist.map((s, originalIndex) => ({s, originalIndex})).filter(x => !isHidden(x.s)).forEach(({s, originalIndex}) => {
+        const wrap = make("div", "set-item-wrap");
+        const actions = make("div", "swipe-actions");
+        actions.append(make("div", "swipe-action left", "Quitar"), make("div", "swipe-action right", "Cantada"));
+        const row = make("div", "set-item");
+        row.dataset.idx = String(originalIndex);
+        const favOn = isFav(s);
+        if (originalIndex === state.currentIndex) row.classList.add("is-active");
+        if (isSung(s)) row.classList.add("is-sung");
+        if (favOn) row.classList.add("is-fav");
+        if (state.moveModeIndex === originalIndex) row.classList.add("is-move-mode");
+        if (state.moveModeIndex === originalIndex) {
+          const controls = make("div", "move-controls");
+          const up = make("button", "move-btn", "↑");
+          const down = make("button", "move-btn", "↓");
+          up.onclick = ev => moveSongByIndex(originalIndex, -1, ev);
+          down.onclick = ev => moveSongByIndex(originalIndex, 1, ev);
+          controls.append(up, down);
+          row.appendChild(controls);
+        } else row.appendChild(make("span", "drag-handle", "☰"));
+        const titlebox = make("div", "titlebox");
+        titlebox.appendChild(make("div", "songtitle", s.titulo || "(Sin título)"));
+        const metaParts = [];
+        if (s.artista) metaParts.push(s.artista);
+        if (favOn) metaParts.push("Offline");
+        if (isSung(s)) metaParts.push("Cantada");
+        titlebox.appendChild(make("div", "songmeta", metaParts.join(" · ")));
+        const heart = make("button", `pill heart ${favOn ? "on" : ""}`, favOn ? "♥" : "♡");
+        heart.type = "button";
+        heart.onclick = ev => toggleFavByIndex(originalIndex, ev);
+        row.append(titlebox, heart);
+        row.onclick = () => seleccionar(originalIndex);
+        wrap.append(actions, row);
+        sl.appendChild(wrap);
+        if (state.userRole !== "musico") attachSwipe(row);
+        attachLongPressMoveMode(row);
+      });
+    }
+    function renderReader(){
+      const currHidden = state.currentIndex >= 0 && state.setlist[state.currentIndex] && isHidden(state.setlist[state.currentIndex]);
+      if (currHidden) {
+        const next = getNextVisibleIndex(state.currentIndex);
+        state.currentIndex = next >= 0 ? next : getPrevVisibleIndex(state.currentIndex);
+      }
+      const curr = state.setlist[state.currentIndex], view = $("viewContent"), info = $("current-song-info"), dots = $("metro-dots");
+      if (dots) dots.classList.toggle("is-hidden", state.userRole === "musico");
+      if (!curr) {
+        if (info) info.textContent = "Adoranza Cloud";
+        if (view) view.textContent = "Selecciona una canción.";
+        updateNowNextInfo();
+        return;
+      }
+      if (info) {
+        info.textContent = "";
+        info.appendChild(document.createTextNode(curr.titulo || ""));
+        const sub = make("span", "sub");
+        if (state.userRole === "drums") {
+          const bpm = toNumber(curr.bpm_override, toNumber(curr.bpm, null));
+          sub.textContent = `BPM: ${state.half && bpm ? bpm / 2 : bpm ?? "-"}`;
+        } else {
+          const step = toNumber(curr.transpose_steps, 0);
+          const artist = curr.artista || "";
+          sub.textContent = step ? `${artist} · ${step > 0 ? "+" : ""}${step}` : artist;
+        }
+        info.appendChild(sub);
+      }
+      updateNowNextInfo();
+      const bodyBase = curr.body_base || curr.body || "";
+      const keyRaw = String(curr.tono_effective || curr.tono_override || curr.tono_original || curr.key || "").trim();
+      let keyNorm = keyRaw.replace(/\s+/g, "");
+      const mm = keyNorm.match(/^([A-G])([#b]?)(m)?/i);
+      keyNorm = mm ? mm[1].toUpperCase() + (mm[2] || "") + (mm[3] ? "m" : "") : "";
+      const flatMinorKeys = ["Dm","Gm","Cm","Fm","Bbm","Ebm","Abm"];
+      let preferFlats = /^[A-G]b/i.test(keyNorm) || ["F","Bb","Eb","Ab","Db","Gb","Cb"].includes(keyNorm) || flatMinorKeys.includes(keyNorm);
+      if (!keyNorm) preferFlats = /\b[A-G]b\b/.test(bodyBase);
+      const body = transposeBody(bodyBase, toNumber(curr.transpose_steps, 0), preferFlats);
+      if (view) {
+        if (state.userRole === "musico") renderChordText(view, body);
+        else view.textContent = stripChordsAndCompactText(body);
+        view.style.fontSize = state.currentFontSize + "px";
+      }
+      const bpm = toNumber(curr.bpm_override, toNumber(curr.bpm, 120));
+      state.currentBPM = state.half ? bpm / 2 : bpm;
+      if (state.userRole === "drums" && state.metroActive) startMetro();
+    }
+    async function addToSetlist(song){
+      try {
+        const favs = getFavorites();
+        const k = songKey(song);
+        const bodyBase = favs[k]?.body_base || favs[k]?.body || await fetchSongBodyFromBucket(song);
+        state.setlist.push({...song, body:bodyBase, body_base:bodyBase, transpose_steps:0, bpm_override:null});
+        markDirty();
+        saveLocal();
+        renderAll();
+      } catch(e){ console.error(e); appAlert("No se pudo cargar el archivo:\n" + (song?.path_url || "")); }
+    }
+    function toggleFavByIndex(idx, ev){
+      ev?.stopPropagation();
+      const song = state.setlist[idx];
+      if (!song) return;
+      const favs = getFavorites(), k = songKey(song);
+      if (favs[k]) delete favs[k];
+      else {
+        const bodyBase = song.body_base || song.body || "";
+        favs[k] = {key:k,id:song.id||null,titulo:song.titulo||"",artista:song.artista||"",path_url:song.path_url||"",body:bodyBase,body_base:bodyBase,bpm:song.bpm??null,time_signature:song.time_signature??null,tono_original:song.tono_original||"",updatedAt:Date.now()};
+      }
+      setFavorites(favs);
+      renderAll();
+      renderFavoritesInConfig();
+    }
+    function renderFavoritesInConfig(){
+      const box = $("favList");
+      if (!box) return;
+      const arr = Object.values(getFavorites()).sort((a,b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+      const count = $("favCount");
+      if (count) count.textContent = `(${arr.length})`;
+      box.textContent = "";
+      if (!arr.length) { box.appendChild(make("div", "songmeta", "No hay favoritos offline.")); return; }
+      arr.forEach(fav => {
+        const card = make("div", "setlist-card");
+        const info = make("div");
+        info.append(make("strong", "", fav.titulo || "(Sin título)"), make("small", "", fav.artista || "Sin artista"));
+        const actions = make("div", "setlist-card-actions");
+        const open = make("button", "btn btn-blue", "Abrir");
+        const remove = make("button", "btn btn-red", "Quitar");
+        open.onclick = ev => openFavorite(fav.key, ev);
+        remove.onclick = ev => removeFavorite(fav.key, ev);
+        actions.append(open, remove);
+        card.append(info, actions);
+        box.appendChild(card);
+      });
+    }
+    function openFavorite(key, ev){
+      ev?.stopPropagation();
+      const fav = getFavorites()[key];
+      if (!fav) return;
+      const existing = state.setlist.findIndex(x => songKey(x) === key || String(x.id || "") === String(fav.id || ""));
+      if (existing >= 0) { seleccionar(existing); closeConfig(); return; }
+      const bodyBase = fav.body_base || fav.body || "";
+      state.setlist.push({id:fav.id||null,titulo:fav.titulo||"",artista:fav.artista||"",path_url:fav.path_url||"",body:bodyBase,body_base:bodyBase,bpm:fav.bpm??null,time_signature:fav.time_signature??null,tono_original:fav.tono_original||"",transpose_steps:0,bpm_override:null});
+      markDirty();
+      saveLocal();
+      renderAll();
+      seleccionar(state.setlist.length - 1);
+      closeConfig();
+    }
+    async function removeFavorite(key, ev){
+      ev?.stopPropagation();
+      const favs = getFavorites();
+      if (!favs[key]) return;
+      if (!await appConfirm("¿Quitar este favorito offline?")) return;
+      delete favs[key];
+      setFavorites(favs);
+      renderFavoritesInConfig();
+      renderAll();
+    }
+    function seleccionar(idx){ state.currentIndex = idx; state.half = false; renderAll(); scrollToReader(); }
+    function nextSong(){
+      if (!state.setlist.length) return;
+      let idx = state.currentIndex < 0 ? getVisibleIndexes()[0] ?? -1 : getNextVisibleIndex(state.currentIndex);
+      if (idx < 0) return;
+      state.currentIndex = idx; state.half = false; renderAll(); scrollToReader();
+    }
+    function prevSong(){
+      if (!state.setlist.length) return;
+      let idx = state.currentIndex < 0 ? getVisibleIndexes()[0] ?? -1 : getPrevVisibleIndex(state.currentIndex);
+      if (idx < 0) return;
+      state.currentIndex = idx; state.half = false; renderAll(); scrollToReader();
+    }
+    function transpose(delta){
+      const curr = state.setlist[state.currentIndex];
+      if (!curr) return;
+      curr.transpose_steps = toNumber(curr.transpose_steps, 0) + delta;
+      markDirty();
+      saveLocal();
+      renderAll();
+    }
+    function scrollToReader(){
+      const panel = $("fixedControlPanel"), target = $("songInfoBelowSetlist") || $("viewContent");
+      if (!panel || !target) return;
+      const y = target.getBoundingClientRect().top + window.scrollY - (panel.offsetHeight + 10);
+      window.scrollTo({top:Math.max(0,y), behavior:"smooth"});
+    }
+    function softRemoveSong(idx){
+      const song = state.setlist[idx];
+      if (!song) return;
+      state.lastRemoved = {song,index:idx};
+      state.setlist.splice(idx, 1);
+      if (state.currentIndex === idx) state.currentIndex = -1;
+      else if (state.currentIndex > idx) state.currentIndex--;
+      markDirty();
+      saveLocal();
+      renderAll();
+      showUndoToast(`Quitada: ${song.titulo || "Canción"}`);
+    }
+    function showUndoToast(label){
+      const toast = $("toastUndo"), msg = $("toastMsg");
+      if (!toast || !msg) return;
+      msg.textContent = label || "Quitada";
+      toast.style.display = "flex";
+      if (state.toastT) clearTimeout(state.toastT);
+      state.toastT = setTimeout(() => { toast.style.display = "none"; state.toastT = null; state.lastRemoved = null; }, 4500);
+    }
+    function undoLastRemove(){
+      if (!state.lastRemoved) return;
+      const {song,index} = state.lastRemoved;
+      state.setlist.splice(Math.max(0, Math.min(index, state.setlist.length)), 0, song);
+      state.lastRemoved = null;
+      const toast = $("toastUndo");
+      if (toast) toast.style.display = "none";
+      markDirty();
+      saveLocal();
+      renderAll();
+    }
+    async function clearOrCloseSetlist(){
+      if (state.listIdUnico && state.hasUnsavedChanges) {
+        if (!await appConfirm("Tienes cambios sin guardar. ¿Cerrar de todos modos?")) return;
+      }
+      if (hasLoadedNamedList()) {
+        if (!await appConfirm("¿Cerrar este setlist? No se borra en la nube.")) return;
+      } else if (!await appConfirm("¿Vaciar la lista temporal?")) return;
+      clearSetlist();
+    }
+    function clearSetlist(){
+      const oldKey = listKey();
+      state.setlist = [];
+      state.currentIndex = -1;
+      state.listName = "";
+      state.listIdUnico = "";
+      state.hasUnsavedChanges = false;
+      const hm = getHiddenMap();
+      delete hm[oldKey];
+      setHiddenMap(hm);
+      saveLocal();
+      renderAll();
+    }
+    async function guardarListaCloud(){
+      if (!db) return appAlert("Supabase no está listo.");
+      if (!state.setlist.length) return appAlert("El setlist está vacío.");
+      const { canciones_ids, canciones_json } = buildCloudSetlistPayload();
+      if (state.listIdUnico) {
+        const target = state.listIdUnico.trim().toUpperCase();
+        const { error } = await db.from("setlists_guardados").update({canciones_ids,canciones_json,updated_at:new Date().toISOString()}).eq("id_unico", target);
+        if (error) return appAlert("Error al actualizar: " + error.message);
+        state.hasUnsavedChanges = false;
+        renderAll();
+        if ($("configPanel").style.display === "flex") listarMisSetlists();
+        return appAlert("Cambios guardados correctamente.");
+      }
+      const name = await appPrompt("Nombre del setlist:", "");
+      if (!name?.trim()) return;
+      let idUnico = "", lastErr = null;
+      for (let i=0;i<6;i++) {
+        idUnico = genSetlistId8("");
+        const { error } = await db.from("setlists_guardados").insert({nombre_lista:name.trim(),canciones_ids,canciones_json,id_unico:idUnico,owner_id:state.userId,owner_name:state.username,updated_at:new Date().toISOString()});
+        if (!error) { lastErr = null; break; }
+        lastErr = error;
+      }
+      if (lastErr) return appAlert("Error al crear setlist: " + lastErr.message);
+      state.listName = name.trim();
+      state.listIdUnico = idUnico;
+      state.hasUnsavedChanges = false;
+      renderAll();
+      if ($("configPanel").style.display === "flex") listarMisSetlists();
+      appAlert("Guardado con éxito.\nCódigo: " + idUnico);
+    }
+    async function pickRoleForSetlist(){
+      return showModal({
+        title:"Abrir setlist",
+        body:"Escoge la vista para cargarlo.",
+        choices:[
+          {label:"Piano / Guitarra", description:"Muestra acordes, tono y tablatura.", value:"musico"},
+          {label:"Voz / Batería", description:"Letra limpia, metrónomo y descarga.", value:"drums"}
+        ]
+      });
+    }
+    async function cargarListaCloudPorId(id, askRole=true){
+      if (!db) return appAlert("Supabase no está listo.");
+      if (state.hasUnsavedChanges && !await appConfirm("Tienes cambios sin guardar. Si cargas otra lista, se perderán. ¿Continuar?")) return;
+      const want = String(id || "").trim().toUpperCase();
+      if (!want) return appAlert("ID de setlist inválido.");
+      if (askRole) {
+        const role = await pickRoleForSetlist();
+        if (!role) return;
+        setRole(role);
+      }
+      try {
+        const setlist = await loadSetlistByCode(want, db);
+        state.listName = setlist.nombre_lista || "";
+        state.listIdUnico = String(setlist.id_unico || want).trim().toUpperCase();
+        if (setlist.owner_id && setlist.owner_id !== state.userId) {
+          if (await appConfirm("¿Deseas guardar este setlist en tus accesos rápidos?")) adoptSetlistId(want);
+        }
+        state.setlist = await resolveSetlistSongs(setlist, db);
+        state.currentIndex = -1;
+        state.hasUnsavedChanges = false;
+        const hm = getHiddenMap();
+        delete hm[listKey()];
+        setHiddenMap(hm);
+        saveLocal();
+        renderAll();
+        closeConfig();
+        appAlert("Setlist cargado:\n" + (state.listName || state.listIdUnico));
+      } catch(e){ console.error(e); appAlert("No se encontró o no se pudo cargar: " + want); }
+    }
+    async function cargarListaCloud(){
+      const uid = await appPrompt("Ingresa el ID del Setlist:", "");
+      if (!uid) return;
+      await cargarListaCloudPorId(uid, true);
+    }
+    async function listarMisSetlists(){
+      if (!db) return;
+      const box = $("mySetlists");
+      if (!box) return;
+      box.textContent = "Cargando...";
+      try {
+        const adoptedIds = getAdoptedSetlists();
+        const { data: mine, error: mineError } = await db.from("setlists_guardados").select("*").eq("owner_id", state.userId).order("updated_at", {ascending:false});
+        if (mineError) throw mineError;
+        let all = Array.isArray(mine) ? [...mine] : [];
+        if (adoptedIds.length) {
+          const { data: adopted, error: adoptedError } = await db.from("setlists_guardados").select("*").in("id_unico", adoptedIds).order("updated_at", {ascending:false});
+          if (adoptedError) throw adoptedError;
+          const seen = new Set(all.map(x => String(x.id_unico || "").trim().toUpperCase()));
+          (adopted || []).forEach(row => {
+            const code = String(row.id_unico || "").trim().toUpperCase();
+            if (!seen.has(code)) { all.push(row); seen.add(code); }
+          });
+        }
+        box.textContent = "";
+        if (!all.length) { box.appendChild(make("div", "songmeta", "Sin setlists.")); return; }
+        all.forEach(row => {
+          const id = String(row.id_unico || "").trim().toUpperCase();
+          const name = row.nombre_lista || "(Sin nombre)";
+          const ownerTag = row.owner_id === state.userId ? "Mío" : "Acceso rápido";
+          const card = make("div", "setlist-card");
+          const info = make("div");
+          info.append(make("strong", "", name), make("small", "", `ID: ${id} · ${ownerTag}`));
+          const actions = make("div", "setlist-card-actions");
+          const open = make("button", "btn btn-primary", "Abrir");
+          const copy = make("button", "btn btn-ghost", "Copiar");
+          open.onclick = () => cargarListaCloudPorId(id, true);
+          copy.onclick = ev => copiarSetlistId(id, ev);
+          actions.append(open, copy);
+          card.append(info, actions);
+          box.appendChild(card);
+        });
+      } catch(e){ console.error(e); box.textContent = "Error cargando setlists."; }
+    }
+    async function copiarSetlistId(id, ev){ ev?.stopPropagation(); const ok = await copyToClipboard(id); appAlert(ok ? `Copiado:\n${id}` : `No se pudo copiar:\n${id}`); }
+    async function copiarMiSetlistActual(){ if (!state.listIdUnico) return appAlert("No hay setlist cargado."); await copiarSetlistId(state.listIdUnico.trim().toUpperCase()); }
+    async function compartirWhatsApp(){
+      if (!state.listIdUnico) return appAlert("Guarda el setlist primero.");
+      if (state.hasUnsavedChanges) return appAlert("Tienes cambios pendientes. Guarda antes de compartir.");
+      const sid = state.listIdUnico.trim().toUpperCase();
+      const name = state.listName || "Setlist";
+      const url = `${window.location.origin}${window.location.pathname}?sid=${encodeURIComponent(sid)}`;
+      window.open(`https://wa.me/?text=${encodeURIComponent(`Setlist: ${name}\nCódigo: ${sid}\nAbrir: ${url}`)}`, "_blank", "noopener");
+    }
+    async function Estadisticas(){
+      if (!db) return appAlert("Supabase no está listo.");
+      try {
+        const { data, error } = await db.from("canciones").select("titulo, veces_tocada").gt("veces_tocada", 0).order("veces_tocada", {ascending:false}).limit(5);
+        if (error) throw error;
+        const lines = (data || []).map(s => `- ${s.titulo} (${s.veces_tocada})`);
+        appAlert("TOP 5:\n" + (lines.length ? lines.join("\n") : "Sin datos todavía."));
+      } catch(e){ console.error(e); appAlert("No se pudieron cargar estadísticas."); }
+    }
+    function setRole(role){
+      state.userRole = role;
+      $("roleSelector").style.display = "none";
+      const isDrums = role === "drums";
+      $("toneDownBtn").style.display = isDrums ? "none" : "inline-flex";
+      $("toneUpBtn").style.display = isDrums ? "none" : "inline-flex";
+      $("btnMetroState").style.display = isDrums ? "inline-flex" : "none";
+      $("halfBtn").style.display = isDrums ? "inline-flex" : "none";
+      $("downloadBtn").style.display = isDrums ? "inline-flex" : "none";
+      $("volume-container").style.display = isDrums ? "block" : "none";
+      renderAll();
+    }
+    function showHome(){ $("roleSelector").style.display = "flex"; stopMetro(); }
+    function openConfig(){
+      $("configPanel").style.display = "flex";
+      $("uid-display").textContent = state.userId;
+      $("uname-display").textContent = state.username || "(sin usuario)";
+      renderFavoritesInConfig();
+      if (db) listarMisSetlists();
+    }
+    function closeConfig(){ $("configPanel").style.display = "none"; }
+    function showConfigTab(tab){
+      document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
+      document.querySelectorAll(".config-section").forEach(s => s.classList.toggle("active", s.dataset.section === tab));
+      if (tab === "favorites") renderFavoritesInConfig();
+      if (tab === "setlists" && db) listarMisSetlists();
+    }
+    function toggleLiveMode(){
+      state.liveMode = !state.liveMode;
+      document.body.classList.toggle("live-mode", state.liveMode);
+      $("liveModeBtn").textContent = state.liveMode ? "Salir vivo" : "En vivo";
+      scrollToReader();
+    }
+    function toggleMetroManual(){
+      state.metroActive = !state.metroActive;
+      $("btnMetroState").textContent = state.metroActive ? "⏹" : "▶";
+      state.metroActive ? startMetro() : stopMetro();
+    }
+    function halfTime(){ state.half = !state.half; renderAll(); }
+    function startMetro(){
+      stopMetro();
+      const curr = state.setlist[state.currentIndex];
+      if (!curr) return;
+      const dots = $("metro-dots");
+      if (!dots) return;
+      const rawBeats = parseInt(curr.time_signature, 10);
+      const beats = Math.max(1, Math.min(12, Number.isFinite(rawBeats) ? rawBeats : 4));
+      const bpm = Math.max(30, Math.min(260, toNumber(state.currentBPM, 120)));
+      dots.textContent = "";
+      for (let i=0;i<beats;i++) { const dot = make("div", "beat-dot"); dot.id = `dot-${i}`; dots.appendChild(dot); }
+      try {
+        if (!state.audioCtx) state.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (state.audioCtx.state === "suspended") state.audioCtx.resume().catch(()=>{});
+      } catch(e){ console.error(e); appAlert("No se pudo iniciar el metrónomo."); return; }
+      let step = 0;
+      state.metroInt = setInterval(() => {
+        const audioCtx = state.audioCtx;
+        if (!audioCtx) return;
+        const vol = Math.max(0, Math.min(1, toNumber($("volRange")?.value, .5)));
+        document.querySelectorAll(".beat-dot").forEach(d => d.className = "beat-dot");
+        const dot = $(`dot-${step}`);
+        if (dot) dot.classList.add(step === 0 ? "beat-active-red" : "beat-active-green");
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(step === 0 ? 880 : 440, audioCtx.currentTime);
+        gain.gain.setValueAtTime(vol * .3, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(.001, audioCtx.currentTime + .1);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(); osc.stop(audioCtx.currentTime + .1);
+        step = (step + 1) % beats;
+      }, (60 / bpm) * 1000);
+    }
+    function stopMetro(){ if (state.metroInt) clearInterval(state.metroInt); state.metroInt = null; const md = $("metro-dots"); if (md) md.textContent = ""; }
+    function attachSwipe(el){
+      let startX=0,startY=0,dx=0,dy=0,dragging=false,pointerId=null;
+      const wrap = el.closest(".set-item-wrap");
+      const reset = () => {
+        el.style.transition = "transform .16s ease";
+        el.style.transform = "translateX(0px)";
+        wrap?.classList.remove("is-swiping");
+        setTimeout(() => { el.style.transition = ""; }, 180);
+        dragging=false; dx=0; dy=0; pointerId=null;
+      };
+      el.addEventListener("pointerdown", ev => {
+        const target = ev.target;
+        if (target?.closest(".pill") || target?.closest(".drag-handle") || target?.closest(".move-btn")) return;
+        pointerId=ev.pointerId; startX=ev.clientX; startY=ev.clientY; dx=0; dy=0; dragging=false;
+      }, {passive:true});
+      el.addEventListener("pointermove", ev => {
+        if (pointerId == null || ev.pointerId !== pointerId) return;
+        dx = ev.clientX - startX; dy = ev.clientY - startY;
+        if (!dragging) {
+          if (Math.abs(dy) > 12 && Math.abs(dy) > Math.abs(dx)) { pointerId = null; return; }
+          if (Math.abs(dx) > 10) { dragging = true; try { el.setPointerCapture(ev.pointerId); } catch{} wrap?.classList.add("is-swiping"); }
+        }
+        if (dragging) el.style.transform = `translateX(${dx}px)`;
+      }, {passive:true});
+      el.addEventListener("pointerup", () => {
+        const idx = parseInt(el.dataset.idx || "-1", 10);
+        if (!dragging) { if (Math.abs(dx) <= 8 && Math.abs(dy) <= 8 && idx >= 0) seleccionar(idx); reset(); return; }
+        const threshold = (el.getBoundingClientRect().width || 1) * .28;
+        if (dx <= -threshold) { reset(); if (idx >= 0) softRemoveSong(idx); return; }
+        if (dx >= threshold) {
+          reset();
+          const song = state.setlist[idx];
+          if (song) { markSung(song, true); setHidden(song, true); saveLocal(); renderAll(); }
+          return;
+        }
+        reset();
+      }, {passive:true});
+      el.addEventListener("pointercancel", reset, {passive:true});
+    }
+    function attachLongPressMoveMode(el){
+      if (!el) return;
+      let timer=null,startX=0,startY=0,pointerId=null;
+      const cancel = () => { if (timer) clearTimeout(timer); timer=null; pointerId=null; };
+      el.addEventListener("pointerdown", ev => {
+        const target = ev.target;
+        if (target?.closest(".pill") || target?.closest(".move-btn") || target?.closest(".drag-handle")) return;
+        pointerId=ev.pointerId; startX=ev.clientX; startY=ev.clientY;
+        const idx = parseInt(el.dataset.idx || "-1", 10);
+        if (idx < 0) return;
+        timer = setTimeout(() => { timer=null; pointerId=null; activateMoveMode(idx); }, 1400);
+      }, {passive:true});
+      el.addEventListener("pointermove", ev => {
+        if (pointerId == null || ev.pointerId !== pointerId) return;
+        if (Math.abs(ev.clientX - startX) > 12 || Math.abs(ev.clientY - startY) > 12) cancel();
+      }, {passive:true});
+      el.addEventListener("pointerup", cancel, {passive:true});
+      el.addEventListener("pointercancel", cancel, {passive:true});
+      el.addEventListener("pointerleave", cancel, {passive:true});
+    }
+    function activateMoveMode(idx){
+      if (state.moveModeTimer) clearTimeout(state.moveModeTimer);
+      state.moveModeIndex = idx;
+      renderAll();
+      state.moveModeTimer = setTimeout(() => { state.moveModeIndex = -1; state.moveModeTimer = null; renderAll(); }, 7000);
+    }
+    function moveSongByIndex(idx, dir, ev){
+      ev?.stopPropagation();
+      const newIdx = idx + dir;
+      if (newIdx < 0 || newIdx >= state.setlist.length) return;
+      const item = state.setlist.splice(idx, 1)[0];
+      state.setlist.splice(newIdx, 0, item);
+      if (state.currentIndex === idx) state.currentIndex = newIdx;
+      else if (state.currentIndex === newIdx) state.currentIndex = idx;
+      state.moveModeIndex = newIdx;
+      markDirty();
+      saveLocal();
+      renderAll();
+      if (state.moveModeTimer) clearTimeout(state.moveModeTimer);
+      state.moveModeTimer = setTimeout(() => { state.moveModeIndex = -1; state.moveModeTimer = null; renderAll(); }, 7000);
+    }
+    function initSortable(){
+      const list = $("setList");
+      if (!list || !window.Sortable) return;
+      if (list._sortable) { try { list._sortable.destroy(); } catch{} list._sortable = null; }
+      list._sortable = Sortable.create(list, {
+        animation:150, draggable:".set-item-wrap", handle:".drag-handle", forceFallback:true,
+        fallbackOnBody:false, fallbackTolerance:3, delayOnTouchOnly:true, delay:300, touchStartThreshold:15,
+        scroll:true, bubbleScroll:true,
+        onStart:() => document.body.classList.add("is-dragging-sortable"),
+        onEnd:evt => {
+          document.body.classList.remove("is-dragging-sortable");
+          try {
+            const oldIndex = evt.oldIndex, newIndex = evt.newIndex;
+            if (oldIndex == null || newIndex == null || oldIndex === newIndex) return;
+            const visibleIdxs = state.setlist.map((song,i) => (!isHidden(song) ? i : null)).filter(i => i !== null);
+            const fromActual = visibleIdxs[oldIndex];
+            if (fromActual == null) return;
+            const moved = state.setlist.splice(fromActual, 1)[0];
+            if (!moved) return;
+            const visibleAfterRemove = state.setlist.map((song,i) => (!isHidden(song) ? i : null)).filter(i => i !== null);
+            const insertAt = newIndex >= visibleAfterRemove.length ? state.setlist.length : visibleAfterRemove[newIndex];
+            state.setlist.splice(insertAt, 0, moved);
+            state.currentIndex = state.setlist.findIndex(song => song === moved);
+            markDirty(); saveLocal(); renderAll();
+          } catch(e){ console.error(e); appAlert("Error al reordenar:\n" + (e?.message || e)); renderAll(); }
+        }
+      });
+    }
+    function initSearch(){
+      const sb = $("searchBox"), results = $("results");
+      if (!sb || !results) return;
+      let timer = null;
+      sb.oninput = () => {
+        const val = sb.value.trim();
+        if (timer) clearTimeout(timer);
+        if (!db || val.length < 2) { results.textContent = ""; return; }
+        timer = setTimeout(async () => {
+          const currentVal = sb.value.trim();
+          if (currentVal !== val) return;
+          const safeVal = val.replace(/[%_,()]/g, "").trim();
+          if (safeVal.length < 2) { results.textContent = ""; return; }
+          const { data, error } = await db.from("canciones").select("*").or(`titulo.ilike.%${safeVal}%,artista.ilike.%${safeVal}%`).limit(8);
+          if (error) { console.error(error); results.textContent = ""; return; }
+          if (sb.value.trim() !== val) return;
+          results.textContent = "";
+          (data || []).forEach(song => {
+            const item = make("div", "set-item");
+            const titlebox = make("div", "titlebox");
+            titlebox.append(make("div", "songtitle", song.titulo || ""), make("div", "songmeta", song.artista || ""));
+            const btn = make("button", "btn btn-primary", "ADD");
+            btn.onclick = ev => { ev.stopPropagation(); addToSetlist(song); };
+            item.append(titlebox, btn);
+            results.appendChild(item);
+          });
+        }, 280);
+      };
+    }
+    function initReaderSwipe(){
+      const el = $("viewContent");
+      if (!el || el.dataset.swipeReady === "1") return;
+      el.dataset.swipeReady = "1";
+      let startX=0,startY=0,dx=0,dy=0,pointerId=null;
+      el.addEventListener("pointerdown", ev => { pointerId=ev.pointerId; startX=ev.clientX; startY=ev.clientY; dx=0; dy=0; }, {passive:true});
+      el.addEventListener("pointermove", ev => {
+        if (pointerId == null || ev.pointerId !== pointerId) return;
+        dx = ev.clientX - startX; dy = ev.clientY - startY;
+        if (Math.abs(dy) > 18 && Math.abs(dy) > Math.abs(dx)) pointerId = null;
+      }, {passive:true});
+      el.addEventListener("pointerup", ev => {
+        if (pointerId == null || ev.pointerId !== pointerId) return;
+        if (Math.abs(dy) <= 60 && Math.abs(dx) >= 70) dx < 0 ? nextSong() : prevSong();
+        pointerId = null;
+      }, {passive:true});
+      el.addEventListener("pointercancel", () => pointerId = null, {passive:true});
+    }
+    function initPinchZoom(){
+      const el = $("viewContent");
+      if (!el || el.dataset.pinchReady === "1") return;
+      el.dataset.pinchReady = "1";
+      const pointers = new Map();
+      let initialDistance = null, initialFontSize = state.currentFontSize;
+      const distance = (a,b) => Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+      el.addEventListener("pointerdown", ev => {
+        pointers.set(ev.pointerId, ev);
+        if (pointers.size === 2) { const pts = Array.from(pointers.values()); initialDistance = distance(pts[0], pts[1]); initialFontSize = state.currentFontSize; }
+      });
+      el.addEventListener("pointermove", ev => {
+        if (!pointers.has(ev.pointerId)) return;
+        pointers.set(ev.pointerId, ev);
+        if (pointers.size === 2 && initialDistance) {
+          const pts = Array.from(pointers.values());
+          const newSize = Math.max(12, Math.min(42, Math.round(initialFontSize * (distance(pts[0], pts[1]) / initialDistance))));
+          if (newSize !== state.currentFontSize) { state.currentFontSize = newSize; localStorage.setItem("adoranza_font_size", String(newSize)); el.style.fontSize = newSize + "px"; }
+        }
+      });
+      const cleanup = ev => { pointers.delete(ev.pointerId); if (pointers.size < 2) initialDistance = null; };
+      el.addEventListener("pointerup", cleanup);
+      el.addEventListener("pointercancel", cleanup);
+      el.addEventListener("pointerleave", cleanup);
+    }
+    function initReaderLongPressEdit(){
+      const el = $("viewContent");
+      if (!el || el.dataset.longPressEditReady === "1") return;
+      el.dataset.longPressEditReady = "1";
+      let timer=null,startX=0,startY=0,pointerId=null;
+      const cancel = () => { if (timer) clearTimeout(timer); timer=null; pointerId=null; };
+      el.addEventListener("pointerdown", ev => {
+        if (ev.pointerType === "mouse" && ev.button !== 0) return;
+        if (state.userRole !== "musico" || state.currentIndex < 0) return;
+        pointerId=ev.pointerId; startX=ev.clientX; startY=ev.clientY;
+        timer = setTimeout(() => { timer=null; pointerId=null; openTabEditor(); }, 2600);
+      }, {passive:true});
+      el.addEventListener("pointermove", ev => {
+        if (pointerId == null || ev.pointerId !== pointerId) return;
+        if (Math.abs(ev.clientX - startX) > 18 || Math.abs(ev.clientY - startY) > 28) cancel();
+      }, {passive:true});
+      el.addEventListener("pointerup", cancel, {passive:true});
+      el.addEventListener("pointercancel", cancel, {passive:true});
+      el.addEventListener("pointerleave", cancel, {passive:true});
+    }
+    function initAutoHideControls(){
+      let ticking = false;
+      window.addEventListener("scroll", () => {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(() => {
+          document.body.classList.toggle("controls-hidden", (window.scrollY || window.pageYOffset || 0) >= 40);
+          ticking = false;
+        });
+      }, {passive:true});
+    }
+    function storagePathFromSong(song){
+      let p = String(song?.path_url || "").trim();
+      if (!p) return "";
+      p = p.replace(/^https?:\/\/[^/]+\/storage\/v1\/object\/public\/Cancionero_Adoranza\//i, "");
+      p = p.replace(/^Cancionero_Adoranza\//i, "").replace(/^\.\//, "");
+      try { p = decodeURIComponent(p); } catch {}
+      return p;
+    }
+    async function openTabEditor(){
+      if (state.userRole !== "musico") return appAlert("La edición de tablatura está disponible en modo Piano / Guitarra.");
+      const curr = state.setlist[state.currentIndex];
+      if (!curr) return;
+      if (!await appConfirm("¿Querés editar la tablatura de esta canción?")) return;
+      $("tabEditTitle").textContent = `${curr.titulo || "(Sin título)"}${curr.artista ? " - " + curr.artista : ""}`;
+      $("tabEditText").value = curr.body_base || curr.body || "";
+      $("tabEditModal").style.display = "block";
+      setTimeout(() => $("tabEditText").focus(), 80);
+    }
+    function closeTabEditor(){ $("tabEditModal").style.display = "none"; }
+    async function saveTabEditor(){
+      if (!db) return appAlert("Supabase no está listo.");
+      const curr = state.setlist[state.currentIndex];
+      if (!curr) return;
+      const path = storagePathFromSong(curr);
+      if (!path) return appAlert("Esta canción no tiene path_url válido.");
+      const newBody = $("tabEditText").value || "";
+      if (!await appConfirm("Esto reemplazará la tablatura original en la base de datos.\n\n¿Guardar cambios?")) return;
+      try {
+        const blob = new Blob([newBody], {type:"text/plain;charset=utf-8"});
+        const { error } = await db.storage.from(BUCKET).upload(path, blob, {upsert:true, contentType:"text/plain;charset=utf-8"});
+        if (error) throw error;
+        curr.body = newBody;
+        curr.body_base = newBody;
+        const favs = getFavorites();
+        const k = songKey(curr);
+        if (favs[k]) { favs[k].body = newBody; favs[k].body_base = newBody; favs[k].updatedAt = Date.now(); setFavorites(favs); }
+        saveLocal(); closeTabEditor(); renderAll(); appAlert("Tablatura actualizada correctamente.");
+      } catch(e){ console.error(e); appAlert("No se pudo guardar la tablatura:\n" + (e?.message || e)); }
+    }
+    function buildCurrentSongText(){
+      const curr = state.setlist[state.currentIndex];
+      if (!curr) return "";
+      const lyric = stripChordsAndCompactText(curr.body_base || curr.body || "");
+      return [curr.titulo || "Sin título", curr.artista || "", "", lyric].filter((x,i) => i === 2 || x).join("\n").trim();
+    }
+    function buildFullSetlistText(){
+      const parts = [state.listName || state.listIdUnico || "Setlist", ""];
+      state.setlist.forEach((song,i) => {
+        parts.push(`${i + 1}. ${song?.titulo || `Canción ${i + 1}`}`);
+        if (song?.artista) parts.push(song.artista);
+        parts.push("", stripChordsAndCompactText(song?.body_base || song?.body || ""), "", "--------------------------------", "");
+      });
+      return parts.join("\n").trim();
+    }
+    function safeFileName(s){
+      return String(s || "archivo").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^\w\- ]+/g,"").trim().replace(/\s+/g,"_");
+    }
+    function downloadTxt(filename, content){
+      const blob = new Blob([content], {type:"text/plain;charset=utf-8"});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+    async function descargarTexto(){
+      const choice = await showModal({
+        title:"Descargar texto",
+        body:"Escoge qué deseas descargar.",
+        choices:[
+          {label:"Canción actual", description:"Solo la letra visible de la canción seleccionada.", value:"song"},
+          {label:"Todo el setlist", description:"Un archivo con todas las letras del setlist.", value:"setlist"}
+        ]
+      });
+      if (!choice) return;
+      if (choice === "song") {
+        const curr = state.setlist[state.currentIndex];
+        if (!curr) return appAlert("No hay una canción seleccionada.");
+        downloadTxt(safeFileName(curr.titulo || "cancion") + ".txt", buildCurrentSongText());
+      } else {
+        if (!state.setlist.length) return appAlert("El setlist está vacío.");
+        downloadTxt(safeFileName(state.listName || state.listIdUnico || "setlist") + ".txt", buildFullSetlistText());
+      }
+    }
+    async function revisarLinkSetlistId(){
+      if (!db) return false;
+      const params = new URLSearchParams(window.location.search);
+      const sid = params.get("sid");
+      if (!sid) return false;
+      await cargarListaCloudPorId(sid, true);
+      params.delete("sid");
+      const qs = params.toString();
+      window.history.replaceState({}, "", window.location.pathname + (qs ? "?" + qs : ""));
+      return true;
+    }
+    document.addEventListener("DOMContentLoaded", async () => {
+      try {
+        await ensureLocalUserOrBlock();
+        db = initSupabaseOrWarn();
+        await upsertUserToCloudNonBlocking();
+        initSearch();
+        initReaderSwipe();
+        initPinchZoom();
+        initReaderLongPressEdit();
+        initAutoHideControls();
+        let handledLink = false;
+        if (db) handledLink = await revisarLinkSetlistId();
+        if (!handledLink) loadLocalSetlist();
+        $("uid-display").textContent = state.userId;
+        $("uname-display").textContent = state.username;
+        renderAll();
+      } catch(e){ console.error("Error iniciando app:", e); appAlert("Error iniciando la app:\n" + (e?.message || e)); }
+    });
+  </script>
+</body>
+</html>
