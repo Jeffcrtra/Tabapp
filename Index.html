@@ -4,9 +4,11 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#090b10" />
-  <title>Adoranza Pro v7</title>
+  <title>8.55 Adoranza Pro v7</title>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+
   <style>
     :root{
       --bg:#090b10;
@@ -27,6 +29,7 @@
       --sans:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
       --mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
     }
+
     *{box-sizing:border-box}
     html{scroll-behavior:smooth}
     body{
@@ -41,9 +44,11 @@
         var(--bg);
       overflow-x:hidden;
     }
+
     body.controls-hidden{padding-top:8px}
     button,input,textarea{font:inherit}
     button{-webkit-tap-highlight-color:transparent}
+
     .btn{
       min-height:36px;
       border:1px solid var(--line2);
@@ -68,6 +73,7 @@
     .btn-red{background:rgba(240,96,114,.12);border-color:rgba(240,96,114,.44);color:#ffe1e6}
     .btn-ghost{background:rgba(255,255,255,.025)}
     .btn-icon{width:40px;padding:0;font-size:16px}
+
     #roleSelector{
       position:fixed;
       inset:0;
@@ -144,6 +150,7 @@
       text-align:center;
     }
     .footer-credits a{color:var(--accent);font-weight:850;text-decoration:none}
+
     #fixedControlPanel{
       position:fixed;
       inset:0 0 auto 0;
@@ -187,9 +194,11 @@
       font-weight:850;
       letter-spacing:.08em;
     }
+
     .wrap{max-width:1220px;margin:0 auto;padding:12px}
     .grid{display:grid;grid-template-columns:1fr;gap:14px}
     @media (min-width:860px){.grid{grid-template-columns:330px 1fr}}
+
     .card{
       border:1px solid var(--line);
       border-radius:14px;
@@ -229,6 +238,7 @@
     }
     .input:focus{border-color:rgba(244,197,66,.55)}
     .input::placeholder{color:rgba(154,166,178,.74)}
+
     #setlist-container{width:100%;margin:0 auto}
     .setlist-actions{
       display:flex;
@@ -352,6 +362,7 @@
       font-weight:950;
       cursor:pointer;
     }
+
     #songInfoBelowSetlist{grid-column:1/-1}
     #info-display{
       border:1px solid rgba(255,255,255,.11);
@@ -492,6 +503,7 @@
       font-weight:850;
     }
     .dirty-chip.show{display:block}
+
     #configPanel{
       position:fixed;
       inset:0;
@@ -571,6 +583,7 @@
       font-size:11px;
     }
     .setlist-card-actions{display:flex;gap:7px}
+
     #toastUndo{
       position:fixed;
       left:50%;
@@ -597,6 +610,7 @@
       font-size:12px;
       font-weight:850;
     }
+
     #tabEditModal,.modal-shell{
       display:none;
       position:fixed;
@@ -686,6 +700,7 @@
       font-size:16px;
       line-height:1.45;
     }
+
     body.live-mode{
       padding-top:72px;
       background:
@@ -709,6 +724,7 @@
       border-color:rgba(244,197,66,.20);
     }
     body.live-mode #current-song-info{font-size:24px}
+
     .sortable-ghost{opacity:.25!important}
     .sortable-chosen{opacity:.95!important}
     .sortable-drag{opacity:.95!important;transform:scale(1.02);z-index:99999!important}
@@ -716,6 +732,7 @@
       user-select:none!important;
       -webkit-user-select:none!important;
     }
+
     @media (max-width:720px){
       body{padding-top:132px}
       .topbar{grid-template-columns:1fr}
@@ -733,6 +750,7 @@
     }
   </style>
 </head>
+
 <body>
   <div id="roleSelector">
     <div class="brand-mark">
@@ -763,6 +781,7 @@
     </div>
     <div class="footer-credits">App creada por <a href="https://www.linkedin.com/in/jeffrey-trigueros-371191123/" target="_blank" rel="noopener">Jeffrey Trigueros</a></div>
   </div>
+
   <div id="fixedControlPanel">
     <div class="topbar">
       <div class="transport">
@@ -784,6 +803,7 @@
       <input type="range" id="volRange" min="0" max="1" step="0.05" value="0.5" style="width:140px;vertical-align:middle">
     </div>
   </div>
+
   <div id="configPanel">
     <button class="btn btn-blue" style="width:140px;margin:0 auto" onclick="closeConfig()">Volver</button>
     <div class="config-tabs">
@@ -791,6 +811,7 @@
       <button class="tab-btn" data-tab="favorites" onclick="showConfigTab('favorites')">Favoritos</button>
       <button class="tab-btn" data-tab="profile" onclick="showConfigTab('profile')">Perfil</button>
     </div>
+
     <section class="card config-section active" data-section="setlists">
       <div class="hd">
         <span>Mis Setlists</span>
@@ -801,6 +822,7 @@
         <div class="hint">Toca “Abrir” para cargar directamente. “Copiar” mantiene el flujo anterior.</div>
       </div>
     </section>
+
     <section class="card config-section" data-section="favorites">
       <div class="hd">Favoritos Offline <span id="favCount" style="color:var(--muted);font-weight:700"></span></div>
       <div class="bd">
@@ -808,6 +830,7 @@
         <div class="hint">Estos favoritos viven en este dispositivo.</div>
       </div>
     </section>
+
     <section class="card config-section" data-section="profile">
       <div class="hd">Perfil Local</div>
       <div class="bd" style="display:grid;gap:12px">
@@ -823,6 +846,7 @@
       </div>
     </section>
   </div>
+
   <main class="wrap">
     <div class="grid">
       <section class="card search-card">
@@ -832,6 +856,7 @@
           <div id="results" style="margin-top:10px"></div>
         </div>
       </section>
+
       <section class="card setlist-card-main">
         <div class="hd">
           <div style="min-width:0">Setlist <span id="list-name-badge"></span></div>
@@ -848,6 +873,7 @@
           <div id="dirtyChip" class="dirty-chip">Cambios sin guardar</div>
         </div>
       </section>
+
       <section id="songInfoBelowSetlist">
         <div id="info-display">
           <div class="now-next-row">
@@ -863,15 +889,18 @@
           <div id="metro-dots"></div>
         </div>
       </section>
+
       <section class="card flat reader-card" style="grid-column:1/-1">
         <pre id="viewContent">Selecciona una canción.</pre>
       </section>
     </div>
   </main>
+
   <div id="toastUndo">
     <div id="toastMsg">Quitada</div>
     <button class="btn btn-primary" onclick="undoLastRemove()">Deshacer</button>
   </div>
+
   <div id="tabEditModal">
     <div class="tab-edit-box">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
@@ -888,6 +917,7 @@
       </div>
     </div>
   </div>
+
   <div id="appModal" class="modal-shell">
     <div class="modal-box">
       <div class="modal-title" id="modalTitle">Adoranza</div>
@@ -897,9 +927,10 @@
       <div class="modal-actions" id="modalActions"></div>
     </div>
   </div>
+
   <script>
     const SB_URL = "https://ystlbjvjoqpqoklvjdrj.supabase.co";
-    const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXAiLCJyZWYiOiJ5c3RsYmp2am9xcHFva2x2amRyaiIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzY3OTc2ODQ1LCJleHAiOjIwODM1NTI4NDV9.AQg9BuuGlbUtuyccvrBJwRGzx4Bgzx58aqGbfMPzKfg".replace('"iss":"sup"', '"iss":"supabase"');
+    const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlzdGxianZqb3FwcW9rbHZqZHJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5NzY4NDUsImV4cCI6MjA4MzU1Mjg0NX0.AQg9BuuGlbUtuyccvrBJwRGzx4Bgzx58aqGbfMPzKfg";
     const BUCKET = "Cancionero_Adoranza";
     const BUCKET_URL = `${SB_URL}/storage/v1/object/public/${BUCKET}/`;
     const LS_SETLIST = "adoranza_v4_setlist";
@@ -907,6 +938,7 @@
     const LS_SUNG = "adoranza_sung_v1";
     const LS_HIDDEN = "adoranza_hidden_v1";
     const LS_ADOPT = "adoranza_adopted_setlists_v1";
+
     let db = null;
     const state = {
       setlist: [],
@@ -929,6 +961,7 @@
       moveModeTimer: null,
       liveMode: false
     };
+
     const $ = id => document.getElementById(id);
     function make(tag, className, text){
       const node = document.createElement(tag);
@@ -942,6 +975,7 @@
       return Number.isFinite(n) ? n : fallback;
     }
     function safeJSONParse(txt, fallback){ try { return JSON.parse(txt); } catch { return fallback; } }
+
     function showModal({title="Adoranza", body="", input=false, inputValue="", choices=null, okText="OK", cancelText=null}){
       return new Promise(resolve => {
         const shell = $("appModal");
@@ -950,6 +984,7 @@
         const inputEl = $("modalInput");
         const choicesEl = $("modalChoices");
         const actions = $("modalActions");
+
         titleEl.textContent = title;
         bodyEl.textContent = body;
         actions.textContent = "";
@@ -957,10 +992,12 @@
         inputEl.style.display = input ? "block" : "none";
         choicesEl.style.display = choices ? "grid" : "none";
         inputEl.value = inputValue || "";
+
         const close = value => {
           shell.style.display = "none";
           resolve(value);
         };
+
         if (choices) {
           choices.forEach(choice => {
             const btn = make("button", "choice-card");
@@ -980,6 +1017,7 @@
           ok.onclick = () => close(input ? inputEl.value : true);
           actions.appendChild(ok);
         }
+
         shell.style.display = "block";
         setTimeout(() => input ? inputEl.focus() : actions.querySelector("button")?.focus(), 50);
       });
@@ -987,6 +1025,7 @@
     const appAlert = message => showModal({body:String(message || "")});
     const appConfirm = message => showModal({body:String(message || ""), okText:"Continuar", cancelText:"Cancelar"});
     const appPrompt = (message, value="") => showModal({body:String(message || ""), input:true, inputValue:value, okText:"Aceptar", cancelText:"Cancelar"});
+
     function markDirty(){
       if (state.listIdUnico) state.hasUnsavedChanges = true;
       renderBadge();
@@ -1017,6 +1056,7 @@
       return song._localKey;
     }
     const listKey = () => state.listIdUnico ? state.listIdUnico.trim().toUpperCase() : "LOCAL";
+
     async function copyToClipboard(text){
       try {
         if (navigator.clipboard && window.isSecureContext) {
@@ -1036,6 +1076,7 @@
       ta.remove();
       return ok;
     }
+
     function initSupabaseOrWarn(){
       if (!window.supabase?.createClient) {
         appAlert("No cargó Supabase. Revisa internet o bloqueo del CDN.");
@@ -1062,6 +1103,7 @@
         if (error) console.warn("upsert user:", error);
       } catch(e){ console.warn("upsert user:", e); }
     }
+
     function getFavorites(){ const obj = safeJSONParse(localStorage.getItem(LS_FAV) || "{}", {}); return obj && typeof obj === "object" ? obj : {}; }
     function setFavorites(obj){ localStorage.setItem(LS_FAV, JSON.stringify(obj || {})); }
     const isFav = song => !!getFavorites()[songKey(song)];
@@ -1098,6 +1140,7 @@
       const parsed = safeJSONParse(localStorage.getItem(LS_SETLIST), []);
       state.setlist = Array.isArray(parsed) ? parsed : [];
     }
+
     async function fetchSongBodyFromBucket(song){
       let rawUrl = String(song?.path_url || "").trim();
       if (!rawUrl) throw new Error("path_url vacío");
@@ -1161,6 +1204,7 @@
         }))
       };
     }
+
     function transposeBody(raw, steps, preferFlats=false){
       const nSteps = toNumber(steps, 0);
       if (!nSteps) return raw || "";
@@ -1199,6 +1243,7 @@
       for (let i=visible.length-1;i>=0;i--) if (visible[i] < fromIdx) return visible[i];
       return -1;
     }
+
     function renderBadge(){
       const badge = $("list-name-badge");
       if (!badge) return;
@@ -1229,6 +1274,7 @@
       next.appendChild(document.createTextNode(nextSong ? nextSong.titulo || "(Sin título)" : "(no hay más)"));
       next.appendChild(make("span", "sub2", "Siguiente"));
     }
+
     function renderAll(){
       renderSetlist();
       renderReader();
@@ -1250,6 +1296,7 @@
         if (isSung(s)) row.classList.add("is-sung");
         if (favOn) row.classList.add("is-fav");
         if (state.moveModeIndex === originalIndex) row.classList.add("is-move-mode");
+
         if (state.moveModeIndex === originalIndex) {
           const controls = make("div", "move-controls");
           const up = make("button", "move-btn", "↑");
@@ -1259,6 +1306,7 @@
           controls.append(up, down);
           row.appendChild(controls);
         } else row.appendChild(make("span", "drag-handle", "☰"));
+
         const titlebox = make("div", "titlebox");
         titlebox.appendChild(make("div", "songtitle", s.titulo || "(Sin título)"));
         const metaParts = [];
@@ -1324,6 +1372,7 @@
       state.currentBPM = state.half ? bpm / 2 : bpm;
       if (state.userRole === "drums" && state.metroActive) startMetro();
     }
+
     async function addToSetlist(song){
       try {
         const favs = getFavorites();
@@ -1395,6 +1444,7 @@
       renderFavoritesInConfig();
       renderAll();
     }
+
     function seleccionar(idx){ state.currentIndex = idx; state.half = false; renderAll(); scrollToReader(); }
     function nextSong(){
       if (!state.setlist.length) return;
@@ -1475,6 +1525,7 @@
       saveLocal();
       renderAll();
     }
+
     async function guardarListaCloud(){
       if (!db) return appAlert("Supabase no está listo.");
       if (!state.setlist.length) return appAlert("El setlist está vacío.");
@@ -1586,7 +1637,10 @@
           card.append(info, actions);
           box.appendChild(card);
         });
-      } catch(e){ console.error(e); box.textContent = "Error cargando setlists."; }
+      } catch(e){
+        console.error("listarMisSetlists error:", e);
+        box.textContent = "Error cargando setlists. Revisa conexión o permisos de Supabase.";
+      }
     }
     async function copiarSetlistId(id, ev){ ev?.stopPropagation(); const ok = await copyToClipboard(id); appAlert(ok ? `Copiado:\n${id}` : `No se pudo copiar:\n${id}`); }
     async function copiarMiSetlistActual(){ if (!state.listIdUnico) return appAlert("No hay setlist cargado."); await copiarSetlistId(state.listIdUnico.trim().toUpperCase()); }
@@ -1607,6 +1661,7 @@
         appAlert("TOP 5:\n" + (lines.length ? lines.join("\n") : "Sin datos todavía."));
       } catch(e){ console.error(e); appAlert("No se pudieron cargar estadísticas."); }
     }
+
     function setRole(role){
       state.userRole = role;
       $("roleSelector").style.display = "none";
@@ -1640,6 +1695,7 @@
       $("liveModeBtn").textContent = state.liveMode ? "Salir vivo" : "En vivo";
       scrollToReader();
     }
+
     function toggleMetroManual(){
       state.metroActive = !state.metroActive;
       $("btnMetroState").textContent = state.metroActive ? "⏹" : "▶";
@@ -1681,6 +1737,7 @@
       }, (60 / bpm) * 1000);
     }
     function stopMetro(){ if (state.metroInt) clearInterval(state.metroInt); state.metroInt = null; const md = $("metro-dots"); if (md) md.textContent = ""; }
+
     function attachSwipe(el){
       let startX=0,startY=0,dx=0,dy=0,dragging=false,pointerId=null;
       const wrap = el.closest(".set-item-wrap");
@@ -1789,6 +1846,7 @@
         }
       });
     }
+
     function initSearch(){
       const sb = $("searchBox"), results = $("results");
       if (!sb || !results) return;
@@ -1892,6 +1950,7 @@
         });
       }, {passive:true});
     }
+
     function storagePathFromSong(song){
       let p = String(song?.path_url || "").trim();
       if (!p) return "";
@@ -1986,6 +2045,7 @@
       window.history.replaceState({}, "", window.location.pathname + (qs ? "?" + qs : ""));
       return true;
     }
+
     document.addEventListener("DOMContentLoaded", async () => {
       try {
         await ensureLocalUserOrBlock();
