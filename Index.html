@@ -1952,47 +1952,79 @@
       if (byId("configPanel").style.display === "flex") listarMisSetlists();
     }
 
-    async function cargarListaCloud() {
+    async function cargarListaCloudPorId(id, askRole = true) {
       if (!db) {
         appAlert("Supabase no está listo.");
         return;
       }
-
+    
       if (state.hasUnsavedChanges) {
         if (!appConfirm("Tienes cambios sin guardar. Si cargas otra lista, se perderán. ¿Continuar?")) return;
       }
-
-      const uid = prompt("Ingresa el ID del Setlist:");
-      if (!uid) return;
-
-      const want = uid.trim().toUpperCase();
-
+    
+      const want = String(id || "").trim().toUpperCase();
+    
+      if (!want) {
+        appAlert("ID de setlist inválido.");
+        return;
+      }
+    
+      if (askRole) {
+        const roleChoice = prompt(
+          "¿Cómo querés abrir este setlist?\n\n1 = Piano / Guitarra\n2 = Voz + Batería",
+          "1"
+        );
+    
+        if (roleChoice === null) return;
+    
+        const val = String(roleChoice).trim();
+    
+        if (val === "1") {
+          setRole("musico");
+        } else if (val === "2") {
+          setRole("drums");
+        } else {
+          appAlert("Opción inválida. Usa 1 o 2.");
+          return;
+        }
+      }
+    
       try {
         const setlist = await loadSetlistByCode(want, db);
-
+    
         state.listName = setlist.nombre_lista || "";
         state.listIdUnico = String(setlist.id_unico || want).trim().toUpperCase();
-
+    
         if (setlist.owner_id && setlist.owner_id !== state.userId) {
           if (appConfirm("¿Deseas guardar este setlist en tu lista de accesos rápidos?")) {
             adoptSetlistId(want);
           }
         }
-
+    
         state.setlist = await resolveSetlistSongs(setlist, db);
         state.currentIndex = -1;
         state.hasUnsavedChanges = false;
-
+    
         const hm = getHiddenMap();
         delete hm[listKey()];
         setHiddenMap(hm);
-
+    
         saveLocal();
         renderAll();
+        closeConfig();
+    
+        appAlert("Setlist cargado:\n" + (state.listName || state.listIdUnico));
       } catch (e) {
         console.error(e);
         appAlert("No se encontró o no se pudo cargar: " + want);
       }
+    }
+    
+    async function cargarListaCloud() {
+      const uid = prompt("Ingresa el ID del Setlist:");
+      if (!uid) return;
+    
+      await cargarListaCloudPorId(uid, true);
     }
 
     async function listarMisSetlists() {
@@ -2054,7 +2086,7 @@
           const item = make("div", "set-item");
           item.style.cursor = "pointer";
           item.style.borderRadius = "12px";
-          item.onclick = () => copiarSetlistId(id);
+          item.onclick = () => cargarListaCloudPorId(id, true);
 
           const titlebox = make("div", "titlebox");
           titlebox.appendChild(make("div", "songtitle", name));
